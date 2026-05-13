@@ -10,7 +10,7 @@ description: >-
   orchestrator (`/calibrate`) and standalone via `/claude-calibration:calibrate-plugins`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.claude-plugin/*.json), Write(.claude-plugin/*.json)
 ---
 
 # calibrate-plugins — per-feature bundle

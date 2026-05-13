@@ -12,7 +12,7 @@ description: >-
   orchestrator (`/calibrate`) and standalone via `/claude-calibration:calibrate-subagents`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.claude/agents/*.md), Edit(~/.claude/agents/*.md), Write(.claude/agents/*.md), Write(~/.claude/agents/*.md)
 ---
 
 # calibrate-subagents — per-feature bundle

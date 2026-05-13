@@ -1,19 +1,18 @@
 ---
 name: calibrate-general
 description: >-
-  Cross-cutting calibration synthesizer. Not bound to a single Claude Code feature — instead
-  rolls up findings that span more than one: estimated always-on context cost (CLAUDE.md +
-  unconditional rules), nested-CLAUDE.md conflict risk, settings precedence surprises, missing
-  `.gitignore` coverage for `CLAUDE.local.md` / `.claude/settings.local.json` /
-  `.claude/calibration/`, and "must"/"always"/"never" rules with no enforcement hook. Always
-  emits the `general:diagnostics-ask` INFO so the evaluator reminds the user to paste `/doctor`,
-  `/context all`, `/skills` (press `t`), `/mcp` for exact numbers. The lint script is also the
-  back-end for `/calibrate cost` — its TSV output is read directly by the orchestrator's
-  cost-mode formatter. Invoked by the calibration orchestrator (`/calibrate`) and standalone via
-  `/claude-calibration:calibrate-general`.
+  Use this bundle when cross-cutting calibration findings span more than one Claude Code feature.
+  Rolls up estimated always-on context cost (CLAUDE.md + unconditional rules), nested-CLAUDE.md
+  conflict risk, settings precedence surprises, missing `.gitignore` coverage for
+  `CLAUDE.local.md` / `.claude/settings.local.json` / `.claude/calibration/`, and
+  "must"/"always"/"never" rules with no enforcement hook. Always emits `general:diagnostics-ask`
+  so the evaluator reminds the user to paste `/doctor`, `/context all`, `/skills` (press `t`),
+  `/mcp` for exact numbers. The lint script is also the back-end for `/calibrate cost` — its TSV
+  output is read directly by the orchestrator's cost-mode formatter. Invoked by the calibration
+  orchestrator (`/calibrate`) and standalone via `/claude-calibration:calibrate-general`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.gitignore), Write(.gitignore), Edit(.claude/settings.local.json), Write(.claude/settings.local.json)
 ---
 
 # calibrate-general — per-feature bundle (cross-cutting synthesizer)

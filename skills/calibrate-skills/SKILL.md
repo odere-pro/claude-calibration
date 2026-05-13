@@ -11,7 +11,7 @@ description: >-
   orchestrator (`/calibrate`) and standalone via `/claude-calibration:calibrate-skills`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Bash(gh *), Edit(.claude/skills/**), Edit(~/.claude/skills/**), Write(.claude/skills/**), Write(~/.claude/skills/**)
 ---
 
 # calibrate-skills — per-feature bundle

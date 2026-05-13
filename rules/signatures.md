@@ -172,10 +172,11 @@ Each row: `signature · default severity · what it flags`.
 
 ## When a new signature is needed
 
-1. Add the row here first (severity + trigger + bundle).
-2. Add the same row to the owning bundle's `reference.md`.
-3. Emit the signature from the bundle's `scripts/lint.sh`.
-4. Map it in [`dispatch.md`](dispatch.md) if it has a `kind: create` archetype (recurrence target).
+Add the row here first (severity + trigger + bundle), then add the same row to the owning
+bundle's `reference.md`, emit the signature from the bundle's `scripts/lint.sh`, and map it in
+[`dispatch.md`](dispatch.md) if it has a `kind: create` archetype (recurrence target). All four
+locations must be in sync — a missing entry in any of them makes the signature invisible somewhere
+in the pipeline.
 
 `/plugin-update` keeps `reference.md` / `lint.sh` constants in sync with the source `docs/features/*.md`;
 this rules file is the authoritative cross-bundle catalogue — keep it the same shape as the

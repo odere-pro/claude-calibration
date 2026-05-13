@@ -13,7 +13,7 @@ description: >-
   and standalone via `/claude-calibration:calibrate-hooks`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.claude/hooks/**), Edit(~/.claude/hooks/**), Write(.claude/hooks/**), Write(~/.claude/hooks/**), Edit(.claude/settings.json), Write(.claude/settings.json)
 ---
 
 # calibrate-hooks — per-feature bundle

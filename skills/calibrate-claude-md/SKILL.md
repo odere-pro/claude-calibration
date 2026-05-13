@@ -11,7 +11,7 @@ description: >-
   `/claude-calibration:calibrate-claude-md`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(**/CLAUDE.md), Edit(**/CLAUDE.local.md), Write(**/CLAUDE.md), Write(**/CLAUDE.local.md)
 ---
 
 # calibrate-claude-md — per-feature bundle

@@ -11,7 +11,7 @@ description: >-
   `/claude-calibration:calibrate-mcp`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.mcp.json), Write(.mcp.json), Edit(.claude/agents/*.md), Write(.claude/agents/*.md)
 ---
 
 # calibrate-mcp — per-feature bundle

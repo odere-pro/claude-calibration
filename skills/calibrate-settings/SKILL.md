@@ -13,7 +13,7 @@ description: >-
   `/claude-calibration:calibrate-settings`.
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Bash, Write, Edit
+allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.claude/settings.json), Edit(.claude/settings.local.json), Write(.claude/settings.json), Write(.claude/settings.local.json)
 ---
 
 # calibrate-settings — per-feature bundle

@@ -1,14 +1,14 @@
 ---
 name: calibration-evaluator
 description: >-
-  Audits a Claude Code setup against the calibration rubric. Two passes — `1 (baseline)` writes
-  per-feature, interactions, and intent-flow reports under the run folder; `2 (delta)` re-audits
-  the same scope and writes a delta report comparing against the baseline. Dispatches per-feature
-  work to the matching `<Bundles dir>/calibrate-<feature>/` (its `reference.md` for the rubric and
-  `scripts/enumerate.sh` + `scripts/lint.sh` for the actual numbers). Every finding carries a
-  pattern signature. Invoked by `/calibrate` (both passes) and by
-  `/claude-calibration:calibration-audit` and `/claude-calibration:calibration-diff` (baseline /
-  delta only). Never edits Claude Code config — only writes reports into the run folder.
+  Use this agent when auditing a Claude Code setup against the calibration rubric. Two passes —
+  `1 (baseline)` writes per-feature, interactions, and intent-flow reports under the run folder;
+  `2 (delta)` re-audits the same scope and writes a delta report comparing against the baseline.
+  Dispatches per-feature work to the matching `<Bundles dir>/calibrate-<feature>/` (its
+  `reference.md` for the rubric and `scripts/enumerate.sh` + `scripts/lint.sh` for actual
+  numbers). Every finding carries a pattern signature. Invoked by `/calibrate` (both passes) and
+  by `/claude-calibration:calibration-audit` and `/claude-calibration:calibration-diff` (baseline
+  / delta only). Never edits Claude Code config — only writes reports into the run folder.
 tools: Read, Grep, Glob, Bash, Write, Edit, TodoWrite
 model: sonnet
 maxTurns: 40

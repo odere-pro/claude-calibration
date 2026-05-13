@@ -31,6 +31,7 @@ internals; loads on-demand).
 
 Do **not**:
 
+<!-- TODO: add PreToolUse hook on rules/signatures.md and rules/dispatch.md to enforce the two hard rules below (see enforcement opportunity E3 in the calibration plan) -->
 - rename a pattern signature (breaks recurrence history — see `rules/signatures.md`).
 - break the `signature → bundle` map in `rules/dispatch.md`.
 - skip `/reload-plugins` after editing under `--plugin-dir`.
