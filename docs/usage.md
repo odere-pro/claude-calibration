@@ -219,6 +219,8 @@ spawn their own subagent chain and need their own preprocessing block:
 | `/calibrate cost` | Runs `calibrate-general/scripts/lint.sh` + the diagnostics ask. No run, no subagents, no edits. | The single-number standing-context-cost check. |
 | `/claude-calibration:calibration-audit` | Runs `/calibrate` through Phase 2 only — baseline evaluation, no improvement plan, no edits. Pure read-only audit. Enforced read-only by the audit-write-guard hook. | Periodic health check; CI gate; "just tell me what's wrong". |
 | `/claude-calibration:calibration-diff` | Evaluator pass-2 against the previous run's baseline; no planner / calibrator. | "What's changed since last calibration?" — useful between runs or after manual edits. |
+| `/claude-calibration:calibration-doctor` | Fast structural health check (~5s). Runs `scripts/doctor.sh`: JSON parses, hook scripts exist + executable, frontmatter is valid, MCP commands resolve, `.gitignore` covers `.claude/calibration/`. Triage list (broken/warn/ok). No rubric grading. | Pre-commit / pre-push smoke check; after a hand-edit; CI smoke gate. |
+| `/claude-calibration:calibration-onboarding` | First-time setup guide. Detects existing config + stack signals (TS/Python/Go/Rust/etc.) and names a single minimal next step. Pure guidance — never writes a config file. | Picking up a project with no Claude Code setup; orienting a teammate before they run `/calibrate`. |
 
 All convenience flows are thin wrappers — they exist for discoverability and to pre-set common
 argument combinations. You can always invoke `/calibrate` directly with the equivalent args.

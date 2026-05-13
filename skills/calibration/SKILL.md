@@ -33,6 +33,8 @@ Resolve `$ARGUMENTS` (case-insensitive, trim whitespace):
 | `help` / `?` / `menu` / `list`                                                                        | Print the **menu**. Stop.                                                                                |
 | `audit`                                                                                               | Invoke `Skill(skill="calibration-audit")`.                                                               |
 | `diff`                                                                                                | Invoke `Skill(skill="calibration-diff")`.                                                                |
+| `doctor`                                                                                              | Invoke `Skill(skill="calibration-doctor")`.                                                              |
+| `onboarding` / `onboard` / `setup`                                                                    | Invoke `Skill(skill="calibration-onboarding")`.                                                          |
 | `tighten`                                                                                             | Invoke `Skill(skill="calibrate", args="tighten")` (rewrites to intent `"tighten standards"`).            |
 | `harden`                                                                                              | Invoke `Skill(skill="calibrate", args="harden")` (rewrites to intent `"tighten standards"` + `--yes`).   |
 | `cost`                                                                                                | Invoke `Skill(skill="calibrate", args="cost")` (cost-mode: no run, no subagents).                        |
@@ -64,8 +66,10 @@ When `$ARGUMENTS` is empty or matches a help keyword, print exactly this (Markdo
 - /calibrate cost                   — single-number standing-context-cost snapshot (no run, no subagents)
 
 ## Convenience flows (separate skills — multi-phase, need their own preprocessing)
-- /claude-calibration:calibration-audit     — read-only baseline; no plan, no edits (Phase 1+2 of /calibrate)
-- /claude-calibration:calibration-diff      — evaluator pass-2 against the previous run's baseline only
+- /claude-calibration:calibration-audit         — read-only baseline; no plan, no edits (Phase 1+2 of /calibrate)
+- /claude-calibration:calibration-diff          — evaluator pass-2 against the previous run's baseline only
+- /claude-calibration:calibration-doctor        — fast structural health check (~5s; broken/warn/ok triage; not a rubric audit)
+- /claude-calibration:calibration-onboarding    — first-time setup guide; detects state, names one next step
 
 ## Per-feature (skip the orchestration)
 - /claude-calibration:calibrate-claude-md   — every CLAUDE.md / CLAUDE.local.md

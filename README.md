@@ -11,7 +11,7 @@ recurring.
                               entry point (top)
                 /calibration (dispatcher) → /calibrate (orchestrator, opus)
                                             └── built-in modes: tighten · harden · cost
-                /claude-calibration:calibration-{audit,diff}  (separate skills — multi-phase)
+                /claude-calibration:calibration-{audit,diff,doctor,onboarding}  (separate skills)
                                     │ chains
                                     ▼
                                   agents (middle)
@@ -42,7 +42,7 @@ MCP server with no wrapper skill is the docs' own anti-pattern.
 | `.claude-plugin/plugin.json` | Plugin manifest (`v0.2.0`). |
 | `skills/calibrate/` | The orchestrator — `/calibrate`. |
 | `skills/calibration/` | The top-level dispatcher — `/claude-calibration:calibration` (menu / shortcut / intent forwarder above `/calibrate`). |
-| `skills/calibration-{audit,diff}/` × 2 | Convenience flow skills — slim orchestrators that spawn their own subagent chain (`disable-model-invocation: true`). The three other shortcuts — `tighten`, `harden`, `cost` — are argument-token modes inside `/calibrate` rather than separate skills. |
+| `skills/calibration-{audit,diff,doctor,onboarding}/` × 4 | Convenience flow skills — slim, all `disable-model-invocation: true`. `audit` and `diff` spawn the worker agents; `doctor` runs a ~5-second structural health check (`scripts/doctor.sh`); `onboarding` is a stateless first-time setup guide. The three other shortcuts — `tighten`, `harden`, `cost` — are argument-token modes inside `/calibrate` rather than separate skills. |
 | `skills/calibrate-<feature>/` × 9 | The per-feature calibration bundles. Each is also user-invocable on its own (e.g. `/claude-calibration:calibrate-skills`). |
 | `agents/` | The 4 worker subagents: `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`, plus the per-feature `calibration-feature-evaluator` that the evaluator fans out to in parallel (one per feature, haiku-class). |
 | `rules/` | Two path-scoped rules (`signatures.md`, `dispatch.md`) — the canonical signature catalogue and the signature → bundle map. `paths:` frontmatter limits them to calibration files, so they cost zero standing context. |
@@ -99,6 +99,8 @@ standalone skills:
 |---|---|
 | `/claude-calibration:calibration-audit` | Phase 1+2 only — baseline evaluation, no improvement plan, no edits. Periodic health check or CI gate. Enforced read-only by the audit-write-guard hook. |
 | `/claude-calibration:calibration-diff` | Evaluator pass-2 against the previous run's baseline; no planner or calibrator. "What's changed since last calibration?" |
+| `/claude-calibration:calibration-doctor` | ~5-second structural health check: JSON parses, hook scripts exist + executable, frontmatter is valid, MCP commands resolve. Triage list, not a rubric audit. Good as a pre-commit or CI smoke check. |
+| `/claude-calibration:calibration-onboarding` | First-time setup guide. Detects what config exists, names the stack, recommends one minimal next step. Pure guidance — no auto-writes. |
 
 ### Per-feature calibration (the bundles, on their own)
 
