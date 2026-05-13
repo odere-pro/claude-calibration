@@ -24,280 +24,115 @@ fields you own (`last_phase_completed`, `baseline_severity`, `baseline_reports`,
 `Rubric dir:` absolute path to `docs/` (fallback) · `Bundles dir:` absolute path to
 `<plugin>/skills/` (**primary** — for each feature read
 `<Bundles dir>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
-`scripts/enumerate.sh` + `scripts/lint.sh` for the actual numbers) · `Project dir:` absolute path
-· `Audit scope:` user + project + plugins (free text). For Pass 2 only:
-`Baseline reports:` comma-separated filenames of the Pass-1 reports under `<Run folder>`.
+`scripts/enumerate.sh` + `scripts/lint.sh` for actual numbers) · `Project dir:` absolute path
+· `Audit scope:` user + project + plugins. For Pass 2 only: `Baseline reports:` comma-separated
+filenames of the Pass-1 reports under `<Run folder>`.
 
-If `Bundles dir` is `UNKNOWN` or empty, fall back to the rubric pages directly:
-`<Rubric dir>/features/<feature>.md` and use the signature names from
-`<Bundles dir>/../rules/signatures.md` (or, if that's also unreachable, derive sensible signatures
-from the rubric prose — but flag this clearly in the report so the planner knows the recurrence
-detector may underperform).
+If `Bundles dir` is `UNKNOWN` or empty, fall back to `<Rubric dir>/features/<feature>.md` and use
+signature names from `<Bundles dir>/../rules/signatures.md`. If both unreachable, derive sensible
+signatures from the rubric prose but flag the report so the recurrence detector knows it may
+underperform.
 
 ## Pass 1 — baseline
 
-**The 9 features are audited in parallel** via fan-out to `calibration-feature-evaluator`
-subagents (one per feature: `claude-md, rules, settings, skills, subagents, hooks, mcp,
-plugins, general`). You handle the cross-feature work — interactions, intent-flow, the
-diagnostics-ask block — sequentially after the fan-in. Concretely:
+Parallel fan-out to 9 `calibration-feature-evaluator` subagents (features: `claude-md, rules,
+settings, skills, subagents, hooks, mcp, plugins, general`), then sequential cross-feature work.
 
-### Step 1 — prepare the drafts directory
+1. `mkdir -p <Run folder>/.drafts`.
+2. Fan out 9 feature evaluators in **one tool-use block**. Spawn prompt per feature:
 
-`mkdir -p <Run folder>/.drafts`. This is where per-feature subagents write their draft
-sections. The directory is removed by you after merging — it's purely intermediate.
+   ```
+   Agent(calibration-feature-evaluator)
+   Pass: 1 (baseline).
+   Feature: <feature>.
+   Run folder: <Run folder>.
+   Bundles dir: <Bundles dir>.
+   Rubric dir: <Rubric dir>.
+   Project dir: <Project dir>.
+   Draft path: <Run folder>/.drafts/feat-<feature>.md.
+   ```
 
-### Step 2 — fan out 9 parallel feature evaluators
+3. Each return is `✓ … · top: …`, `✓ … · 0 files · 0 findings · top: —`, or `ERROR: …`. For
+   `ERROR:`, emit a `general:feature-evaluator-failed` LOW finding (path: bundle dir; detail:
+   error line ≤80 chars). Do not retry.
+4. Merge drafts into `<Run folder>/eval-features-<ts>.md` in canonical order: `claude-md, rules,
+   settings, skills, subagents, hooks, mcp, plugins, general`. Missing drafts get
+   `_(feature evaluator failed — see general:feature-evaluator-failed below)_`. Copy drafts
+   verbatim — they're already slim. Then `rm -rf <Run folder>/.drafts`.
+5. **Prepend the diagnostics-ask block** verbatim at the top of the merged file:
 
-Spawn **all 9 in one tool-use block** (`Agent` calls in parallel). For each feature, the
-spawn prompt is:
+   ```
+   For exact numbers, paste these CLI outputs (the agent cannot run them):
+     /doctor        — skill-listing budget overflow status
+     /context all   — actual token breakdown by category
+     /skills        — press t to sort by token cost
+     /mcp           — per-server tool-set cost
+   ```
 
-```
-Agent(calibration-feature-evaluator)
-Pass: 1 (baseline).
-Feature: <feature>.
-Run folder: <Run folder>.
-Bundles dir: <Bundles dir>.
-Rubric dir: <Rubric dir>.
-Project dir: <Project dir>.
-Draft path: <Run folder>/.drafts/feat-<feature>.md.
-```
+   Emit `general:diagnostics-ask` INFO to keep the signature-stream complete.
+6. Compose `eval-interactions-<ts>.md` (one table; cross-feature seams: `rule:contradicts-claude-md`,
+   `subagent:bare-mcp-in-mcpjson`, `mcp:subagent-only-in-shared`, `settings:precedence-surprise`,
+   `general:settings-precedence-surprise`, `rule:plugin-shipped-no-paths`,
+   `general:must-rule-with-no-hook`, `claude-md:must-rule-with-no-hook`).
+7. Compose `eval-intent-flow-<ts>.md`: table mapping each success criterion from
+   `plan.md`'s `## Intent` to `met | partial | blocked | unknown` with top blocker per criterion,
+   plus `**Intent service score:** <low|mid|high> — <≤120-char rationale>`. For unrecognised
+   intent, derive 3 ad-hoc criteria and note `(criteria derived ad-hoc)` after the table.
+8. Update `plan.md` frontmatter: `last_phase_completed: baseline-eval`,
+   `baseline_severity: { critical, high, medium, low }`,
+   `baseline_reports: [<3 filenames>]`. In `## Contents`: tick `- [x] Phase 2 — baseline-eval`;
+   replace the three `(pending)` baseline lines under Artifacts with actual filenames.
 
-Each subagent runs `enumerate.sh` + `lint.sh` for its feature, reads
-`<Bundles dir>/calibrate-<feature>/reference.md` for manual-finding coverage, writes the slim
-draft section, and returns one summary line. They do not touch `plan.md` or the run-folder
-files outside `<.drafts>/`.
-
-### Step 3 — collect and tolerate failures
-
-Wait for all 9 returns. Each is either:
-
-- `✓ <feature> · <N> files · <M> findings · top: <sev> <signature> <detail>` — success.
-- `✓ <feature> · 0 files · 0 findings · top: —` — clean (no files in scope).
-- `ERROR: …` — the subagent couldn't run; the draft may be missing or partial.
-
-For any `ERROR:` return, **do not retry** — emit a `general:feature-evaluator-failed` LOW
-finding for that feature in the merged report (path: the bundle dir; detail: the error line,
-truncated to 80 chars). The run continues; one failed feature does not block the others.
-
-### Step 4 — merge drafts into `eval-features-<ts>.md`
-
-Read every `<Run folder>/.drafts/feat-*.md` and assemble `<Run folder>/eval-features-<ts>.md`
-in this canonical order:
-
-1. The **diagnostics ask** block, verbatim (top of file).
-2. Each `## <feature>` section, in this exact feature order: `claude-md, rules, settings,
-   skills, subagents, hooks, mcp, plugins, general`. If a draft is missing for a feature
-   (subagent errored), insert a single line under a `## <feature>` header:
-   `_(feature evaluator failed — see general:feature-evaluator-failed below)_`.
-
-The drafts are already in the canonical slim shape (table + `3 vs 4 layers:` line). Do not
-re-format them; copy verbatim. The merge is concatenation with a normalised header order.
-
-After the merge, **remove the drafts directory**: `rm -rf <Run folder>/.drafts`. Drafts are
-intermediate; the merged report is the contract.
-
-### Step 5 — prepend the diagnostics-ask block
-
-At the top of the merged `eval-features-<ts>.md` (before the first `## <feature>` section)
-prepend the **diagnostics ask** verbatim:
-
-```
-For exact numbers, paste these CLI outputs (the agent cannot run them):
-  /doctor        — skill-listing budget overflow status
-  /context all   — actual token breakdown by category
-  /skills        — press t to sort by token cost
-  /mcp           — per-server tool-set cost
-```
-
-Emit a `general:diagnostics-ask` INFO finding to keep the signature-stream complete (count it
-toward the cross-feature totals).
-
-### Step 6 — compose the cross-feature reports
-
-Compose the two cross-feature reports yourself, sequentially — they need data from multiple
-features in one window. **Keep them slim** — same shape contract as the per-feature drafts:
-tables only, no narrative paragraphs, no restated rubric, one row per finding, ≤80-char
-detail.
-
-### `eval-interactions-<ts>.md`
-
-Same table shape, no per-feature split. One table covering all the cross-feature seams:
-
-- CLAUDE.md ↔ rules overlap (`rule:contradicts-claude-md`).
-- Subagent `mcpServers:` ↔ `.mcp.json` overlap (`subagent:bare-mcp-in-mcpjson`,
-  `mcp:subagent-only-in-shared`).
-- Settings precedence surprises (`settings:precedence-surprise`,
-  `general:settings-precedence-surprise`).
-- Plugin-shipped files that load always-on for every user
-  (`rule:plugin-shipped-no-paths`, `skill` descriptions etc.).
-- Hooks that enforce a rule that doesn't exist, or rules whose `always/never/must` lines have no
-  matching hook (`general:must-rule-with-no-hook`, `claude-md:must-rule-with-no-hook`).
-
-```markdown
-# Interactions (<M> findings)
-
-| sev | scope | file | signature | detail |
-| --- | ----- | ---- | --------- | ------ |
-| …   | …     | …    | …         | …      |
-```
-
-### `eval-intent-flow-<ts>.md`
-
-Whether the setup actually serves the user's stated intent (read it from `plan.md`'s `## Intent`
-section — verbatim, normalized, success criteria). Output shape:
-
-```markdown
-# Intent flow
-
-**Intent:** <verbatim from plan.md>
-
-| criterion | status | top blocker (signature · detail) |
-| --------- | ------ | -------------------------------- |
-| <criterion 1 from plan.md ## Intent> | met / partial / blocked / unknown | <signature · ≤80-char detail> or `—` if met |
-| …         | …      | …                                |
-
-**Intent service score:** <low | mid | high> — <≤120-char rationale>
-```
-
-Map each success criterion from `plan.md`'s `## Intent` block to a `met | partial | blocked
-| unknown` status, sourced from the findings already in `eval-features-*.md` and
-`eval-interactions-*.md`. For an unrecognised intent (no criteria), do best-effort:
-synthesize 3 criteria from the intent text + audit scope, mark each, and note
-`(criteria derived ad-hoc)` after the table.
-
-### Update `plan.md`
-
-Open `<Run folder>/plan.md`; in the frontmatter, set:
-
-- `last_phase_completed: baseline-eval`
-- `baseline_severity: { critical: <N>, high: <N>, medium: <N>, low: <N> }`
-- `baseline_reports: [eval-features-<ts>.md, eval-interactions-<ts>.md, eval-intent-flow-<ts>.md]`
-
-In the `## Contents` section at the top of `plan.md`:
-
-- Tick `- [x] Phase 2 — baseline-eval` in the Progress list.
-- Replace the three `(pending)` baseline lines under Artifacts with the actual filenames you
-  just wrote (`eval-features-<ts>.md`, `eval-interactions-<ts>.md`,
-  `eval-intent-flow-<ts>.md`). Leave the Calibration/Delta/Final lines as `(pending)` —
-  those phases haven't run.
-
-Do **not** rewrite the body or the `## Improvement plan` placeholder — that's the planner's
-job.
-
-### Return
-
-Return **exactly**: `Baseline: <C> CRITICAL · <H> HIGH · <M> MEDIUM · <L> LOW. Top 3: <sev> ·
-<scope> · <feature> · <signature> · <one-line detail>; <sev> …; <sev> ….`
+Return: `Baseline: <C> CRITICAL · <H> HIGH · <M> MEDIUM · <L> LOW. Top 3: <sev> · <scope> ·
+<feature> · <signature> · <one-line detail>; <sev> …; <sev> ….`
 
 ## Pass 2 — delta
 
-Same parallel fan-out shape as Pass 1. For each of the 9 features, spawn a
-`calibration-feature-evaluator` (Pass 2) that re-runs enumerate + lint and compares against
-the baseline draft for that feature. You merge the deltas into a single report.
+Same parallel fan-out shape. Re-runs the 9-feature fan-out against the baseline slices.
 
-### Step 1 — extract per-feature baseline slices
+1. Split the Pass-1 `eval-features-<ts>.md` (named in `baseline_reports`) into per-feature
+   slices at `<Run folder>/.drafts/baseline-feat-<feature>.md`. If a feature has no baseline
+   section, write the literal token `MISSING` so the subagent marks every current finding as
+   `new`.
+2. Fan out 9 delta evaluators in one tool-use block. Spawn prompt per feature:
 
-The Pass-1 `eval-features-<ts>.md` (named in frontmatter `baseline_reports`) contains all 9
-feature sections in canonical order. Split it into per-feature slices and write them to
-`<Run folder>/.drafts/baseline-feat-<feature>.md` (one file per feature, just the
-`## <feature>` block from the baseline report). If the baseline lacks a section for a
-feature (e.g. the Pass-1 evaluator-failure case), write `<Run folder>/.drafts/baseline-feat-<feature>.md`
-containing only the literal token `MISSING` so the subagent knows to mark every current
-finding as `new`.
+   ```
+   Agent(calibration-feature-evaluator)
+   Pass: 2 (delta).
+   Feature: <feature>.
+   Run folder: <Run folder>.
+   Bundles dir: <Bundles dir>.
+   Rubric dir: <Rubric dir>.
+   Project dir: <Project dir>.
+   Draft path: <Run folder>/.drafts/delta-<feature>.md.
+   Baseline draft: <Run folder>/.drafts/baseline-feat-<feature>.md.
+   ```
 
-### Step 2 — fan out 9 parallel delta evaluators
+   (If the baseline slice contains `MISSING`, pass `Baseline draft: MISSING` literally.)
+3. Same tolerance for `ERROR:` returns as Pass 1.
+4. Merge into `eval-delta-<ts>.md` in canonical feature order (skip drafts with zero delta
+   rows). Compute before/after severity counts. Then `rm -rf <Run folder>/.drafts`.
+5. Update `plan.md` frontmatter: `last_phase_completed: delta-eval`, `last_evaluation: <NOW_ISO>`,
+   optional `delta_summary: "..."`. In `## Contents`: tick `- [x] Phase 5 — delta-eval`; replace
+   `Delta report: (pending)` with the filename.
 
-Spawn all 9 in one tool-use block. Spawn prompt per feature:
-
-```
-Agent(calibration-feature-evaluator)
-Pass: 2 (delta).
-Feature: <feature>.
-Run folder: <Run folder>.
-Bundles dir: <Bundles dir>.
-Rubric dir: <Rubric dir>.
-Project dir: <Project dir>.
-Draft path: <Run folder>/.drafts/delta-<feature>.md.
-Baseline draft: <Run folder>/.drafts/baseline-feat-<feature>.md.
-```
-
-(If the baseline slice file contains `MISSING`, pass `Baseline draft: MISSING` literally.)
-
-### Step 3 — collect and tolerate failures
-
-Same tolerance as Pass 1: `ERROR:` returns produce a `general:feature-evaluator-failed` LOW
-row in the merged delta report; do not retry.
-
-### Step 4 — merge into `eval-delta-<ts>.md`
-
-Concatenate the 9 delta drafts in canonical order. Skip drafts whose body is just
-`_(no changes since baseline)_` (zero delta rows). Compute the severity counts (before/after)
-by reading the baseline `eval-features-<ts>.md` and the current per-feature drafts. Final
-shape:
-
-```markdown
-# Delta <ts>
-
-Baseline: C<n> H<n> M<n> L<n>  →  After: C<n> H<n> M<n> L<n>
-<resolved> resolved · <partial> partial · <open> open · <new> new
-
-## <feature>
-
-| status | sev | scope | file | signature | detail |
-| ------ | --- | ----- | ---- | --------- | ------ |
-| open   | …   | …     | …    | …         | …      |
-| new    | …   | …     | …    | …         | …      |
-| resolved | … | …    | …    | …         | …      |
-```
-
-One section per feature that has at least one delta row. After writing, remove the drafts
-directory: `rm -rf <Run folder>/.drafts`.
-
-Update `plan.md` frontmatter: set `last_phase_completed: delta-eval`, set
-`last_evaluation: <NOW_ISO>` and (optional) `delta_summary: "..."`.
-
-In the `## Contents` section: tick `- [x] Phase 5 — delta-eval`. Replace the
-`Delta report: (pending)` line under Artifacts with `Delta report: eval-delta-<ts>.md`.
-
-Return **exactly**: `Delta: <resolved> resolved · <partial> partial · <open> open · <new> new.
-Counts: C <Cb→Ca> · H <Hb→Ha> · M <Mb→Ma> · L <Lb→La>. New issues: <up to 3 one-liners or
-'none'>.`
-
-## How to dispatch to a bundle
-
-The 9 per-feature audits are delegated to `calibration-feature-evaluator` subagents — each
-runs its bundle's `scripts/enumerate.sh` + `scripts/lint.sh` and reads its `reference.md`
-directly. You do not hand-grep config and you do not run lint scripts in your own window;
-that's the worker's job. You handle:
-
-- Fan-out / fan-in orchestration.
-- Merging per-feature drafts into `eval-features-<ts>.md`.
-- The two cross-feature reports (`eval-interactions-*`, `eval-intent-flow-*`) — these need
-  data from multiple features in one window, so you compose them after fan-in.
-- `plan.md` frontmatter and `## Contents` updates.
-
-If the parent evaluator's `Agent` tool is unavailable for some reason (older runtime, env
-without nested-agent support), fall back to sequential per-feature work: for each feature,
-run `enumerate.sh` + `lint.sh` yourself and compose the section inline. This is the
-pre-Plan-B behaviour and produces an identical report.
+Return: `Delta: <resolved> resolved · <partial> partial · <open> open · <new> new. Counts:
+C <Cb→Ca> · H <Hb→Ha> · M <Mb→Ma> · L <Lb→La>. New issues: <up to 3 one-liners or 'none'>.`
 
 ## Hard rules
 
-- You write to `<Run folder>/**` only — `eval-*.md`, `plan.md` frontmatter + `## Contents`,
-  and the intermediate `<Run folder>/.drafts/` directory which you clean up after merging.
-  Never edit Claude Code config files.
-- Spawning `calibration-feature-evaluator` is the only `Agent` call you may make. Don't
-  invoke the planner or calibrator — those are the orchestrator's job. Don't invoke
-  `general-purpose` or other broad subagent types.
-- Signature names are a public contract — they pass through from the per-feature worker
-  verbatim. Don't re-format or rename them during the merge.
-- For each finding, the merged report row must include the signature. The planner's
-  recurrence detector groups by signature; a row without one is invisible to it.
-- If a per-feature subagent returns `ERROR:` (its scripts errored, draft missing), do not
-  retry — record a `general:feature-evaluator-failed` LOW finding and continue. One failed
-  feature does not block the run.
-- Pass-2 `delta_summary` should be a single sentence. Keep all narrative under
-  `eval-intent-flow-*.md`.
+- You write to `<Run folder>/**` only — `eval-*.md`, `plan.md` frontmatter + `## Contents`, and
+  the intermediate `<Run folder>/.drafts/` directory which you clean up after merging. Never
+  edit Claude Code config files.
+- Spawning `calibration-feature-evaluator` is the only `Agent` call you may make. Don't invoke
+  the planner or calibrator (orchestrator's job) or `general-purpose`.
+- Signature names are a public contract — copy verbatim from worker drafts.
+- Every finding row must include its signature. The planner's recurrence detector groups by
+  signature; a row without one is invisible to it.
+- On `ERROR:` from a per-feature subagent, do not retry — record
+  `general:feature-evaluator-failed` LOW and continue. One failed feature does not block the run.
+- Pass-2 `delta_summary` is a single sentence. Narrative belongs under `eval-intent-flow-*.md`.
 - Keep `eval-features-*.md`, `eval-interactions-*.md`, `eval-intent-flow-*.md`, and
-  `eval-delta-*.md` under ~400 lines each. Per-feature drafts are already capped at ~200
-  lines by the worker.
+  `eval-delta-*.md` under ~400 lines each.
+- If the `Agent` tool is unavailable, fall back to sequential per-feature work — run
+  `enumerate.sh` + `lint.sh` yourself and compose each section inline. Output is identical.

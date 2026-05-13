@@ -27,22 +27,32 @@ application — every file under here ships to end users when the plugin is inst
 - Docs index (the rubric): [`docs/README.md`](docs/README.md)
 - Plugin lifecycle & usage: [`docs/install.md`](docs/install.md), [`docs/usage.md`](docs/usage.md)
 
+## Agent routing
+
+The 4 worker agents (`calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
+`calibration-feature-evaluator`) are invoked exclusively by the orchestrator skill at
+`skills/calibration/SKILL.md`. No root `AGENTS.md` is needed; routing is encoded in the
+orchestrator's dispatch logic, not a routing table.
+
 ## House rules
 
 Detailed plugin-development rules live in `.claude/rules/plugin-dev.md` (path-scoped to plugin
 internals; loads on-demand).
 
-Do **not**:
+Guard rails (each labelled by enforcement mechanism):
 
-<!-- TODO: add PreToolUse hook on rules/signatures.md and rules/dispatch.md to enforce the two hard rules below (see enforcement opportunity E3 in the calibration plan) -->
-- rename a pattern signature (breaks recurrence history — see `rules/signatures.md`).
-- break the `signature → bundle` map in `rules/dispatch.md`.
-- skip `/reload-plugins` after editing under `--plugin-dir`.
+- **[signature-tracked]** Don't rename a pattern signature — breaks recurrence history. See
+  `rules/signatures.md`; signature `rule:should-be-skill` tracks this class of violation.
+- **[hook-guarded]** Don't break the `signature → bundle` map in `rules/dispatch.md` —
+  signature `general:must-rule-with-no-hook` flags it and `hooks/calibrator-write-guard.sh`
+  blocks unauthorised writes during a calibrator session.
+- **[advisory]** Don't skip `/reload-plugins` after editing under `--plugin-dir`. No hook
+  enforces this; it's a workflow reminder.
 
 Run the plugin against itself to validate changes:
 
 ```bash
-cd /Users/aleksandrderechei/Git/claude-calibration
+cd $PROJECT_DIR
 claude --plugin-dir .
 # then in the session:
 /reload-plugins
