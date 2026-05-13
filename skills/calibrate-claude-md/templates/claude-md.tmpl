@@ -1,0 +1,34 @@
+# {{Project name}}
+
+## What this is
+
+{{One paragraph: what the repo does, who it's for, and the one or two facts Claude can't infer
+from the code (e.g. "this is a Next.js 15 app router project", "Python 3.12 + uv", "deploys to
+Vercel"). Keep it tight — every line costs tokens on every turn.}}
+
+## Conventions
+
+- {{Convention #1 — concrete and verifiable.}}
+- {{Convention #2.}}
+- {{Convention #3.}}
+- {{Convention #4 (max 5 — anything more belongs in `.claude/rules/`).}}
+
+## @-imports
+
+@AGENTS.md
+@.claude/rules/testing.md
+@.claude/rules/conventions.md
+
+## House rules
+
+Topic-specific rules live in [`.claude/rules/`](.claude/rules/) — they load only when a matching
+file is open. See:
+
+- [`testing.md`](.claude/rules/testing.md) — test conventions
+- [`conventions.md`](.claude/rules/conventions.md) — code-style canon
+- {{add more as needed}}
+
+## See also
+
+- [`README.md`](README.md) — public-facing overview (do not restate here)
+- [`AGENTS.md`](AGENTS.md) — multi-agent routing

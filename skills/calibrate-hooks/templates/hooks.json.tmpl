@@ -1,0 +1,17 @@
+{
+  "_comment": "Template for a PreToolUse enforcement hook. Used by the calibrate-hooks bundle when scaffolding `kind: create` rows for recurring `subagent:missing-tools`, `skill:side-effecting-no-dmi`, or `claude-md:must-rule-with-no-hook` findings. Drop this block into the appropriate settings.json `hooks` object (project-scoped for one repo; plugin-shipped in `hooks/hooks.json` when distributed via a plugin). Replace placeholders, then re-run the bundle's lint to verify.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "{{matcher}}",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "{{command}}",
+            "description": "{{description}}"
+          }
+        ]
+      }
+    ]
+  }
+}
