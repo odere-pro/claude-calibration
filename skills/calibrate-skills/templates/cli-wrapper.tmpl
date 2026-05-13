@@ -1,0 +1,38 @@
+---
+name: {{tool}}-wrapper
+description: >-
+  Wraps the `{{tool}}` CLI so Claude can use it without standing context cost. Use when you need
+  to run `{{tool}}` for {{primary use case}}. Loaded on demand (`disable-model-invocation: true`);
+  Claude invokes by name.
+disable-model-invocation: true
+model: sonnet
+allowed-tools: Read, Bash({{tool}} *)
+---
+
+# {{tool}} wrapper
+
+## When to use
+
+- {{Primary use case: "creating a PR", "deploying a service", "rolling a release", etc.}}
+- {{Secondary use case if any.}}
+
+Do NOT use this skill for {{out-of-scope cases}} — those have their own skills or should run
+directly.
+
+## Workflow
+
+1. {{First step: typically a read-only check (`{{tool}} status`, `{{tool}} --version`, etc).}}
+2. {{Second step: the actual action.}}
+3. {{Third step: verify or report.}}
+
+## Limits
+
+- `allowed-tools` is `Bash({{tool}} *)` only — this skill cannot call other CLIs.
+- This skill is side-effecting; `disable-model-invocation: true` is REQUIRED. Don't remove it.
+- For destructive operations ({{e.g. delete, force-push}}), the user must confirm explicitly
+  before the step runs.
+
+## See also
+
+- [`{{tool}}` docs]({{link}})
+- [`reference.md`](reference.md) — full flag reference, error patterns

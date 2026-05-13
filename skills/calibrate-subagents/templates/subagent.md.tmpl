@@ -1,0 +1,44 @@
+---
+name: {{agent-name-kebab}}
+description: >-
+  {{One paragraph: what this agent does, when Claude should route to it, and what it explicitly
+  does NOT do. Include routing words: "use when", "after", "before". Keep it specific — the
+  description is how Claude picks this agent over its siblings.}}
+tools: Read, Grep, Glob, Bash
+model: sonnet
+maxTurns: 20
+---
+
+# {{Agent title}}
+
+## Role
+
+{{One paragraph: the agent's responsibility scope. What does it own? What's out of scope?}}
+
+## Inputs
+
+- {{What the parent task hands this agent: a path, a query, a finding from a previous step.}}
+
+## Workflow
+
+1. {{First step — usually a read-only scan.}}
+2. {{Second step — the actual analysis or transformation.}}
+3. {{Third step — return a structured result to the caller.}}
+
+## Output
+
+{{Describe the shape of what this agent returns. Markdown? TSV? A list of findings?
+Be specific — the caller relies on this.}}
+
+## Limits
+
+- `tools:` is explicitly listed above — this agent cannot reach MCP servers or other tools.
+- `model:` is explicitly set — don't fall back to `inherit`.
+- `maxTurns:` caps the loop so a runaway agent can't burn tokens forever.
+- Stay within scope; if the work isn't on the workflow list, return early and let the parent
+  re-route.
+
+<!--
+Plugin-shipped agents: do NOT add `hooks:`, `mcpServers:`, or `permissionMode:` here. Those
+fields are silently ignored at the plugin layer (`subagent:plugin-ignored-frontmatter`).
+-->

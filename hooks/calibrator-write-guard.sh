@@ -50,7 +50,7 @@ TARGET="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // .tool_input.pat
 PROJECT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 case "$TARGET" in
   /*) ABS="$TARGET" ;;
-  *)  ABS="$PROJECT/$TARGET" ;;
+  ./*|[!./]*) ABS="$PROJECT/$TARGET" ;;
 esac
 
 # Strip a single `./` prefix.

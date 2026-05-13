@@ -13,7 +13,7 @@ description: >-
 argument-hint: "[intent text | --yes | restart | status | tighten | harden | cost]"
 disable-model-invocation: true
 model: opus
-allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write, Bash(git diff:*), Bash(git status:*), Bash(git rev-parse:*)
+allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git diff:*), Bash(git status:*), Bash(git rev-parse:*)
 ---
 
 ```!

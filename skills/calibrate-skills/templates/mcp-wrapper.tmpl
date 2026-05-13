@@ -1,0 +1,47 @@
+---
+name: {{server}}-wrapper
+description: >-
+  Wraps the `{{server}}` MCP server so its tool surface stays out of standing context. Use when
+  you need to {{primary use case}} via {{server}}. Loaded on demand
+  (`disable-model-invocation: true`); the wrapper's job is to call exactly the MCP tools it needs
+  and shape the result.
+disable-model-invocation: true
+model: sonnet
+allowed-tools: Read, mcp__{{server}}__*
+mcpServers:
+  - {{server}}
+---
+
+# {{server}} MCP wrapper
+
+## Why this exists
+
+The `{{server}}` MCP server exposes {{N}} tools. Keeping them in standing context for every
+session is wasteful — most sessions don't need them. This wrapper:
+
+- Loads only when invoked by name.
+- Calls exactly the MCP tools needed for {{primary use case}}.
+- Shapes the result so the parent task gets a clean answer, not a raw tool dump.
+
+## When to use
+
+- {{Primary use case.}}
+- {{Secondary use case if any.}}
+
+## Workflow
+
+1. {{First MCP tool call — usually a read.}}
+2. {{Second MCP tool call — the action.}}
+3. Format and return the relevant fields to the caller.
+
+## Limits
+
+- `allowed-tools` is scoped to `mcp__{{server}}__*` — this wrapper cannot call other MCP servers.
+- `disable-model-invocation: true` is REQUIRED — the whole point is to keep the MCP surface off
+  the standing context budget.
+- For state-changing MCP calls, the user must confirm explicitly.
+
+## See also
+
+- `{{server}}` MCP docs: {{link}}
+- [`reference.md`](reference.md) — full tool list, schemas, error patterns

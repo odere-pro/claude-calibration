@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "{{server-name}}": {
+      "command": "{{command}}",
+      "args": ["{{arg1}}", "{{arg2}}"],
+      "env": {
+        "{{API_KEY_ENV_VAR}}": "${{{API_KEY_ENV_VAR}}}"
+      },
+      "headers": {
+        "Authorization": "Bearer ${{{API_KEY_ENV_VAR}}}"
+      }
+    }
+  }
+}

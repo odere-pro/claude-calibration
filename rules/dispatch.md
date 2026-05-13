@@ -88,11 +88,10 @@ Every signature belongs to exactly one bundle (which owns its `lint.sh`). Cross-
 
 ## When a new dispatch rule is needed
 
-1. Decide which bundle owns the _fix_ (not necessarily the bundle whose lint emitted the signature
-   — a `claude-md:` finding can resolve via a `calibrate-rules` edit when the right answer is "move
-   this into a path-scoped rule").
-2. Add the row to the appropriate table above.
-3. Make sure the owning bundle's `SKILL.md` workflow knows how to handle the companion work, if any.
-4. If it's a recurrence archetype, also note it in the planner's improve-mode body
-   (`agents/calibration-planner.md`) — that's the primary place the recurrence detector reads the
-   archetype table; this file is the rationalised cross-bundle view.
+Decide which bundle owns the fix (not necessarily the bundle whose lint emitted the signature —
+a `claude-md:` finding can resolve via a `calibrate-rules` edit when the right answer is "move
+this into a path-scoped rule"). Add the row to the appropriate table above, ensure the owning
+bundle's `SKILL.md` workflow knows how to handle any companion work, and if it's a recurrence
+archetype also note it in the planner's improve-mode body (`agents/calibration-planner.md`) —
+that is the primary place the recurrence detector reads the archetype table; this file is the
+rationalised cross-bundle view.

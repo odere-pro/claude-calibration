@@ -9,7 +9,7 @@ description: >-
 argument-hint: "[restart]"
 disable-model-invocation: true
 model: opus
-allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write, Bash(git rev-parse:*), Bash(git status:*), Bash(date:*), Bash(ls:*), Bash(grep:*), Bash(mkdir:*)
+allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git rev-parse:*), Bash(git status:*), Bash(date:*), Bash(ls:*), Bash(grep:*), Bash(mkdir:*)
 ---
 
 ```!

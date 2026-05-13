@@ -41,7 +41,7 @@ TARGET="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // .tool_input.pat
 
 case "$TARGET" in
   /*) ABS="$TARGET" ;;
-  *)  ABS="$PROJECT/$TARGET" ;;
+  ./*|[!./]*) ABS="$PROJECT/$TARGET" ;;
 esac
 ABS="${ABS#./}"
 

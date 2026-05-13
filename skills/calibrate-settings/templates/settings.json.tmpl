@@ -1,0 +1,16 @@
+{
+  "//": "Baseline settings.json — safe, narrow read-only Bash entries. Copy then add project-specific tools as needed.",
+  "//permissions": "Each entry below is intentionally narrow. Never use Bash(*), Bash(rm *), or Bash(sudo *).",
+  "permissions": {
+    "allow": [
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)"
+    ]
+  },
+  "//env": "Keep committed env minimal. Per-machine values belong in .claude/settings.local.json.",
+  "env": {}
+}
