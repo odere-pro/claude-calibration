@@ -1,0 +1,48 @@
+---
+name: <agent-name>             # required: lowercase letters + hyphens; unique within scope
+description: >-                # required: when Claude should delegate to this agent
+  <one-line definition>. Use PROACTIVELY when <trigger>. MUST BE USED for <high-value condition>.
+tools: <Tool, Tool>            # required-by-convention: explicit minimal allowlist (NEVER omit)
+                               # omit = inherits ALL tools including MCP — almost always wrong
+model: sonnet                  # explicit: haiku (narrow), sonnet (orchestration), opus (deep reasoning)
+# disallowedTools: <Tool>      # alternative when you want "inherit all except X"
+# permissionMode: default      # default | acceptEdits | auto | dontAsk | bypassPermissions | plan
+                               #   (ignored for plugin subagents)
+# maxTurns: 30                 # cap on agentic turns before the agent stops
+# skills: [name1, name2]       # preload these skills' full content at startup
+                               #   (does not work with disable-model-invocation: true skills)
+# mcpServers:                  # subagent-only MCP servers — keeps their tool descriptions out of
+#   server-name:               # the main conversation
+#     command: ...
+# hooks:                       # lifecycle hooks scoped to this subagent (ignored for plugin agents)
+# memory: project              # user | project | local — cross-session auto memory for this agent
+# isolation: worktree          # run in a temporary git worktree (auto-cleaned if no changes)
+# background: true             # always run as a background task
+# effort: low                  # effort override (low..max, model-dependent)
+---
+
+<This is the SYSTEM PROMPT for the subagent — concise, focused, single-purpose. The agent receives
+only this body + basic environment (cwd, git status). Don't paste the codebase here.>
+
+You are a <role>. <Mission in one sentence.>
+
+## Inputs
+
+<What appears in the spawn prompt — paths, parameters, constraints. Be explicit about what's required.>
+
+## Do
+
+1. <step — concrete, verifiable>
+2. <step>
+3. <step — preserve the structure the caller expects>
+
+## Output
+
+<What you return to the caller. Keep it tight — the caller will see only this, and any of your work
+that touched files. Never paste full file contents in your return; point at paths.>
+
+## Hard rules
+
+- Only the allowed paths. <list them.>
+- <Constraint, e.g. "never apply changes outside the approved set">
+- <Constraint, e.g. "if you can't read X, surface that and stop — don't silently continue">

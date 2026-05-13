@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "<server-name>": {
+      "command": "<binary-or-path>",
+      "args": ["<arg-1>", "<arg-2>"],
+      "env": {
+        "<TOKEN_VAR_NAME>": "${<TOKEN_VAR_NAME>}"
+      }
+    },
+    "<server-via-http>": {
+      "transport": "http",
+      "url": "https://<host>/<path>",
+      "headers": {
+        "Authorization": "Bearer ${<TOKEN_VAR_NAME>}"
+      }
+    }
+  }
+}

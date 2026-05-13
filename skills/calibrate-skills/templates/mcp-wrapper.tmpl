@@ -1,0 +1,56 @@
+---
+name: <server-name>            # match the MCP server name in .mcp.json (e.g. "postgres", "linear")
+description: >-
+  Use the <server> MCP server well: schema, common queries, the patterns this project relies on. Pair
+  this skill with the matching .mcp.json entry — without it, Claude flails through the server's tool
+  catalogue. Loads only when invoked or auto-routed.
+allowed-tools: <list of mcp__<server-name>__... tool names you want pre-approved>
+---
+
+# <Server name> — usage skill
+
+<one paragraph: what the MCP server provides, why it's wired in, the high-level mental model. Cite
+the canonical reference (the server's docs URL).>
+
+## Schema (the model needs this in context to query well)
+
+<entities, relationships, key fields. Use a small table or block diagram. Keep tight — full schema
+lives upstream; this is the navigation aid.>
+
+## Common queries
+
+### <Use case 1>
+
+What to call:
+
+```
+mcp__<server>__<tool>({...arguments...})
+```
+
+What the response shape looks like, the typical follow-up call, common pitfalls.
+
+### <Use case 2>
+
+...
+
+## Tool reference
+
+| Tool | Use for |
+|---|---|
+| `mcp__<server>__<tool>` | <one-liner> |
+| `mcp__<server>__<tool>` | <one-liner> |
+| ... | ... |
+
+## Hard rules
+
+- For destructive operations (delete, drop, send, post), require explicit user confirmation.
+- If the server is disconnected (`/mcp` shows it dead), don't fall back to inventing data — say so
+  and ask the user to reconnect.
+- Don't <project-specific guardrail, e.g. "query against the production schema without a `--prod`
+  in the user's prompt">.
+
+## Additional resources
+
+- Pair with the `.mcp.json` entry (this skill assumes that entry exists).
+- The Claude Code docs explicitly recommend this pattern: "Pair an MCP server with a skill that
+  teaches Claude how to use it well — your schema, common query patterns, which table for what."

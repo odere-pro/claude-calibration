@@ -1,0 +1,52 @@
+---
+name: <tool-name>              # e.g. "gh", "kubectl", "aws-cli"; lowercase, hyphens
+description: >-
+  Run <tool> with the project's conventions. Wraps the <tool> CLI for use with Claude — handles
+  flags, parses common outputs, and documents the recipes that come up most. The 4th-layer wrapper:
+  without it Claude re-derives flags / parsing each invocation; with it the recipes are stable.
+argument-hint: "<subcommand and args>"
+allowed-tools: Bash(<tool> *), Read, Grep
+---
+
+# <Tool name>
+
+<one paragraph: what this tool is, why this wrapper exists, when to reach for it instead of letting
+Claude shell out raw. Mention what's intentionally NOT in scope (e.g. "destructive subcommands require
+an explicit confirmation in the prompt").>
+
+## Recipes
+
+### <Common task 1>
+
+```bash
+<tool> <subcommand> <flags>
+```
+
+What this returns and the parsing rule (e.g. "JSON via `--json <fields>` then `jq -r '.field'`";
+"line-oriented; one record per line"; "exit code 0 = present, 1 = absent").
+
+### <Common task 2>
+
+```bash
+<tool> ...
+```
+
+Notes / caveats / when this fails.
+
+## Argument forms
+
+- `/<tool-name> <subcommand>` → runs `<tool> <subcommand>` and returns its output.
+- `/<tool-name> "<natural-language request>"` → translates into the closest recipe above; if
+  ambiguous, asks before running.
+
+## Hard rules
+
+- Allowlists `Bash(<tool> *)` only — won't run other commands without a separate prompt.
+- Destructive `<tool>` subcommands (`delete`, `destroy`, `drop`, …) require an explicit confirmation
+  in the user's prompt; don't infer them from context.
+- If `<tool>` isn't installed, fail clearly with the install instruction (don't silently exit).
+- For long-running commands, surface progress; don't swallow stderr.
+
+## Additional resources
+
+- The MCP equivalent (when there's a server for the same data): see `mcp-wrapper.tmpl`.

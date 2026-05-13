@@ -1,0 +1,35 @@
+---
+name: <skill-name>             # lowercase letters / numbers / hyphens; ≤ 64 chars; defaults to dir name
+description: >-                # key use case FIRST; well under 1,536 chars combined with when_to_use
+  <one-line definition; mention the trigger phrases a user would say. State "side-effecting" if it is.>
+argument-hint: "[<arg description>]"      # optional autocomplete hint
+disable-model-invocation: true # set to true if this skill has side effects (deploy/commit/post/edit)
+allowed-tools: <Tool, Tool>    # narrow to what's needed without a prompt; scope Bash to specific cmds
+# model: sonnet                # uncomment to override the session model for this skill's turns
+# paths:                       # uncomment to scope auto-activation (path-scoped rule format)
+#   - "src/**/*.ts"
+---
+
+# <Title>
+
+<one-paragraph overview: what this does, when to use it, the headline output.>
+
+## Do
+
+1. <step — concrete and verifiable>
+2. <step>
+3. <step>
+
+## Output
+
+<what the skill produces — file changes, a printed summary, a structured report.>
+
+## Hard rules
+
+- <constraint, e.g. allowed paths, do-not-touch list>
+- <constraint, e.g. require explicit confirmation for destructive subcommands>
+
+## Additional resources
+
+- See [`reference.md`](reference.md) for the rubric this skill targets.
+- See [`examples.md`](examples.md) for worked cases.

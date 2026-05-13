@@ -1,0 +1,52 @@
+<!--
+  CLAUDE.md template — fill in the placeholders, keep under ~200 lines.
+  HTML comments are stripped before injection (free annotations).
+  Move bulky / path-specific content into .claude/rules/<topic>.md (path-scoped) instead of growing
+  this file.
+-->
+
+# <Project name>
+
+<one paragraph: what this project is, what stack, who uses it. The orientation Claude needs in every
+session.>
+
+## Build & test
+
+- Install: `<command>`
+- Run: `<command>`
+- Test: `<command>`
+- Lint / format: `<command>`
+
+(Exact commands in backticks — Claude runs them verbatim.)
+
+## Layout
+
+- `src/<area-1>/` — <one-liner>
+- `src/<area-2>/` — <one-liner>
+- `tests/` — <one-liner>
+
+## Conventions
+
+- <Concrete, verifiable convention. e.g. "API handlers live in `src/api/handlers/`."
+  NOT "keep files organized">.
+- <Convention. e.g. "All HTTP responses use the standard envelope in `src/lib/response.ts`.">
+- <Convention.>
+
+(Bulky topic-specific conventions — testing patterns, API design, security, accessibility — go in
+`.claude/rules/<topic>.md` with `paths:` frontmatter, not here.)
+
+## Always do
+
+- <Concrete must. e.g. "Run `pnpm test` before committing.">
+- <Concrete must. If something genuinely must hold every time, make it a `PreToolUse`/`Stop` hook,
+  not a CLAUDE.md line — hooks are enforcement; CLAUDE.md is a request.>
+
+## Never do
+
+- <Concrete must-not. e.g. "Never disable ESLint rules to make a build pass.">
+- <Concrete must-not.>
+
+@AGENTS.md   <!-- include this line if AGENTS.md exists in the same dir; remove otherwise -->
+
+<!-- Personal overrides: put them in CLAUDE.local.md (gitignored) or in `@~/path/to/personal.md`
+     to survive across worktrees. -->

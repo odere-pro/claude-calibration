@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:agents.md)",
+      "WebFetch(domain:agentskills.io)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git show:*)",
+      "Bash(wc:*)",
+      "Bash(ls:*)"
+    ]
+  }
+}

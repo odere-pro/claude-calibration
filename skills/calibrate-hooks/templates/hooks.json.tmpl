@@ -1,0 +1,40 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Edit(*.<ext>)",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/<your-script>.sh",
+            "description": "<one line: what this enforces and why>"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | xargs -I {} pnpm prettier --write {}",
+            "description": "Format files after edits"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/verify.sh",
+            "description": "Heavier verification at turn-end (build, full tests)"
+          }
+        ]
+      }
+    ]
+  }
+}

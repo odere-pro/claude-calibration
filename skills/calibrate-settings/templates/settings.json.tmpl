@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(<your project's safe commands here, e.g. Bash(pnpm test*) Bash(pnpm lint*)>)"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(sudo*)"
+    ]
+  },
+  "env": {},
+  "cleanupPeriodDays": 30
+}
