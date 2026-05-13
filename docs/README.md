@@ -32,30 +32,30 @@ you care about.
 
 ## Index
 
-| Page | Covers |
-|------|--------|
-| [`glossary.md`](glossary.md) | The vocabulary: feature, scope, layering, precedence, CLAUDE.md, auto memory, importing AGENTS.md, frontmatter, built-in command, bundled skill, marketplace, context cost |
+| Page                                   | Covers                                                                                                                                                                                                   |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`glossary.md`](glossary.md)           | The vocabulary: feature, scope, layering, precedence, CLAUDE.md, auto memory, importing AGENTS.md, frontmatter, built-in command, bundled skill, marketplace, context cost                               |
 | [`general-setup.md`](general-setup.md) | The setup as a whole — the extension layer, the `.claude/` layout, scopes & precedence & layering, the `AGENTS.md` import, the context-cost model, the always-on checklist; how to validate & improve it |
 
 ### Features
 
-| Page | Covers |
-|------|--------|
-| [`features/claude-md.md`](features/claude-md.md) | `CLAUDE.md` (+ `CLAUDE.local.md`, auto memory, importing `AGENTS.md`) |
-| [`features/rules.md`](features/rules.md) | `.claude/rules/` — topic / path-scoped instruction files |
-| [`features/settings.md`](features/settings.md) | `.claude/settings.json` (+ `.local`, managed) |
-| [`features/commands.md`](features/commands.md) | Built-in commands & bundled skills (the `/…` reference); custom commands → skills |
-| [`features/skills.md`](features/skills.md) | `.claude/skills/<name>/SKILL.md` authoring (+ legacy `.claude/commands/*.md`) |
-| [`features/subagents.md`](features/subagents.md) | `.claude/agents/*.md` |
-| [`features/hooks.md`](features/hooks.md) | `.claude/hooks/` + `settings.json` → `hooks` |
-| [`features/mcp.md`](features/mcp.md) | `.mcp.json` (+ `~/.claude.json`, `managed-mcp.json`) |
-| [`features/plugins.md`](features/plugins.md) | Plugin layout, marketplaces, lifecycle |
+| Page                                             | Covers                                                                            |
+| ------------------------------------------------ | --------------------------------------------------------------------------------- |
+| [`features/claude-md.md`](features/claude-md.md) | `CLAUDE.md` (+ `CLAUDE.local.md`, auto memory, importing `AGENTS.md`)             |
+| [`features/rules.md`](features/rules.md)         | `.claude/rules/` — topic / path-scoped instruction files                          |
+| [`features/settings.md`](features/settings.md)   | `.claude/settings.json` (+ `.local`, managed)                                     |
+| [`features/commands.md`](features/commands.md)   | Built-in commands & bundled skills (the `/…` reference); custom commands → skills |
+| [`features/skills.md`](features/skills.md)       | `.claude/skills/<name>/SKILL.md` authoring (+ legacy `.claude/commands/*.md`)     |
+| [`features/subagents.md`](features/subagents.md) | `.claude/agents/*.md`                                                             |
+| [`features/hooks.md`](features/hooks.md)         | `.claude/hooks/` + `settings.json` → `hooks`                                      |
+| [`features/mcp.md`](features/mcp.md)             | `.mcp.json` (+ `~/.claude.json`, `managed-mcp.json`)                              |
+| [`features/plugins.md`](features/plugins.md)     | Plugin layout, marketplaces, lifecycle                                            |
 
 ### Reference
 
-| Page | Covers |
-|------|--------|
-| [`reference/agents-md.md`](reference/agents-md.md) | The `AGENTS.md` open standard + how Claude Code maps to it (import / symlink, behavioral equivalence) |
+| Page                                                       | Covers                                                                                                       |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [`reference/agents-md.md`](reference/agents-md.md)         | The `AGENTS.md` open standard + how Claude Code maps to it (import / symlink, behavioral equivalence)        |
 | [`reference/beyond-config.md`](reference/beyond-config.md) | Tools that evaluate **code** or a **running app** — out of scope of `.claude/` config, kept for completeness |
 
 ## Sources

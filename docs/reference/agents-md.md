@@ -25,15 +25,23 @@ A pragmatic section template (use what applies, delete the rest):
 ```markdown
 # <Project Name>
 
-## Project overview        — what this repo is, the stack, the architecture in a sentence, where the important code lives
-## Setup & environment     — prerequisites, bootstrap command, required env vars (point at .env.example — never put secrets here)
-## Build & run             — dev server, production build, common scripts
-## Testing                 — run the full suite / a single test, coverage expectations, "always run X before a PR"
+## Project overview — what this repo is, the stack, the architecture in a sentence, where the important code lives
+
+## Setup & environment — prerequisites, bootstrap command, required env vars (point at .env.example — never put secrets here)
+
+## Build & run — dev server, production build, common scripts
+
+## Testing — run the full suite / a single test, coverage expectations, "always run X before a PR"
+
 ## Code style & conventions — formatter/linter command, naming, file organization, patterns vs anti-patterns
-## Project layout          — key directories (note any nested AGENTS.md), generated files not to hand-edit
-## Git & PR guidelines     — branch naming, commit format, required checks before pushing
-## Security & safety       — secrets handling, off-limits files, destructive commands
-## Gotchas                 — flaky tests, slow steps, known-broken things, non-obvious decisions
+
+## Project layout — key directories (note any nested AGENTS.md), generated files not to hand-edit
+
+## Git & PR guidelines — branch naming, commit format, required checks before pushing
+
+## Security & safety — secrets handling, off-limits files, destructive commands
+
+## Gotchas — flaky tests, slow steps, known-broken things, non-obvious decisions
 ```
 
 ## How Claude Code relates to `AGENTS.md`
@@ -45,6 +53,7 @@ To use the open-standard file with Claude Code, [import it](../glossary.md) from
 @AGENTS.md
 
 ## Claude Code
+
 Claude-specific instructions can go here, below the import.
 ```
 
@@ -65,21 +74,21 @@ import/symlink exists only because Claude Code looks for `CLAUDE.md`.
 
 ### Once imported — behavioral equivalence
 
-| Behavior | `AGENTS.md` (open standard) | Claude Code (via `CLAUDE.md` ⟵ `@AGENTS.md` / symlink) | Same? |
-|----------|------------------------------|---------------------------------------------------------|-------|
-| Native read | agents read `AGENTS.md` at the repo root directly | reads `CLAUDE.md`; the import makes `AGENTS.md` content arrive at session start | ⚠️ needs the one-line import |
-| Discovery | agent reads the file at the repo root | `CLAUDE.md` files loaded at session start | ✅ |
-| Nesting / monorepo | nearest `AGENTS.md` to the edited file wins; parent applies otherwise | walks **up** the dir tree from cwd; all `CLAUDE.md`/`CLAUDE.local.md` found are concatenated (root → cwd, closer read last); subdirectory files load on demand | ✅ |
-| Multiple levels combine | root + nested both inform the agent | all discovered files concatenated into context | ✅ |
-| Explicit prompt vs. file | a direct chat prompt overrides the file | a chat instruction overrides the memory file | ✅ |
-| "Run the checks" | programmatic steps are expected to actually run | Claude runs the commands, doesn't just acknowledge them | ✅ |
-| Plain Markdown, no schema | any headings; nothing mandatory | same — free-form Markdown | ✅ |
-| Includes / references | some tools support `@path` imports | `@path` imports work in `CLAUDE.md` (and what it imports — `@AGENTS.md`, `~/.claude/rules/**`); max depth 5 hops | ✅ |
-| Path-scoped rules | not part of the standard | extra: `.claude/rules/*.md` with `paths:` frontmatter load only for matching files (see [`features/rules.md`](../features/rules.md)) | ➕ Claude-only |
+| Behavior                  | `AGENTS.md` (open standard)                                           | Claude Code (via `CLAUDE.md` ⟵ `@AGENTS.md` / symlink)                                                                                                         | Same?                        |
+| ------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Native read               | agents read `AGENTS.md` at the repo root directly                     | reads `CLAUDE.md`; the import makes `AGENTS.md` content arrive at session start                                                                                | ⚠️ needs the one-line import |
+| Discovery                 | agent reads the file at the repo root                                 | `CLAUDE.md` files loaded at session start                                                                                                                      | ✅                           |
+| Nesting / monorepo        | nearest `AGENTS.md` to the edited file wins; parent applies otherwise | walks **up** the dir tree from cwd; all `CLAUDE.md`/`CLAUDE.local.md` found are concatenated (root → cwd, closer read last); subdirectory files load on demand | ✅                           |
+| Multiple levels combine   | root + nested both inform the agent                                   | all discovered files concatenated into context                                                                                                                 | ✅                           |
+| Explicit prompt vs. file  | a direct chat prompt overrides the file                               | a chat instruction overrides the memory file                                                                                                                   | ✅                           |
+| "Run the checks"          | programmatic steps are expected to actually run                       | Claude runs the commands, doesn't just acknowledge them                                                                                                        | ✅                           |
+| Plain Markdown, no schema | any headings; nothing mandatory                                       | same — free-form Markdown                                                                                                                                      | ✅                           |
+| Includes / references     | some tools support `@path` imports                                    | `@path` imports work in `CLAUDE.md` (and what it imports — `@AGENTS.md`, `~/.claude/rules/**`); max depth 5 hops                                               | ✅                           |
+| Path-scoped rules         | not part of the standard                                              | extra: `.claude/rules/*.md` with `paths:` frontmatter load only for matching files (see [`features/rules.md`](../features/rules.md))                           | ➕ Claude-only               |
 
 ### What has no `AGENTS.md` counterpart
 
-`AGENTS.md` is scoped to *instructions*. Claude Code's other features have no `agents.md`
+`AGENTS.md` is scoped to _instructions_. Claude Code's other features have no `agents.md`
 equivalent and live under `.claude/`: [Settings](../features/settings.md), [Hooks](../features/hooks.md),
 [Subagents](../features/subagents.md), [Skills](../features/skills.md) (incl. legacy
 [commands](../features/commands.md)), [Plugins](../features/plugins.md), [MCP](../features/mcp.md)
