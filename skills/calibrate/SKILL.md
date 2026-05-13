@@ -10,7 +10,7 @@ description: >-
   approval gate. Three convenience modes pre-fill common workflows: /calibrate tighten (intent "tighten
   standards"), /calibrate harden (= tighten + --yes), /calibrate cost (single-number standing-context-
   cost snapshot — no planner/evaluator/calibrator).
-argument-hint: "[intent text | --yes | restart | status | tighten | harden | cost]"
+argument-hint: "[feature ...] [intent text | --yes | restart | status | tighten | harden | cost]"
 disable-model-invocation: true
 model: opus
 allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git diff:*), Bash(git status:*), Bash(git rev-parse:*), Bash(rm:*), Bash(ls:*)
@@ -101,25 +101,67 @@ in Phase 8 via `Write` (to bake in the summary block and update `summary_status`
 
 ## 0. Parse the arguments
 
-Tokenise `$ARGUMENTS` (split on whitespace, case-insensitive). Resolve in this order — later rules
-only fire if no earlier rule matched:
+Tokenise `$ARGUMENTS` (split on whitespace, case-insensitive). Resolution happens in two passes.
+
+### Pass A — extract feature tokens
+
+Before any of the mode rules fire, scan the tokens for whole-word, case-insensitive matches against
+the **feature token vocabulary** in [`rules/dispatch.md`](../../rules/dispatch.md#feature-token-vocabulary)
+(canonical: `claude-md, rules, settings, skills, subagents, hooks, mcp, plugins, general`;
+aliases: `agents → subagents`, `commands → skills`).
+
+Build `SCOPE=[…]` in canonical form (alias-resolved, deduped, original order preserved). Strip the
+matched tokens from the working argument string; what's left feeds Pass B.
+
+Heuristic: tokens immediately preceded by `the` / `a` / `an` / `my` / `our` / `these` / `those`
+are intent prose, not scope — leave them in the residual. So `/calibrate refactor the skills`
+yields `SCOPE=[]` and intent text `"refactor the skills"`. Unknown tokens (e.g. `widgets`) stay
+in the residual too — they are never rejected.
+
+### Pass B — mode resolution
+
+Run the existing rules in this order on the stripped string (later rules only fire if no earlier
+rule matched):
 
 - `status` → **Status mode** (§ 0c). Stop after.
 - `cost` (standalone token) → **Cost mode** (§ 0b). Stop after.
-- `tighten` (standalone token) → rewrite `$ARGUMENTS` to `tighten standards` plus any other tokens
-  (so `/calibrate tighten` becomes intent `"tighten standards"`; `/calibrate tighten --yes` becomes
-  intent `"tighten standards"` with `--yes`). Then continue parsing the rewritten form.
-- `harden` (standalone token) → rewrite `$ARGUMENTS` to `tighten standards --yes` plus any other
-  tokens. Then continue parsing the rewritten form.
-- `restart` → start a **new run** (the previous run's folder is left as history). The rest of
-  `$ARGUMENTS`, if any, is the intent.
-- contains `--yes` → `APPROVAL=auto` (skip the gate). The rest of `$ARGUMENTS` is the intent.
+- `tighten` (standalone token) → rewrite the working string to `tighten standards` plus any other
+  tokens (so `/calibrate tighten` becomes intent `"tighten standards"`; `/calibrate tighten --yes`
+  becomes intent `"tighten standards"` with `--yes`). Then continue parsing the rewritten form.
+- `harden` (standalone token) → rewrite to `tighten standards --yes` plus any other tokens. Then
+  continue parsing the rewritten form.
+- `restart` → start a **new run** (the previous run's folder is left as history). The rest of the
+  string, if any, is the intent.
+- contains `--yes` → `APPROVAL=auto` (skip the gate). The rest of the string is the intent.
 - otherwise non-empty → the **intent text** for this run.
 - empty → resume an in-progress run, or (if none) start a new one with a **guessed** intent.
 
-The rewrite for `tighten` / `harden` is purely a string substitution — the rest of the orchestrator
-pipeline (§ 1 onwards) is unchanged. The planner's auto-promote rule keys on the literal intent text
-`tighten standards`, so both rewrites trigger it.
+The rewrite for `tighten` / `harden` is purely a string substitution. The planner's auto-promote
+rule keys on the literal intent text `tighten standards`, so both rewrites trigger it.
+
+### Composition matrix
+
+| Mode | Composes with SCOPE? |
+|------|----------------------|
+| status / cost | No — print `⚠ Ignoring feature scope (<list>) — <mode> mode runs against the whole setup.` once, then run as-is. |
+| tighten / harden / restart / --yes / intent / empty | Yes — `SCOPE` flows through to plan.md and to the evaluator. |
+
+### Worked examples
+
+- `/calibrate hooks` → `SCOPE=[hooks]`; intent guessed.
+- `/calibrate skills hooks rules` → `SCOPE=[skills, hooks, rules]`; intent guessed.
+- `/calibrate tighten hooks` → strip `hooks` → `SCOPE=[hooks]`; remaining `tighten` rewrites to
+  `tighten standards`; intent = `"tighten standards"`.
+- `/calibrate agents` → alias resolved → `SCOPE=[subagents]`.
+- `/calibrate cost skills` → strip → `SCOPE=[skills]`; `cost` fires; warn line printed; cost
+  mode runs unscoped.
+- `/calibrate restart skills` → strip → `SCOPE=[skills]`; `restart` → new run scoped to skills.
+- `/calibrate skills tighten --yes` → `SCOPE=[skills]`; intent = `"tighten standards"`;
+  `APPROVAL=auto`.
+- `/calibrate refactor the skills` → `the` guard fires → `SCOPE=[]`; intent =
+  `"refactor the skills"`.
+- `/calibrate widgets` → no match → `SCOPE=[]`; intent = `"widgets"`; planner derives ad-hoc
+  criteria as it already does.
 
 ## 0b. Cost mode (no run, no subagents)
 
@@ -127,6 +169,10 @@ When `$ARGUMENTS` matches the standalone `cost` token, the preprocessing block a
 executed `<BUNDLES_DIR>/calibrate-general/scripts/lint.sh "$PROJECT_DIR"` and inlined its TSV
 between `--- cost-mode lint ---` and `--- end cost-mode lint ---` markers (or printed
 `COST_LINT_NOT_FOUND=...` if the bundle wasn't resolvable).
+
+If Pass A produced a non-empty `SCOPE`, print one line first:
+`⚠ Ignoring feature scope (<list>) — cost mode runs against the whole setup.`
+Then proceed with the unscoped cost snapshot below.
 
 Read those lines and format them as the user-facing cost snapshot. Each TSV row is
 `path \t signature \t severity \t detail`. Map signatures to the headline categories:
@@ -162,13 +208,16 @@ one line and stop — the plugin install is broken or the bundles dir didn't res
 See `## Status mode` at the bottom of this file. The behaviour is unchanged from before this
 section was added.
 
+If Pass A produced a non-empty `SCOPE`, print one line before the status output:
+`⚠ Ignoring feature scope (<list>) — status mode runs against the whole setup.`
+
 ## 1. Resume, start, or report complete
 
 If `CURRENT_RUN` points to a folder with a `plan.md`:
 
 - Read `<run>/plan.md` — `intent`, `intent_source`, `head_sha`, `last_phase_completed`,
-  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`. Check (via Glob)
-  whether a `final-report-*.md` exists.
+  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`, `feature_scope`.
+  Check (via Glob) whether a `final-report-*.md` exists.
 - **If complete** (`last_phase_completed: delta-eval` AND a `final-report-*.md` exists AND
   `summary_status` ∈ {`completed`, `kept`}) and the argument is not `restart` and there's no
   new intent: tell the user the latest run finished — one line of `last_evaluation`, the
@@ -190,6 +239,9 @@ If there is **no** in-progress run, or `restart`, or a new intent was given → 
   default when nothing stands out: _"reduce always-on context cost without losing capability, and close
   obvious reliability/safety gaps"_), and state it in one line:
   `No intent given — calibrating toward: «…». Re-run /calibrate "<your goal>" to change it.` Then proceed.
+- If `SCOPE` is non-empty, print one additional line: `Feature scope: <comma-separated list>.` so the
+  user sees the scoping decision before the planner spawns. On resume, print the same line below the
+  in-progress notice (sourced from `plan.md` frontmatter `feature_scope`).
 - Run folder: `PROJECT_DIR/.claude/calibration/<TIMESTAMP>/` (the planner creates it). Start at phase 1.
 
 ## 2. How you talk between phases
@@ -208,7 +260,8 @@ Skip any already done per `last_phase_completed`. Every subagent prompt carries 
 `Intent source: given|stored|guessed.` · `Run folder: <abs>.` · `Project dir: <PROJECT_DIR>.` ·
 `Rubric dir: <DOCS_DIR>.` · `Bundles dir: <BUNDLES_DIR>.` · `Git HEAD: <GIT_HEAD>.` · `Started:
 <NOW_ISO>.` · `Audit scope: user (~/.claude/) + project (CLAUDE.md, .claude/, .mcp.json under
-PROJECT_DIR) + enabled plugins.` "Create the run folder; write plan.md per your instructions; write
+PROJECT_DIR) + enabled plugins.` · `Feature scope: <comma-separated canonical names from SCOPE,
+or empty>.` "Create the run folder; write plan.md per your instructions; write
 .claude/calibration/current; return one line." → On return: `✓ Plan initialised: <run>/plan.md · 📌
 calibration log folder remembered. → Next: baseline evaluation.`
 
@@ -217,7 +270,8 @@ calibration log folder remembered. → Next: baseline evaluation.`
 <BUNDLES_DIR>` (**primary** — for each Claude Code feature, read
 `<BUNDLES_DIR>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
 `scripts/enumerate.sh|measure.sh|lint.sh` for the actual numbers). · `Project dir: <PROJECT_DIR>.` ·
-`Audit scope: user + project + plugins.` "Write eval-features-<ts>.md (with the 'diagnostics to paste'
+`Audit scope: user + project + plugins.` · `Feature scope: <comma-separated canonical names from
+plan.md frontmatter feature_scope, or empty>.` "Write eval-features-<ts>.md (with the 'diagnostics to paste'
 section + per-finding pattern signatures + the 3-vs-4-layer call per capability),
 eval-interactions-<ts>.md, eval-intent-flow-<ts>.md; update plan.md (check the baseline box, set
 last_phase_completed: baseline-eval, record baseline_severity + baseline_reports); return ONLY severity
@@ -256,7 +310,8 @@ applied/recommended/skipped + the touched-file list." → On return: print the c
 
 **Phase 6 — evaluator (delta).** `Agent(calibration-evaluator)`: `Pass: 2 (delta).` · `Run folder: <abs>.` ·
 `Plan: <run>/plan.md.` · `Baseline reports: <the pass-1 filenames>.` · `Rubric dir: <DOCS_DIR>.` ·
-`Bundles dir: <BUNDLES_DIR>.` "Re-audit the same scope using the bundles' `reference.md` + `scripts/`;
+`Bundles dir: <BUNDLES_DIR>.` · `Feature scope: <from plan.md frontmatter feature_scope, or
+empty>.` "Re-audit the same scope using the bundles' `reference.md` + `scripts/`;
 write eval-delta-<ts>.md (per finding: resolved/partial/open/new; before→after counts); update plan.md:
 check the delta box and set last_phase_completed: delta-eval and last_evaluation; return ONLY
 before→after counts + any newly-introduced issue." → On return you have everything.

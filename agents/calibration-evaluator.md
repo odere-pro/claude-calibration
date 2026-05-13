@@ -25,8 +25,12 @@ fields you own (`last_phase_completed`, `baseline_severity`, `baseline_reports`,
 `<plugin>/skills/` (**primary** — for each feature read
 `<Bundles dir>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
 `scripts/enumerate.sh` + `scripts/lint.sh` for actual numbers) · `Project dir:` absolute path
-· `Audit scope:` user + project + plugins. For Pass 2 only: `Baseline reports:` comma-separated
+· `Audit scope:` user + project + plugins · `Feature scope:` comma-separated canonical names
+(empty or absent = all 9 features). For Pass 2 only: `Baseline reports:` comma-separated
 filenames of the Pass-1 reports under `<Run folder>`.
+
+Compute `effective` = `Feature scope` ∩ canonical 9 (or all 9 if scope is empty/absent). Every
+fan-out and every per-feature merge step below iterates over `effective`, not the literal 9.
 
 If `Bundles dir` is `UNKNOWN` or empty, fall back to `<Rubric dir>/features/<feature>.md` and use
 signature names from `<Bundles dir>/../rules/signatures.md`. If both unreachable, derive sensible
@@ -35,11 +39,13 @@ underperform.
 
 ## Pass 1 — baseline
 
-Parallel fan-out to 9 `calibration-feature-evaluator` subagents (features: `claude-md, rules,
-settings, skills, subagents, hooks, mcp, plugins, general`), then sequential cross-feature work.
+Parallel fan-out to `len(effective)` `calibration-feature-evaluator` subagents (canonical
+features: `claude-md, rules, settings, skills, subagents, hooks, mcp, plugins, general`), then
+sequential cross-feature work.
 
 1. `mkdir -p <Run folder>/.drafts`.
-2. Fan out 9 feature evaluators in **one tool-use block**. Spawn prompt per feature:
+2. Fan out the `effective` feature evaluators in **one tool-use block** (`N` workers, not always
+   9). Spawn prompt per feature:
 
    ```
    Agent(calibration-feature-evaluator)
@@ -55,8 +61,10 @@ settings, skills, subagents, hooks, mcp, plugins, general`), then sequential cro
 3. Each return is `✓ … · top: …`, `✓ … · 0 files · 0 findings · top: —`, or `ERROR: …`. For
    `ERROR:`, emit a `general:feature-evaluator-failed` LOW finding (path: bundle dir; detail:
    error line ≤80 chars). Do not retry.
-4. Merge drafts into `<Run folder>/eval-features-<ts>.md` in canonical order: `claude-md, rules,
-   settings, skills, subagents, hooks, mcp, plugins, general`. Missing drafts get
+4. Merge drafts into `<Run folder>/eval-features-<ts>.md` in canonical order, iterating over
+   `effective` only (`claude-md, rules, settings, skills, subagents, hooks, mcp, plugins,
+   general`). Features outside `effective` are **omitted entirely** — no placeholder section.
+   Missing drafts for features that ARE in scope get
    `_(feature evaluator failed — see general:feature-evaluator-failed below)_`. Copy drafts
    verbatim — they're already slim. Then `rm -rf <Run folder>/.drafts`.
 5. **Prepend the diagnostics-ask block** verbatim at the top of the merged file:
@@ -70,10 +78,16 @@ settings, skills, subagents, hooks, mcp, plugins, general`), then sequential cro
    ```
 
    Emit `general:diagnostics-ask` INFO to keep the signature-stream complete.
+
+   If `Feature scope` is non-empty (i.e. `effective` ⊊ canonical 9), append one extra line
+   immediately under the diagnostics block:
+   `_(Feature scope this run: <comma-separated list>. Other features not audited.)_`
 6. Compose `eval-interactions-<ts>.md` (one table; cross-feature seams: `rule:contradicts-claude-md`,
    `subagent:bare-mcp-in-mcpjson`, `mcp:subagent-only-in-shared`, `settings:precedence-surprise`,
    `general:settings-precedence-surprise`, `rule:plugin-shipped-no-paths`,
-   `general:must-rule-with-no-hook`, `claude-md:must-rule-with-no-hook`).
+   `general:must-rule-with-no-hook`, `claude-md:must-rule-with-no-hook`). When `Feature scope` is
+   non-empty, suppress rows whose signature prefix is not in `effective` (e.g. drop `mcp:*` rows
+   when scope = `[skills, hooks]`).
 7. Compose `eval-intent-flow-<ts>.md`: table mapping each success criterion from
    `plan.md`'s `## Intent` to `met | partial | blocked | unknown` with top blocker per criterion,
    plus `**Intent service score:** <low|mid|high> — <≤120-char rationale>`. For unrecognised
@@ -88,13 +102,13 @@ Return: `Baseline: <C> CRITICAL · <H> HIGH · <M> MEDIUM · <L> LOW. Top 3: <se
 
 ## Pass 2 — delta
 
-Same parallel fan-out shape. Re-runs the 9-feature fan-out against the baseline slices.
+Same parallel fan-out shape. Re-runs the `effective` fan-out against the baseline slices.
 
 1. Split the Pass-1 `eval-features-<ts>.md` (named in `baseline_reports`) into per-feature
-   slices at `<Run folder>/.drafts/baseline-feat-<feature>.md`. If a feature has no baseline
-   section, write the literal token `MISSING` so the subagent marks every current finding as
-   `new`.
-2. Fan out 9 delta evaluators in one tool-use block. Spawn prompt per feature:
+   slices at `<Run folder>/.drafts/baseline-feat-<feature>.md`, iterating over `effective` only.
+   If a feature in `effective` has no baseline section, write the literal token `MISSING` so the
+   subagent marks every current finding as `new`. Features outside `effective` are skipped.
+2. Fan out `len(effective)` delta evaluators in one tool-use block. Spawn prompt per feature:
 
    ```
    Agent(calibration-feature-evaluator)
@@ -110,8 +124,10 @@ Same parallel fan-out shape. Re-runs the 9-feature fan-out against the baseline 
 
    (If the baseline slice contains `MISSING`, pass `Baseline draft: MISSING` literally.)
 3. Same tolerance for `ERROR:` returns as Pass 1.
-4. Merge into `eval-delta-<ts>.md` in canonical feature order (skip drafts with zero delta
-   rows). Compute before/after severity counts. Then `rm -rf <Run folder>/.drafts`.
+4. Merge into `eval-delta-<ts>.md` in canonical feature order, iterating over `effective` only
+   (skip drafts with zero delta rows; features outside `effective` are omitted, not "out of
+   scope" stubs). Compute before/after severity counts over `effective` only. Then
+   `rm -rf <Run folder>/.drafts`.
 5. Update `plan.md` frontmatter: `last_phase_completed: delta-eval`, `last_evaluation: <NOW_ISO>`,
    optional `delta_summary: "..."`. In `## Contents`: tick `- [x] Phase 5 — delta-eval`; replace
    `Delta report: (pending)` with the filename.

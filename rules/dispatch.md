@@ -19,6 +19,28 @@ calibrator knows which bundle's `SKILL.md`, `templates/`, `examples/`, and `scri
 use. This file is the canonical map. See [`signatures.md`](signatures.md) for the signature
 catalogue itself.
 
+## Feature token vocabulary
+
+The `/calibrate` orchestrator's argument parser (§0 of `skills/calibrate/SKILL.md`) recognises
+these tokens to scope a run to a feature subset (e.g. `/calibrate hooks rules skills`):
+
+| Canonical (write to `feature_scope:`) | Accepted aliases (case-insensitive) |
+| -------------------------------------- | ----------------------------------- |
+| `claude-md`                            | —                                   |
+| `rules`                                | —                                   |
+| `settings`                             | —                                   |
+| `skills`                               | `commands`                          |
+| `subagents`                            | `agents`                            |
+| `hooks`                                | —                                   |
+| `mcp`                                  | —                                   |
+| `plugins`                              | —                                   |
+| `general`                              | —                                   |
+
+Resolution rules: whitespace-delimited whole-word match, case-insensitive, alias-resolved to
+the canonical name, deduped, original order preserved. Tokens immediately preceded by `the`,
+`a`, `an`, `my`, `our`, `these`, or `those` are treated as intent prose, not scope (handles
+`refactor the skills`). Unknown tokens stay in the intent text — they are not rejected.
+
 ## Edit-row dispatch (one-off fixes)
 
 For `kind: edit` rows, the bundle is the feature the file lives in:

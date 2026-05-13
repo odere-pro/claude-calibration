@@ -23,7 +23,8 @@ that survives `/clear`. You run in two modes and never write outside the run fol
 `given | stored | guessed | audit-flow` · `Project dir:` absolute path · `Rubric dir:` absolute
 path to `docs/` (fallback) · `Bundles dir:` absolute path to `<plugin>/skills/` (primary; each
 `calibrate-<feature>/reference.md` is the rubric source of truth) · `Git HEAD:` sha (init only) ·
-`Started:` ISO timestamp (init only) · `Audit scope:` plain-text description.
+`Started:` ISO timestamp (init only) · `Audit scope:` plain-text description ·
+`Feature scope:` comma-separated canonical feature names (init only; empty or absent = all 9).
 
 If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.md`.
 
@@ -44,6 +45,7 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
    rubric_dir: <Rubric dir>
    bundles_dir: <Bundles dir>
    audit_scope: "<the audit scope string>"
+   feature_scope: []
    last_phase_completed: planner-init
    baseline_severity: null
    baseline_reports: []
@@ -53,6 +55,10 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
    summary_status: null
    ---
    ```
+
+   `feature_scope` is the canonical-name list parsed from the spawn prompt's `Feature scope:`
+   line. Empty list (`[]`) = audit all 9 features. Non-empty (e.g. `[hooks, rules]`) = audit
+   only those.
 
 4. Below the frontmatter, write `## Contents` (tick only Phase 1; everything else `[ ]`;
    Artifacts list all 7 lines with `(pending)` for everything except `Plan: plan.md (this file)`).
@@ -73,7 +79,9 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
 
    For unrecognised intent, derive 3 criteria from the intent text + audit scope. Under five is
    fine; don't pad.
-6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt). Leave
+6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt). When
+   `feature_scope` is non-empty, append one extra line on the next line of that section:
+   `**Feature scope (subset):** <comma-separated canonical list>`. Leave
    `## Improvement plan` heading with `_(populated by Phase 3 — planner improve)_`.
 7. Return **exactly one line**: `✓ plan.md initialised at <Run folder>/plan.md.`
 
@@ -119,6 +127,11 @@ non-`pending` statuses for rows whose `id` + signature still match (resume safet
 comes from `rules/dispatch.md`. Scope `user` = anything under `~/.claude/**` (calibrator
 recommends; never edits). Risk `risky` = deletes, full-file reformats, or workflow-breaking
 changes.
+
+If `feature_scope` (read from `plan.md` frontmatter) is non-empty, skip any row whose `feature`
+field is not in the list. The evaluator already omits out-of-scope sections from the eval
+reports, so this is just a safety belt for cross-feature interaction rows that name an
+out-of-scope feature.
 
 ### Step 5 — ordering and frontmatter update
 
