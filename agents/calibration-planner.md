@@ -24,7 +24,10 @@ that survives `/clear`. You run in two modes and never write outside the run fol
 path to `docs/` (fallback) · `Bundles dir:` absolute path to `<plugin>/skills/` (primary; each
 `calibrate-<feature>/reference.md` is the rubric source of truth) · `Git HEAD:` sha (init only) ·
 `Started:` ISO timestamp (init only) · `Audit scope:` plain-text description ·
-`Feature scope:` comma-separated canonical feature names (init only; empty or absent = all 9).
+`Feature scope:` comma-separated canonical feature names (init only; empty or absent = all 9) ·
+`Plugin scope:` `<name>@<marketplace>` form (init only; empty = no plugin scope) ·
+`Plugin install path:` absolute path to the plugin's root (init only; empty = no scope) ·
+`Plugin description:` ≤200-char description from the plugin's `plugin.json` (init only; empty = no scope).
 
 If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.md`.
 
@@ -46,6 +49,10 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
    bundles_dir: <Bundles dir>
    audit_scope: "<the audit scope string>"
    feature_scope: []
+   plugin_scope: null              # null | plugin name string
+   plugin_marketplace: null        # null | marketplace string (or "(local)" for in-tree plugin-dev)
+   plugin_install_path: null       # null | absolute path to the plugin root
+   plugin_description: null        # null | description string (≤200 chars)
    last_phase_completed: planner-init
    baseline_severity: null
    baseline_reports: []
@@ -60,11 +67,33 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
    line. Empty list (`[]`) = audit all 9 features. Non-empty (e.g. `[hooks, rules]`) = audit
    only those.
 
+   `plugin_scope` / `plugin_marketplace` / `plugin_install_path` / `plugin_description` come
+   from the spawn prompt's `Plugin scope:` / `Plugin install path:` / `Plugin description:`
+   lines (all set together or all null). When set, every per-feature evaluator filters its
+   enumerate.sh output to keep only files under `plugin_install_path`. `intent_source` extends
+   to `plugin-manifest` (no user intent given) and `plugin-manifest+<given|stored|guessed>`
+   (user intent composed with the manifest).
+
 4. Below the frontmatter, write `## Contents` (tick only Phase 1; everything else `[ ]`;
    Artifacts list all 7 lines with `(pending)` for everything except `Plan: plan.md (this file)`).
 5. Below `## Contents`, write `## Intent` with `**Verbatim:**`, `**Normalized:**`, `**Source:**`
-   labelled lines, then `**Success looks like:**` with 3–5 success criteria. Anchor map
-   (case-insensitive intent match):
+   labelled lines, then `**Success looks like:**` with 3–5 success criteria.
+
+   **If `plugin_scope` is non-null, derive intent from the plugin's manifest:**
+   - User intent given → `intent_source: plugin-manifest+<given|stored|guessed>`;
+     `intent_verbatim` = user intent; treat `plugin_description` as **context** (emitted in
+     `## Audit scope` under a `**Plugin manifest intent:**` line in step 6).
+   - No user intent → `intent_source: plugin-manifest`; `intent_verbatim` = `plugin_description`
+     (already truncated to 200 chars).
+   - For success criteria, read additional context: `<plugin_install_path>/README.md` (first
+     200 lines if present) and up to 3 of `<plugin_install_path>/docs/*.md` (first 200 lines
+     each). Generate 3–5 criteria framed around the plugin's described purpose. Example for
+     description "Build and deploy web apps and agents": _"Deployment workflow agent is
+     invokable from the dispatcher"_, _"Build settings documented in README"_, _"Hooks enforce
+     the deploy guard"_. The anchor map below still applies and composes with the manifest
+     criteria (e.g. `tighten` + plugin → both rubrics apply).
+
+   Anchor map (case-insensitive intent match):
 
    - `tighten standards` / `harden` — _"Recurring signatures enforced by hooks or rules with
      paths"_, _"Always/never/must lines have matching enforcement"_, _"No new MEDIUM+ findings
@@ -77,10 +106,20 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
    - `audit (read-only)` — _"Baseline reports cover every feature with a working bundle"_,
      _"Diagnostics ask surfaces the four CLI outputs the user must paste"_.
 
-   For unrecognised intent, derive 3 criteria from the intent text + audit scope. Under five is
-   fine; don't pad.
-6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt). When
-   `feature_scope` is non-empty, append one extra line on the next line of that section:
+   For unrecognised intent (and no plugin scope), derive 3 criteria from the intent text +
+   audit scope. Under five is fine; don't pad.
+6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt).
+
+   When `plugin_scope` is non-null, append three extra lines to the `## Audit scope` section
+   (before any `**Feature scope (subset):**` line):
+
+   ```markdown
+   **Plugin scope:** <plugin_scope>@<plugin_marketplace> (<version-from-plugin.json or "unknown">)
+   **Plugin install path:** <plugin_install_path>
+   **Plugin manifest intent:** <plugin_description>
+   ```
+
+   When `feature_scope` is non-empty, append one more line:
    `**Feature scope (subset):** <comma-separated canonical list>`. Leave
    `## Improvement plan` heading with `_(populated by Phase 3 — planner improve)_`.
 7. Return **exactly one line**: `✓ plan.md initialised at <Run folder>/plan.md.`

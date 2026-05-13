@@ -26,11 +26,16 @@ fields you own (`last_phase_completed`, `baseline_severity`, `baseline_reports`,
 `<Bundles dir>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
 `scripts/enumerate.sh` + `scripts/lint.sh` for actual numbers) · `Project dir:` absolute path
 · `Audit scope:` user + project + plugins · `Feature scope:` comma-separated canonical names
-(empty or absent = all 9 features). For Pass 2 only: `Baseline reports:` comma-separated
+(empty or absent = all 9 features) · `Plugin install path:` absolute path to a plugin root
+(empty or absent = no plugin filter). For Pass 2 only: `Baseline reports:` comma-separated
 filenames of the Pass-1 reports under `<Run folder>`.
 
 Compute `effective` = `Feature scope` ∩ canonical 9 (or all 9 if scope is empty/absent). Every
 fan-out and every per-feature merge step below iterates over `effective`, not the literal 9.
+
+`Plugin install path` is passed verbatim to each `calibration-feature-evaluator` worker; the
+worker filters its enumerate.sh / lint.sh TSV output to keep only rows whose path equals
+`<Plugin install path>` or starts with `<Plugin install path>/`. Empty path = no filter.
 
 If `Bundles dir` is `UNKNOWN` or empty, fall back to `<Rubric dir>/features/<feature>.md` and use
 signature names from `<Bundles dir>/../rules/signatures.md`. If both unreachable, derive sensible
@@ -56,6 +61,7 @@ sequential cross-feature work.
    Rubric dir: <Rubric dir>.
    Project dir: <Project dir>.
    Draft path: <Run folder>/.drafts/feat-<feature>.md.
+   Plugin install path: <Plugin install path or empty>.
    ```
 
 3. Each return is `✓ … · top: …`, `✓ … · 0 files · 0 findings · top: —`, or `ERROR: …`. For
@@ -120,6 +126,7 @@ Same parallel fan-out shape. Re-runs the `effective` fan-out against the baselin
    Project dir: <Project dir>.
    Draft path: <Run folder>/.drafts/delta-<feature>.md.
    Baseline draft: <Run folder>/.drafts/baseline-feat-<feature>.md.
+   Plugin install path: <Plugin install path or empty>.
    ```
 
    (If the baseline slice contains `MISSING`, pass `Baseline draft: MISSING` literally.)

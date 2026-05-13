@@ -54,6 +54,20 @@ if echo "$ARGUMENTS" | grep -qiE '(^|[[:space:]])cost([[:space:]]|$)'; then
     echo "COST_LINT_NOT_FOUND=$COST_LINT"
   fi
 fi
+# Always inline the installed-plugin TSV so §0 Pass A0 can resolve plugin:<name> tokens.
+echo "--- installed plugins ---"
+LIST_PLUGINS="$BUNDLES_DIR/calibrate-plugins/scripts/list-plugins.sh"
+if [ "$BUNDLES_DIR" != "UNKNOWN" ] && { [ -x "$LIST_PLUGINS" ] || [ -f "$LIST_PLUGINS" ]; }; then
+  bash "$LIST_PLUGINS" "${CLAUDE_PROJECT_DIR:-$(pwd)}" 2>&1 || echo "LIST_PLUGINS_FAILED=$?"
+else
+  echo "LIST_PLUGINS_NOT_FOUND=$LIST_PLUGINS"
+fi
+echo "--- end installed plugins ---"
+if [ -f "${CLAUDE_PROJECT_DIR:-$(pwd)}/.claude-plugin/plugin.json" ]; then
+  echo "PLUGIN_DEV_MODE=yes"
+else
+  echo "PLUGIN_DEV_MODE=no"
+fi
 echo "=== end preprocessing ==="
 ```
 
@@ -101,7 +115,33 @@ in Phase 8 via `Write` (to bake in the summary block and update `summary_status`
 
 ## 0. Parse the arguments
 
-Tokenise `$ARGUMENTS` (split on whitespace, case-insensitive). Resolution happens in two passes.
+Tokenise `$ARGUMENTS` (split on whitespace, case-insensitive). Resolution happens in three passes
+(plugin token first, then feature tokens, then mode resolution).
+
+### Pass A0 — plugin token
+
+Before extracting feature tokens, scan for `plugin:<name>` or `plugin:<name>@<marketplace>`
+(case-insensitive whole-word match against `^plugin:[a-z0-9._-]+(@[a-z0-9._-]+)?$`). The
+preprocessing block above has inlined the installed-plugin TSV between
+`--- installed plugins ---` and `--- end installed plugins ---` markers (columns:
+`name marketplace version install_path description`). Use that table to resolve.
+
+- **>1 `plugin:` tokens** → error:
+  `⚠ Only one plugin: token allowed per run. Saw: <list>.` Stop.
+- **0 tokens** + `PLUGIN_DEV_MODE=yes` + the residual (after stripping feature + mode tokens)
+  is empty → **auto-detect**. Read `<PROJECT_DIR>/.claude-plugin/plugin.json`; set
+  `PLUGIN_SCOPE_NAME`, `PLUGIN_INSTALL_PATH=$PROJECT_DIR`, `PLUGIN_SCOPE_MARKETPLACE=(local)`,
+  `PLUGIN_DESCRIPTION` (truncated to 200 chars). Print:
+  `Plugin-dev mode detected: auto-scoping to <name>. Pass plugin:<other> or any intent text to override.`
+- **1 token** → resolve against the inlined TSV:
+  - 0 matches → error: `⚠ No installed plugin matching 'plugin:<name>'. Available: <comma-list of names>. Run /calibrate without plugin: to audit your whole setup.` Stop.
+  - >1 matches (bare `plugin:<name>` ambiguous across marketplaces) → error:
+    `⚠ Plugin name '<name>' is ambiguous. Disambiguate: plugin:<name>@<mp1>, plugin:<name>@<mp2>.` Stop.
+  - 1 match → set `PLUGIN_SCOPE_NAME`, `PLUGIN_SCOPE_MARKETPLACE`, `PLUGIN_INSTALL_PATH`,
+    `PLUGIN_DESCRIPTION` from the matched row. Strip the `plugin:` token from the working args.
+
+The `the/a/an/my/our/these/those` guard from Pass A does NOT apply here — the `plugin:` prefix
+is unambiguous.
 
 ### Pass A — extract feature tokens
 
@@ -146,6 +186,15 @@ rule keys on the literal intent text `tighten standards`, so both rewrites trigg
 | status / cost | No — print `⚠ Ignoring feature scope (<list>) — <mode> mode runs against the whole setup.` once, then run as-is. |
 | tighten / harden / restart / --yes / intent / empty | Yes — `SCOPE` flows through to plan.md and to the evaluator. |
 
+### Composition matrix — plugin scope (Pass A0)
+
+| Mode | + plugin scope |
+|------|----------------|
+| status / cost | No — print `⚠ Ignoring plugin scope (plugin:<name>) — <mode> mode runs against the whole setup.` once, then run as-is. |
+| tighten / harden / restart / --yes | Yes — compose; intent flows through; planner adds plugin manifest as context. |
+| `SCOPE` (feature tokens, Pass A) | **Intersect** — audit only those features' files **under the plugin install path**. |
+| user intent | Yes — user intent overrides the manifest as `intent_verbatim`; manifest description becomes audit-scope context (planner emits `**Plugin manifest intent:**` line). |
+
 ### Worked examples
 
 - `/calibrate hooks` → `SCOPE=[hooks]`; intent guessed.
@@ -163,6 +212,19 @@ rule keys on the literal intent text `tighten standards`, so both rewrites trigg
 - `/calibrate widgets` → no match → `SCOPE=[]`; intent = `"widgets"`; planner derives ad-hoc
   criteria as it already does.
 
+### Worked examples — plugin scope
+
+- `/calibrate plugin:claude-calibration` → resolved; `feature_scope=[]`; intent from manifest.
+- `/calibrate plugin:vercel skills` → `SCOPE=[skills]` + plugin scope; intersection.
+- `/calibrate plugin:vercel tighten` → compose; intent = `"tighten standards"`; manifest = context.
+- `/calibrate plugin:nonexistent` → error with the available-plugin list. Stop.
+- `/calibrate plugin:foo plugin:bar` → `⚠ Only one plugin: token allowed per run.` Stop.
+- `/calibrate plugin:vercel cost` → warn-and-ignore both feature + plugin scope; cost mode runs
+  unscoped.
+- `/calibrate` (in plugin-dev repo, no args) → auto-detect; manifest intent.
+- `/calibrate "refactor the plugins"` (not in plugin-dev) → `plugins` is intent prose (the
+  `the` guard); no plugin scope set.
+
 ## 0b. Cost mode (no run, no subagents)
 
 When `$ARGUMENTS` matches the standalone `cost` token, the preprocessing block above has already
@@ -170,8 +232,12 @@ executed `<BUNDLES_DIR>/calibrate-general/scripts/lint.sh "$PROJECT_DIR"` and in
 between `--- cost-mode lint ---` and `--- end cost-mode lint ---` markers (or printed
 `COST_LINT_NOT_FOUND=...` if the bundle wasn't resolvable).
 
-If Pass A produced a non-empty `SCOPE`, print one line first:
+If Pass A produced a non-empty `SCOPE`, print one line:
 `⚠ Ignoring feature scope (<list>) — cost mode runs against the whole setup.`
+
+If Pass A0 produced a `PLUGIN_SCOPE_NAME`, print one line:
+`⚠ Ignoring plugin scope (plugin:<name>) — cost mode runs against the whole setup.`
+
 Then proceed with the unscoped cost snapshot below.
 
 Read those lines and format them as the user-facing cost snapshot. Each TSV row is
@@ -211,12 +277,16 @@ section was added.
 If Pass A produced a non-empty `SCOPE`, print one line before the status output:
 `⚠ Ignoring feature scope (<list>) — status mode runs against the whole setup.`
 
+If Pass A0 produced a `PLUGIN_SCOPE_NAME`, print one line before the status output:
+`⚠ Ignoring plugin scope (plugin:<name>) — status mode runs against the whole setup.`
+
 ## 1. Resume, start, or report complete
 
 If `CURRENT_RUN` points to a folder with a `plan.md`:
 
 - Read `<run>/plan.md` — `intent`, `intent_source`, `head_sha`, `last_phase_completed`,
-  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`, `feature_scope`.
+  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`, `feature_scope`,
+  `plugin_scope`, `plugin_marketplace`, `plugin_install_path`, `plugin_description`.
   Check (via Glob) whether a `final-report-*.md` exists.
 - **If complete** (`last_phase_completed: delta-eval` AND a `final-report-*.md` exists AND
   `summary_status` ∈ {`completed`, `kept`}) and the argument is not `restart` and there's no
@@ -242,6 +312,8 @@ If there is **no** in-progress run, or `restart`, or a new intent was given → 
 - If `SCOPE` is non-empty, print one additional line: `Feature scope: <comma-separated list>.` so the
   user sees the scoping decision before the planner spawns. On resume, print the same line below the
   in-progress notice (sourced from `plan.md` frontmatter `feature_scope`).
+- If `PLUGIN_SCOPE_NAME` is set, print one more line: `Plugin scope: <name>@<marketplace>.` On
+  resume, source from `plan.md` frontmatter (`plugin_scope` + `plugin_marketplace`).
 - Run folder: `PROJECT_DIR/.claude/calibration/<TIMESTAMP>/` (the planner creates it). Start at phase 1.
 
 ## 2. How you talk between phases
@@ -261,7 +333,9 @@ Skip any already done per `last_phase_completed`. Every subagent prompt carries 
 `Rubric dir: <DOCS_DIR>.` · `Bundles dir: <BUNDLES_DIR>.` · `Git HEAD: <GIT_HEAD>.` · `Started:
 <NOW_ISO>.` · `Audit scope: user (~/.claude/) + project (CLAUDE.md, .claude/, .mcp.json under
 PROJECT_DIR) + enabled plugins.` · `Feature scope: <comma-separated canonical names from SCOPE,
-or empty>.` "Create the run folder; write plan.md per your instructions; write
+or empty>.` · `Plugin scope: <PLUGIN_SCOPE_NAME@PLUGIN_SCOPE_MARKETPLACE, or empty>.` ·
+`Plugin install path: <PLUGIN_INSTALL_PATH, or empty>.` · `Plugin description:
+<PLUGIN_DESCRIPTION, or empty>.` "Create the run folder; write plan.md per your instructions; write
 .claude/calibration/current; return one line." → On return: `✓ Plan initialised: <run>/plan.md · 📌
 calibration log folder remembered. → Next: baseline evaluation.`
 
@@ -271,7 +345,8 @@ calibration log folder remembered. → Next: baseline evaluation.`
 `<BUNDLES_DIR>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
 `scripts/enumerate.sh|measure.sh|lint.sh` for the actual numbers). · `Project dir: <PROJECT_DIR>.` ·
 `Audit scope: user + project + plugins.` · `Feature scope: <comma-separated canonical names from
-plan.md frontmatter feature_scope, or empty>.` "Write eval-features-<ts>.md (with the 'diagnostics to paste'
+plan.md frontmatter feature_scope, or empty>.` · `Plugin install path: <from plan.md frontmatter
+plugin_install_path, or empty>.` "Write eval-features-<ts>.md (with the 'diagnostics to paste'
 section + per-finding pattern signatures + the 3-vs-4-layer call per capability),
 eval-interactions-<ts>.md, eval-intent-flow-<ts>.md; update plan.md (check the baseline box, set
 last_phase_completed: baseline-eval, record baseline_severity + baseline_reports); return ONLY severity
@@ -311,7 +386,8 @@ applied/recommended/skipped + the touched-file list." → On return: print the c
 **Phase 6 — evaluator (delta).** `Agent(calibration-evaluator)`: `Pass: 2 (delta).` · `Run folder: <abs>.` ·
 `Plan: <run>/plan.md.` · `Baseline reports: <the pass-1 filenames>.` · `Rubric dir: <DOCS_DIR>.` ·
 `Bundles dir: <BUNDLES_DIR>.` · `Feature scope: <from plan.md frontmatter feature_scope, or
-empty>.` "Re-audit the same scope using the bundles' `reference.md` + `scripts/`;
+empty>.` · `Plugin install path: <from plan.md frontmatter plugin_install_path, or empty>.`
+"Re-audit the same scope using the bundles' `reference.md` + `scripts/`;
 write eval-delta-<ts>.md (per finding: resolved/partial/open/new; before→after counts); update plan.md:
 check the delta box and set last_phase_completed: delta-eval and last_evaluation; return ONLY
 before→after counts + any newly-introduced issue." → On return you have everything.

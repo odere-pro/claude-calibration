@@ -41,6 +41,29 @@ the canonical name, deduped, original order preserved. Tokens immediately preced
 `a`, `an`, `my`, `our`, `these`, or `those` are treated as intent prose, not scope (handles
 `refactor the skills`). Unknown tokens stay in the intent text — they are not rejected.
 
+## Plugin token syntax
+
+The orchestrator also accepts a single `plugin:<name>` or `plugin:<name>@<marketplace>` token
+to scope the audit to one plugin's footprint:
+
+- Case-insensitive, colon-prefixed, whitespace-delimited, **one per run**.
+- The `the/a/an/my/our/these/those` heuristic does NOT apply — the `plugin:` prefix is
+  unambiguous.
+- Resolved against `~/.claude/plugins/installed_plugins.json` (inlined as TSV by the
+  preprocessing block via `skills/calibrate-plugins/scripts/list-plugins.sh`). When
+  `<PROJECT_DIR>/.claude-plugin/plugin.json` exists, the local plugin is added as
+  `<name>@(local)`.
+- Ambiguous bare names (same plugin from two marketplaces) require the qualified
+  `plugin:<name>@<marketplace>` form.
+- **Plugin-dev auto-detect:** in a session with `--plugin-dir .` (i.e. `<PROJECT_DIR>` has a
+  `.claude-plugin/plugin.json`), `/calibrate` with no `plugin:` token auto-scopes to the
+  project's plugin and prints a one-line notice. Pass any intent text or another `plugin:`
+  token to override.
+
+Composition: intersects with feature tokens (audit only those features' files under the plugin
+install path); composes with intent text and with `tighten`/`harden`/`restart`/`--yes`;
+warn-and-ignore for `cost`/`status`.
+
 ## Edit-row dispatch (one-off fixes)
 
 For `kind: edit` rows, the bundle is the feature the file lives in:

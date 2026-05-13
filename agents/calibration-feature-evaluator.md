@@ -23,9 +23,11 @@ subagents, hooks, mcp, plugins, general` · `Run folder:` absolute path · `Bund
 path to `<plugin>/skills/` (the parent's primary toolkit; you'll read
 `<Bundles dir>/calibrate-<feature>/` directly) · `Rubric dir:` absolute path to `docs/`
 (fallback) · `Project dir:` absolute path · `Draft path:` absolute path to write to
-(`<run>/.drafts/feat-<feature>.md`). For Pass 2 only: `Baseline draft:` absolute path to the
-prior pass's draft for this feature (under `<run>/`), or `MISSING` if the baseline didn't
-cover this feature.
+(`<run>/.drafts/feat-<feature>.md`) · `Plugin install path:` absolute path to a plugin root
+(empty or absent = no filter; when set, post-filter enumerate.sh + lint.sh TSV output to keep
+only rows whose path is `<Plugin install path>` or starts with `<Plugin install path>/`). For
+Pass 2 only: `Baseline draft:` absolute path to the prior pass's draft for this feature (under
+`<run>/`), or `MISSING` if the baseline didn't cover this feature.
 
 If `Bundles dir` is `UNKNOWN`, fall back to `<Rubric dir>/features/<feature>.md` prose and
 signature names from `<Bundles dir>/../rules/signatures.md` (or, if unreachable, derive
@@ -38,9 +40,14 @@ recurrence detector may underperform).
    <Project dir>`. Output is TSV `<scope>\t<absolute path>` (scope = `user | project |
    plugin-self | …`). Capture all rows.
 
+   **Plugin filter:** if `Plugin install path` is non-empty, drop every row whose path is
+   not equal to `<Plugin install path>` and does not start with `<Plugin install path>/`.
+   Empty install path = no filter (preserves current behaviour).
+
 2. **Lint.** Run `bash <Bundles dir>/calibrate-<Feature>/scripts/lint.sh <path …>` over every
-   enumerated path. Output is TSV `<path>\t<signature>\t<severity>\t<detail>`. Capture all
-   rows.
+   enumerated path **that survived the plugin filter**. Output is TSV
+   `<path>\t<signature>\t<severity>\t<detail>`. Capture all rows. (The lint output is naturally
+   scoped because the script only sees plugin-filtered input paths.)
 
 3. **Manual cross-check.** Read `<Bundles dir>/calibrate-<Feature>/reference.md`. For each
    `Must` and `Should` item that is **not** already covered by a lint signature, emit a
@@ -75,8 +82,9 @@ recurrence detector may underperform).
 
 ## Pass 2 — delta draft for one feature
 
-Same enumerate + lint shape. Read `<Baseline draft>` (the prior pass's per-feature draft) and
-classify each row of the current findings as:
+Same enumerate + lint shape, **including the same `Plugin install path` filter applied to the
+enumerate.sh + lint.sh TSV output** (Pass-1 step 1 + step 2). Read `<Baseline draft>` (the
+prior pass's per-feature draft) and classify each row of the current findings as:
 
 - `resolved` — the same `(path, signature)` no longer fires.
 - `partial` — fires with reduced severity or detail (e.g. line count dropped past a threshold
