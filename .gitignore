@@ -1,0 +1,12 @@
+# Calibration run artifacts (created by /calibrate)
+.claude/calibration/
+
+# Local transient analysis / scratch
+tmp/
+
+# Personal, machine-local settings
+.claude/settings.local.json
+CLAUDE.local.md
+
+# OS / editor cruft
+.DS_Store

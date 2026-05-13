@@ -1,0 +1,17 @@
+{
+  "name": "claude-calibration",
+  "description": "Orchestrates an evaluate -> plan -> calibrate -> re-evaluate loop over your Claude Code setup (CLAUDE.md, rules, settings, skills, subagents, hooks, MCP, plugins). Three-layer architecture: per-feature calibration skill bundles (templates/examples/scripts/reference) -> three worker agents (planner, evaluator, calibrator) -> the /calibrate entry point, with a /claude-calibration:calibration dispatcher above and five convenience flows (audit/tighten/harden/diff/cost). The evaluator scores 3-layer self-contained capabilities and 4-layer CLI/MCP-integrated capabilities against the right rubric; recurring fixes are promoted to enforcement-creation rows that scaffold a new feature (hook/agent/skill/rule/command) into your setup. Ships path-scoped rules (signatures catalogue + bundle-dispatch map) and PreToolUse write-guard hooks that enforce the calibrator's allow-list and the audit flow's read-only contract. Each per-feature bundle is also user-invocable standalone (e.g. /claude-calibration:calibrate-skills). Persists run state so it survives /clear; infers an intent by default.",
+  "version": "0.2.0",
+  "author": {
+    "name": "claude-calibration"
+  },
+  "homepage": "https://code.claude.com/docs/en/plugins",
+  "license": "MIT",
+  "keywords": [
+    "calibration",
+    "evaluation",
+    "harness",
+    "orchestration",
+    "config-audit"
+  ]
+}

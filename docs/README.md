@@ -8,6 +8,11 @@ Start with [**`glossary.md`**](glossary.md) (the vocabulary, aligned with Claude
 then [**`general-setup.md`**](general-setup.md) (the whole picture), then the [feature](#features)
 you care about.
 
+For driving the `claude-calibration` plugin that _uses_ this doc-set, see
+[**`install.md`**](install.md) (install / verify / update / uninstall) and
+[**`usage.md`**](usage.md) (intents, the recurrence → enforcement-creation flow, per-feature
+shortcuts, reading the run-folder files).
+
 ## How these docs are organized
 
 - **One page per thing**, organized vertically: read a feature's page and you have its whole story
@@ -36,6 +41,8 @@ you care about.
 | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`glossary.md`](glossary.md)           | The vocabulary: feature, scope, layering, precedence, CLAUDE.md, auto memory, importing AGENTS.md, frontmatter, built-in command, bundled skill, marketplace, context cost                               |
 | [`general-setup.md`](general-setup.md) | The setup as a whole — the extension layer, the `.claude/` layout, scopes & precedence & layering, the `AGENTS.md` import, the context-cost model, the always-on checklist; how to validate & improve it |
+| [`install.md`](install.md)             | Driving the plugin — install via marketplace / `--plugin-dir` / `--plugin-url`, enable/disable/uninstall, verify (`/plugin`, `/skills`, `/agents`, `/context`), update, troubleshooting                  |
+| [`usage.md`](usage.md)                 | Driving the plugin — your first run, setting an intent, resume/restart/status, per-feature usage, the recurrence → enforcement-creation flow, reading the run-folder files, reverting, limits            |
 
 ### Features
 

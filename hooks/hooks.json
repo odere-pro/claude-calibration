@@ -1,0 +1,21 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/calibrator-write-guard.sh",
+            "description": "Block writes outside the calibrator's allow-list when calibration-calibrator is the active subagent"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/audit-write-guard.sh",
+            "description": "Block writes outside the run folder during a /claude-calibration:calibration-audit flow"
+          }
+        ]
+      }
+    ]
+  }
+}
