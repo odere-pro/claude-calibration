@@ -46,7 +46,12 @@ under "Skipped: out of scope".
    `all` = every main-table row · `safe-only` = rows where `risk` ≠ `risky` · `project-only` = rows
    where `scope` ≠ `user` · `<comma-separated ids>` = exactly those ids (may include enforcement-
    opportunity ids) · `skip` = none. CRITICAL rows in the approved set are done first.
-2. **Dispatch every approved row through its bundle** at `<Bundles dir>/<row.bundle>/`:
+   - **Resume awareness:** the table's first column is `status` (`pending | applying | done |
+     partial | skipped`). On a resumed run, _do not_ re-apply rows whose status is already
+     `done` or `partial`. Treat `applying` as an interrupted prior attempt — re-do those.
+2. **Dispatch every approved row through its bundle** at `<Bundles dir>/<row.bundle>/`. Before
+   the edit, flip the row's status from `pending` to `applying` in `plan.md` (write the file).
+   This is the safety marker for resume.
    - For `kind: edit` rows: read `<bundle>/SKILL.md` (the workflow) and the relevant
      `<bundle>/examples/<case>/before.md → after.md` (if a matching one exists); make the
      surgical edit per the row's `change` column.
@@ -58,18 +63,30 @@ under "Skipped: out of scope".
      dispatch via `<Bundles dir>/calibrate-skills/templates/cli-wrapper.tmpl` (or
      `mcp-wrapper.tmpl`) — these are the wrapper skill scaffolds.
    - **`scope: project`** rows you apply directly. **`scope: user`** rows you do _not_ edit —
-     capture them for the report with the exact edit/command the user should run.
+     flip their status to `skipped` (the row's reason is `scope: user` — captured for the
+     report with the exact edit/command the user should run).
 3. **Verify each change.** After each row, run `bash <bundle>/scripts/lint.sh <changed-or-created
 path>` (when the bundle ships one). Record `verify: ✓` if zero relevant findings remain, or
    `verify: ✗ <signature>` if a finding still fires. Don't undo on a soft fail; just record it.
+   Then **flip the row's status** in `plan.md`:
+   - `done` — verify ✓ (or no lint shipped, edit succeeded, no obvious regression).
+   - `partial` — verify ✗ — applied but the relevant lint signature still fires.
+   - `skipped` — row was excluded by the approved set or filed under "Skipped: out of scope".
+   Rows that were never approved keep `pending` (they don't get flipped to `skipped` — the
+   approved set is the filter, and `pending` accurately reflects "not attempted").
 4. **Companion files.** If a `change` spec implies a companion file (e.g. "move the testing block
    from `CLAUDE.md` into `.claude/rules/testing.md` with `paths:` frontmatter" → create the rule
    file _and_ trim `CLAUDE.md`), do both — that's one item. Never delete a file unless the row
    explicitly says to and is `risk: risky` _and_ was approved.
 5. After the changes: compute `sha256` of each file you modified (`shasum -a 256` or `sha256sum`)
    and write `touched_files: [{path, sha256}, …]` into `plan.md` frontmatter; set
-   `approved_scope: "<the value you were given>"`; check the `calibrate` box; set
-   `last_phase_completed: calibrate`.
+   `approved_scope: "<the value you were given>"`; tick `- [x] Phase 4 — calibrate` in the
+   `## Contents` Progress list; set `last_phase_completed: calibrate`.
+   - In `## Contents` Artifacts, replace `Calibration report: (pending)` with the actual
+     filename you wrote in step 7 (`Calibration report: calibration-report-<ts>.md`). Leave
+     Delta and Final lines untouched.
+   - At this point, every approved row in the `## Improvement plan` table should have a
+     non-`pending` status (`done | partial | skipped`) from step 3. Verify before returning.
 6. If `.claude/calibration/` is not already covered by the project's `.gitignore`: if a `.gitignore`
    exists at the project root, append a line `.claude/calibration/`; if there is none, do not create
    one — note it in the report.

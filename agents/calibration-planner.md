@@ -42,6 +42,7 @@ after `/clear`.
    ---
    intent: "<the quoted intent>"
    intent_source: <given | stored | guessed | audit-flow>
+   intent_normalized: "<one-sentence neutral restatement of the intent>"
    started: <Started ISO timestamp>
    head_sha: <Git HEAD>
    project_dir: <Project dir>
@@ -54,23 +55,76 @@ after `/clear`.
    touched_files: []
    approved_scope: null
    last_evaluation: null
+   summary_status: null
    ---
    ```
 
-4. Below the frontmatter, write the **phase checklist** (one line each, leading `- [ ]`):
+4. Below the frontmatter, write the **`## Contents`** section. This is the top-of-file
+   navigation that every downstream writer keeps in sync. Use exactly this shape (replace
+   `<…>` placeholders with literal values; leave `(pending)` lines alone — later phases fill
+   them in):
 
-   ```
-   - [x] planner-init
-   - [ ] baseline-eval
-   - [ ] planner-improve
-   - [ ] calibrate
-   - [ ] delta-eval
+   ```markdown
+   ## Contents
+
+   Progress:
+   - [x] Phase 1 — planner-init
+   - [ ] Phase 2 — baseline-eval
+   - [ ] Phase 3 — planner-improve
+   - [ ] Phase 4 — calibrate
+   - [ ] Phase 5 — delta-eval
+   - [ ] Phase 6 — final report
+
+   Artifacts:
+   - Plan: plan.md (this file)
+   - Baseline features: (pending)
+   - Baseline interactions: (pending)
+   - Baseline intent-flow: (pending)
+   - Calibration report: (pending)
+   - Delta report: (pending)
+   - Final report: (pending)
    ```
 
-5. Below the checklist, write `## Intent` (the intent text and its source) and `## Audit scope`
-   (verbatim from the spawn prompt). Leave a placeholder `## Improvement plan` heading with the
-   text `_(populated by Phase 3 — planner improve)_`.
-6. Return **exactly one line**: `✓ plan.md initialised at <Run folder>/plan.md.`
+   The Progress bullets mirror `last_phase_completed`: tick `[x]` only for phases already
+   complete. In `init` mode that's just Phase 1.
+
+5. Below `## Contents`, write `## Intent` with three labelled lines:
+
+   ```markdown
+   ## Intent
+
+   **Verbatim:** <the intent text exactly as the user wrote it>
+   **Normalized:** <one-sentence neutral restatement (same as frontmatter intent_normalized)>
+   **Source:** <given | stored | guessed | audit-flow>
+
+   **Success looks like:**
+   - <criterion 1>
+   - <criterion 2>
+   - <criterion 3>
+   ```
+
+   Generate 3–5 success criteria from the intent text. For the canonical intents use these
+   anchors (case-insensitive match on the intent text):
+
+   - `tighten standards` / `harden` — _"Recurring signatures are enforced by hooks or rules
+     with paths"_, _"Always/never/must lines have matching enforcement"_, _"No new MEDIUM+
+     findings in the same families on re-audit"_.
+   - `reduce always-on context cost` / `cost` — _"CLAUDE.md + unconditional rules under the
+     budget heuristic"_, _"No unconditional plugin-shipped rules"_, _"Skill descriptions
+     short enough to keep skill-listing under the doctor budget"_.
+   - `make TDD reliable` — _"Test runner discoverable without prompts"_, _"Failure output
+     points at the failing file"_, _"No silent-success false greens in the lint output"_.
+   - `audit (read-only)` — _"Baseline reports cover every feature with a working bundle"_,
+     _"Diagnostics ask surfaces the four CLI outputs the user must paste"_.
+
+   For unrecognised intent, derive 3 criteria from the intent text itself plus the audit
+   scope. Don't pad past 5; under-specifying is fine.
+
+6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt). Leave a
+   placeholder `## Improvement plan` heading with the text
+   `_(populated by Phase 3 — planner improve)_`.
+
+7. Return **exactly one line**: `✓ plan.md initialised at <Run folder>/plan.md.`
 
 If the run folder already contains a `plan.md`, don't clobber it — return
 `plan.md already present at <Run folder>/plan.md (resume)` and stop. The orchestrator handles resume.
@@ -121,12 +175,20 @@ by quoting its `id`).
 
 ### Step 4 — assemble the rows
 
-Replace the body of `plan.md` (everything **after** the frontmatter and the phase checklist) with:
+Replace the body of `plan.md` (everything **after** the frontmatter and the `## Contents`
+section) with:
 
 ```markdown
 ## Intent
 
-<intent text>  (`intent_source: <…>`)
+**Verbatim:** <intent text>
+**Normalized:** <intent_normalized from frontmatter>
+**Source:** <intent_source from frontmatter>
+
+**Success looks like:**
+- <criterion 1>
+- <criterion 2>
+- <criterion 3>
 
 ## Audit scope
 
@@ -134,10 +196,10 @@ Replace the body of `plan.md` (everything **after** the frontmatter and the phas
 
 ## Improvement plan
 
-| id  | sev | scope    | risk    | kind   | bundle              | feature   | file                                | change (before → after)                | finding (signature · detail) |
-| --- | --- | -------- | ------- | ------ | ------------------- | --------- | ----------------------------------- | -------------------------------------- | ---------------------------- |
-| 1   | …   | project  | safe    | edit   | calibrate-…         | …         | <abs path>                          | …                                      | <signature · one-liner>      |
-| …   | …   | …        | …       | …      | …                   | …         | …                                   | …                                      | …                            |
+| status  | id  | sev | scope    | risk    | kind   | bundle              | feature   | file                                | change (before → after)                | finding (signature · detail) |
+| ------- | --- | --- | -------- | ------- | ------ | ------------------- | --------- | ----------------------------------- | -------------------------------------- | ---------------------------- |
+| pending | 1   | …   | project  | safe    | edit   | calibrate-…         | …         | <abs path>                          | …                                      | <signature · one-liner>      |
+| pending | …   | …   | …        | …       | …      | …                   | …         | …                                   | …                                      | …                            |
 
 ### Enforcement opportunities
 
@@ -146,8 +208,24 @@ Replace the body of `plan.md` (everything **after** the frontmatter and the phas
 | E1   | …                    | …                   | …                      | …                               |
 ```
 
+If the planner already wrote a previous version of the table on an earlier run (resume after
+an aborted approval gate), preserve any existing **non-`pending`** status values for rows
+whose `id` + `finding` signature still match — the calibrator owns those statuses. New rows
+or rows whose finding changed are reset to `pending`.
+
+The **`## Intent` block must carry over the success criteria** the init phase wrote. Read
+them from the prior `plan.md` body and emit them verbatim. Don't regenerate them — they're
+part of the contract with the user.
+
 Field rules:
 
+- **status** — `pending | applying | done | partial | skipped`. Write `pending` for every new
+  row. The calibrator flips this column as it processes:
+  - `applying` — calibrator started this row (mid-edit; written before the Edit).
+  - `done` — applied; bundle lint re-ran clean.
+  - `partial` — applied but the relevant lint signature still fires.
+  - `skipped` — row excluded by approved scope or out-of-bounds for the calibrator's
+    allow-list.
 - **id** — monotonic from 1; enforcement-opportunity ids prefixed `E` (`E1`, `E2`).
 - **sev** — `CRITICAL | HIGH | MEDIUM | LOW`. Inherit from the evaluator's finding; for `create`
   rows take the highest of the cluster.
@@ -177,9 +255,40 @@ Update the frontmatter:
 - `last_phase_completed: planner-improve`
 - Leave `baseline_severity` and `baseline_reports` (the evaluator wrote them).
 
-Tick `- [x] planner-improve` in the phase checklist.
+Tick `- [x] Phase 3 — planner-improve` in the `## Contents` Progress list.
 
-### Step 6 — return
+### Step 6 — refresh `## Contents`
+
+Re-emit the `## Contents` section at the top of `plan.md` (between the frontmatter and
+`## Intent`). The Progress list must reflect the current `last_phase_completed`. The
+Artifacts list must show the actual filenames from `baseline_reports` (the evaluator wrote
+them in Pass 1) — replace the `(pending)` lines with the matching filenames. Leave the lines
+for phases that haven't run yet as `(pending)`.
+
+Example after Phase 3:
+
+```markdown
+## Contents
+
+Progress:
+- [x] Phase 1 — planner-init
+- [x] Phase 2 — baseline-eval
+- [x] Phase 3 — planner-improve
+- [ ] Phase 4 — calibrate
+- [ ] Phase 5 — delta-eval
+- [ ] Phase 6 — final report
+
+Artifacts:
+- Plan: plan.md (this file)
+- Baseline features: eval-features-20260513-1430.md
+- Baseline interactions: eval-interactions-20260513-1430.md
+- Baseline intent-flow: eval-intent-flow-20260513-1430.md
+- Calibration report: (pending)
+- Delta report: (pending)
+- Final report: (pending)
+```
+
+### Step 7 — return
 
 Return **exactly**: `Improvement plan: <C> CRITICAL · <H> HIGH · <M> MEDIUM · <L> LOW · <P>
 project · <U> user · <S> safe · <R> risky · <E> edit · <Cr> create · <Eo> enforcement opportunities.

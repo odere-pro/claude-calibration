@@ -49,20 +49,13 @@ plugins, general` — do this:
    `Must` and `Should` item not already covered by a lint signature, write a manual finding (note
    it as `<feature>:manual-<short-name>` so the planner can still bucket it).
 
-Emit three reports into `<Run folder>`:
+Emit three reports into `<Run folder>`. **Keep them slim** — these are the planner's input,
+not a human read-me. No narrative paragraphs, no restated rubric, no boilerplate. One row per
+finding, tables only, source links for the human-drill-down case.
 
 ### `eval-features-<ts>.md`
 
-One section per feature. Within each section:
-
-- A short paragraph summarising what was audited (counts: how many files, how many findings).
-- A table: `severity · scope (user|project|plugin-self) · file · signature · one-line detail`.
-- A trailing line per feature: `3 vs 4 layers:` — if the feature integrates an external system
-  (CLI / MCP), call out whether the capability uses the right pattern (skill wrapping a CLI is
-  4-layer; bare-CLI skill or unwrapped MCP is the 3-layer anti-pattern). Reference
-  `<Bundles dir>/calibrate-skills/reference.md` for the rubric.
-
-At the top of the file, write the **diagnostics ask** verbatim:
+Top of file — write the **diagnostics ask** verbatim (it stays; the user needs it):
 
 ```
 For exact numbers, paste these CLI outputs (the agent cannot run them):
@@ -74,9 +67,33 @@ For exact numbers, paste these CLI outputs (the agent cannot run them):
 
 Emit a `general:diagnostics-ask` INFO finding to keep the signature stream complete.
 
+Then one section per feature. Each section is exactly:
+
+```markdown
+## <feature> (<N> files · <M> findings)
+
+| sev | scope | file | signature | detail |
+| --- | ----- | ---- | --------- | ------ |
+| HIGH | project | <relative-or-abs path> | <signature> | <≤80-char detail> |
+| …    | …       | …                      | …           | …                 |
+
+3 vs 4 layers: <✓ | ✗ <one-line reason>>
+```
+
+- `<N>` = files enumerated, `<M>` = findings (lint + manual).
+- `file` column is a relative path under `<Project dir>` when possible, absolute otherwise.
+  This _is_ the source link — keep it copyable.
+- `detail` is one line, ≤80 chars. Truncate with `…` if needed; the signature is the
+  recurrence key, not the prose.
+- The `3 vs 4 layers` line is mandatory per feature, even when the verdict is `✓` (no
+  CLI/MCP capability in scope). Reference `<Bundles dir>/calibrate-skills/reference.md` for
+  the rubric.
+- No prose paragraphs, no "this section audits …" preamble. The header line carries the
+  counts.
+
 ### `eval-interactions-<ts>.md`
 
-How the features interact, where the seams creak:
+Same table shape, no per-feature split. One table covering all the cross-feature seams:
 
 - CLAUDE.md ↔ rules overlap (`rule:contradicts-claude-md`).
 - Subagent `mcpServers:` ↔ `.mcp.json` overlap (`subagent:bare-mcp-in-mcpjson`,
@@ -88,17 +105,37 @@ How the features interact, where the seams creak:
 - Hooks that enforce a rule that doesn't exist, or rules whose `always/never/must` lines have no
   matching hook (`general:must-rule-with-no-hook`, `claude-md:must-rule-with-no-hook`).
 
-Same table shape as `eval-features-*.md`.
+```markdown
+# Interactions (<M> findings)
+
+| sev | scope | file | signature | detail |
+| --- | ----- | ---- | --------- | ------ |
+| …   | …     | …    | …         | …      |
+```
 
 ### `eval-intent-flow-<ts>.md`
 
-Whether the setup actually serves the user's stated intent (from `plan.md`'s frontmatter):
+Whether the setup actually serves the user's stated intent (read it from `plan.md`'s `## Intent`
+section — verbatim, normalized, success criteria). Output shape:
 
-- For the top intents the doc-set knows about (`reduce always-on context cost`, `tighten
-  standards`, `make TDD reliable`, …) call out the 3-5 highest-leverage misalignments.
-- For an unrecognised intent, do best-effort: read the intent text, scan the findings, pick the
-  ones whose remediation would most directly serve it.
-- Close with a single-line `Intent service score: <low|mid|high>` and the rationale (one sentence).
+```markdown
+# Intent flow
+
+**Intent:** <verbatim from plan.md>
+
+| criterion | status | top blocker (signature · detail) |
+| --------- | ------ | -------------------------------- |
+| <criterion 1 from plan.md ## Intent> | met / partial / blocked / unknown | <signature · ≤80-char detail> or `—` if met |
+| …         | …      | …                                |
+
+**Intent service score:** <low | mid | high> — <≤120-char rationale>
+```
+
+Map each success criterion from `plan.md`'s `## Intent` block to a `met | partial | blocked
+| unknown` status, sourced from the findings already in `eval-features-*.md` and
+`eval-interactions-*.md`. For an unrecognised intent (no criteria), do best-effort:
+synthesize 3 criteria from the intent text + audit scope, mark each, and note
+`(criteria derived ad-hoc)` after the table.
 
 ### Update `plan.md`
 
@@ -108,8 +145,16 @@ Open `<Run folder>/plan.md`; in the frontmatter, set:
 - `baseline_severity: { critical: <N>, high: <N>, medium: <N>, low: <N> }`
 - `baseline_reports: [eval-features-<ts>.md, eval-interactions-<ts>.md, eval-intent-flow-<ts>.md]`
 
-Tick `- [x] baseline-eval` in the phase checklist. Do **not** rewrite the body or the
-`## Improvement plan` placeholder — that's the planner's job.
+In the `## Contents` section at the top of `plan.md`:
+
+- Tick `- [x] Phase 2 — baseline-eval` in the Progress list.
+- Replace the three `(pending)` baseline lines under Artifacts with the actual filenames you
+  just wrote (`eval-features-<ts>.md`, `eval-interactions-<ts>.md`,
+  `eval-intent-flow-<ts>.md`). Leave the Calibration/Delta/Final lines as `(pending)` —
+  those phases haven't run.
+
+Do **not** rewrite the body or the `## Improvement plan` placeholder — that's the planner's
+job.
 
 ### Return
 
@@ -128,12 +173,31 @@ files listed in frontmatter `baseline_reports`), classify it as:
 
 For each finding now firing that wasn't in the baseline, classify it as `new`.
 
-Write `eval-delta-<ts>.md` with one table per feature: `status (resolved|partial|open|new) ·
-severity · scope · file · signature · detail`. Close with before/after severity counts and a
-one-line summary (`<resolved> resolved, <partial> partial, <open> open, <new> new`).
+Write `eval-delta-<ts>.md`. Same slim shape as Pass 1 — tables only, one row per finding, no
+prose:
 
-Update `plan.md` frontmatter: tick `- [x] delta-eval`, set `last_phase_completed: delta-eval`, set
+```markdown
+# Delta <ts>
+
+Baseline: C<n> H<n> M<n> L<n>  →  After: C<n> H<n> M<n> L<n>
+<resolved> resolved · <partial> partial · <open> open · <new> new
+
+## <feature>
+
+| status | sev | scope | file | signature | detail |
+| ------ | --- | ----- | ---- | --------- | ------ |
+| open   | …   | …     | …    | …         | …      |
+| new    | …   | …     | …    | …         | …      |
+| resolved | … | …    | …    | …         | …      |
+```
+
+One section per feature that has at least one delta row. Skip features with zero changes.
+
+Update `plan.md` frontmatter: set `last_phase_completed: delta-eval`, set
 `last_evaluation: <NOW_ISO>` and (optional) `delta_summary: "..."`.
+
+In the `## Contents` section: tick `- [x] Phase 5 — delta-eval`. Replace the
+`Delta report: (pending)` line under Artifacts with `Delta report: eval-delta-<ts>.md`.
 
 Return **exactly**: `Delta: <resolved> resolved · <partial> partial · <open> open · <new> new.
 Counts: C <Cb→Ca> · H <Hb→Ha> · M <Mb→Ma> · L <Lb→La>. New issues: <up to 3 one-liners or
