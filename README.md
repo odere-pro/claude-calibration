@@ -16,8 +16,9 @@ recurring.
                                     ▼
                                   agents (middle)
        calibration-planner (opus) · calibration-evaluator (sonnet) · calibration-calibrator (sonnet)
-                                    │ dispatch per-feature work
-                                    ▼
+                                    │   └─ fans out 9× calibration-feature-evaluator (haiku) in parallel ─┐
+                                    │                                                                    │
+                                    ▼                                                                    ▼
                                   skills (bottom — per-feature calibration toolkits)
        calibrate-{claude-md, rules, settings, skills, subagents, hooks, mcp, plugins, general}
        each bundle ships:  SKILL.md  reference.md  templates/  examples/  scripts/
@@ -43,7 +44,7 @@ MCP server with no wrapper skill is the docs' own anti-pattern.
 | `skills/calibration/` | The top-level dispatcher — `/claude-calibration:calibration` (menu / shortcut / intent forwarder above `/calibrate`). |
 | `skills/calibration-{audit,diff}/` × 2 | Convenience flow skills — slim orchestrators that spawn their own subagent chain (`disable-model-invocation: true`). The three other shortcuts — `tighten`, `harden`, `cost` — are argument-token modes inside `/calibrate` rather than separate skills. |
 | `skills/calibrate-<feature>/` × 9 | The per-feature calibration bundles. Each is also user-invocable on its own (e.g. `/claude-calibration:calibrate-skills`). |
-| `agents/` | The 3 worker subagents: `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`. |
+| `agents/` | The 4 worker subagents: `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`, plus the per-feature `calibration-feature-evaluator` that the evaluator fans out to in parallel (one per feature, haiku-class). |
 | `rules/` | Two path-scoped rules (`signatures.md`, `dispatch.md`) — the canonical signature catalogue and the signature → bundle map. `paths:` frontmatter limits them to calibration files, so they cost zero standing context. |
 | `hooks/` | Two `PreToolUse` write-guards: `calibrator-write-guard.sh` enforces the calibrator's allow-list at the tool-call layer; `audit-write-guard.sh` keeps `/claude-calibration:calibration-audit` read-only. Zero cost unless they fire. |
 | `.claude/` | This repo's **own** setup — including `/docs-status`, `/docs-update`, `/plugin-update` for keeping `docs/` and the plugin's own bundles in sync with the official docs. Not shipped. |

@@ -7,7 +7,8 @@ application — every file under here ships to end users when the plugin is inst
 
 - `.claude-plugin/plugin.json` — manifest
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
-- `agents/calibration-*.md` — 3 worker agents (planner, evaluator, calibrator)
+- `agents/calibration-*.md` — 4 worker agents: planner, evaluator, calibrator, and
+  `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel)
 - `rules/{signatures,dispatch}.md` — canonical signature catalogue + dispatch map
 - `hooks/{hooks.json,calibrator-write-guard.sh,audit-write-guard.sh}` — `PreToolUse` write-guards
 - `docs/` — human-readable rubric (the doc-set the plugin grades against)

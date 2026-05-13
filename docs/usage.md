@@ -26,9 +26,13 @@ After that you'll see:
 1. **Phase 1 — Plan initialised.** A run folder is created at
    `.claude/calibration/<timestamp>/`; `plan.md` is written; `.claude/calibration/current`
    remembers the run.
-2. **Phase 2 — Baseline evaluation.** The evaluator dispatches per-feature work to each of the 9
-   `calibrate-*` bundles and writes three reports into the run folder:
-   `eval-features-*.md`, `eval-interactions-*.md`, `eval-intent-flow-*.md`.
+2. **Phase 2 — Baseline evaluation.** The evaluator **fans out** to 9 parallel
+   `calibration-feature-evaluator` workers (one per feature, haiku-class), each running its
+   bundle's `enumerate.sh` + `lint.sh` and writing a per-feature draft. The evaluator merges
+   the drafts and adds the two cross-feature reports
+   (`eval-interactions-*.md`, `eval-intent-flow-*.md`). Net effect: one wall-clock pass over
+   all 9 features instead of nine sequential passes. Token cost scales with feature count;
+   compute cost is roughly 9× a single-feature audit.
 3. **Phase 3 — Improvement plan.** The planner reads the eval reports, groups findings by pattern
    signature, and rewrites `plan.md` with a prioritised plan. Recurring patterns produce **`kind:
    create`** rows (enforcement); one-off findings produce **`kind: edit`** rows.
@@ -366,7 +370,9 @@ have exact numbers rather than estimates.
 - The orchestrator's behaviour — [`../skills/calibrate/SKILL.md`](../skills/calibrate/SKILL.md).
 - The worker agents — [`../agents/calibration-planner.md`](../agents/calibration-planner.md),
   [`../agents/calibration-evaluator.md`](../agents/calibration-evaluator.md),
-  [`../agents/calibration-calibrator.md`](../agents/calibration-calibrator.md).
+  [`../agents/calibration-calibrator.md`](../agents/calibration-calibrator.md),
+  [`../agents/calibration-feature-evaluator.md`](../agents/calibration-feature-evaluator.md)
+  (per-feature worker the evaluator fans out to in parallel).
 - Per-feature rubrics — each bundle's `reference.md` under `../skills/calibrate-<feature>/`.
 - Underlying Claude Code feature mechanics — `features/*.md` in this doc-set and their
   `code.claude.com/docs/*` sources.
