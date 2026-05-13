@@ -13,7 +13,7 @@ description: >-
 argument-hint: "[intent text | --yes | restart | status | tighten | harden | cost]"
 disable-model-invocation: true
 model: opus
-allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git diff:*), Bash(git status:*), Bash(git rev-parse:*)
+allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git diff:*), Bash(git status:*), Bash(git rev-parse:*), Bash(rm:*), Bash(ls:*)
 ---
 
 ```!
@@ -79,19 +79,25 @@ spawn prompt — they need them to dispatch per-feature work to the right bundle
 
 ## Phases and state
 
-A run's state lives in `<run>/plan.md` (frontmatter + a phase checklist). The phases, in order, and
-the `last_phase_completed` value each one leaves behind:
+A run's state lives in `<run>/plan.md` (frontmatter + a `## Contents` TOC with Progress and
+Artifacts blocks; see the planner agent for the exact shape). The phases, in order, and the
+`last_phase_completed` value each one leaves behind:
 
 1. **planner-init** — planner creates the run folder, writes `plan.md`, writes `.claude/calibration/current`.
 2. **baseline-eval** — evaluator pass 1: per-feature + interaction + intent-flow reports.
-3. **planner-improve** — planner replaces `plan.md`'s body with the prioritised improvement plan.
+3. **planner-improve** — planner replaces `plan.md`'s body with the prioritised improvement plan
+   (every row starts at `status: pending`).
 4. _(approval gate — your responsibility, not a subagent)_
-5. **calibrate** — calibrator applies the approved changes; records `touched_files`.
+5. **calibrate** — calibrator applies the approved changes; flips each row's `status` from
+   `pending` to `done | partial | skipped`; records `touched_files`.
 6. **delta-eval** — evaluator pass 2: delta report; writes `last_evaluation` into `plan.md`.
 7. _(final report — your responsibility)_
+8. _(summary + close gate — your responsibility; optional prune)_
 
-A run is **complete** when `last_phase_completed: delta-eval` **and** a `final-report-*.md` exists in
-the run folder. Only the subagents edit `plan.md`; you only read it (and write the final report).
+A run is **complete** when `last_phase_completed: delta-eval`, a `final-report-*.md` exists in
+the run folder, **and** `summary_status` in `plan.md` frontmatter is `completed | kept` (the
+close gate ran). Only the subagents edit `plan.md` during phases 1–6; you may rewrite `plan.md`
+in Phase 8 via `Write` (to bake in the summary block and update `summary_status`).
 
 ## 0. Parse the arguments
 
@@ -160,12 +166,16 @@ section was added.
 
 If `CURRENT_RUN` points to a folder with a `plan.md`:
 
-- Read `<run>/plan.md` — `intent`, `intent_source`, `log_folder`, `head_sha`, `last_phase_completed`,
-  `touched_files`, `baseline_reports`, `last_evaluation`. Check (via Glob) whether a `final-report-*.md`
-  exists.
-- **If complete** and the argument is not `restart` and there's no new intent: tell the user the latest
-  run finished — one line of `last_evaluation`, the run-folder path, and `→ /calibrate restart` for a
-  fresh run or `/calibrate "<new goal>"` to recalibrate. Stop.
+- Read `<run>/plan.md` — `intent`, `intent_source`, `head_sha`, `last_phase_completed`,
+  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`. Check (via Glob)
+  whether a `final-report-*.md` exists.
+- **If complete** (`last_phase_completed: delta-eval` AND a `final-report-*.md` exists AND
+  `summary_status` ∈ {`completed`, `kept`}) and the argument is not `restart` and there's no
+  new intent: tell the user the latest run finished — one line of `last_evaluation`, the
+  run-folder path, and `→ /calibrate restart` for a fresh run or `/calibrate "<new goal>"`
+  to recalibrate. Stop.
+- **If Phase 8 didn't run yet** (`final-report-*.md` exists but `summary_status` is `null`):
+  resume at Phase 8 (re-present the close gate). Do not re-run earlier phases.
 - **If in progress** and not `restart`: **drift check** — if `GIT_HEAD` ≠ `head_sha`, or
   `GIT_DIRTY_FILES` is large (> 20) beyond what `touched_files` accounts for → print one warning line
   ("⚠ the repo changed substantially since this run started — results may be stale; `/calibrate restart`
@@ -251,31 +261,138 @@ write eval-delta-<ts>.md (per finding: resolved/partial/open/new; before→after
 check the delta box and set last_phase_completed: delta-eval and last_evaluation; return ONLY
 before→after counts + any newly-introduced issue." → On return you have everything.
 
-**Phase 7 — final report.** Compose the FINAL REPORT from `plan.md` and the report files:
+**Phase 7 — final report.** Compose the FINAL REPORT from `plan.md` and the report files.
+Keep it **tight** — the user is the reader, the LLM uses `plan.md`. One line per item where
+possible, tables for the dense parts, no restated prose from the eval reports.
 
-1. **Intent** (and whether given / stored / guessed).
-2. **Scope audited**, and the four diagnostics still owed by the user (`/doctor`, `/context all`,
-   `/skills` press `t`, `/mcp`) if the evaluator flagged them.
-3. **Baseline** severity counts → **after** severity counts → net change.
-4. **Applied** (project-scope changes, one line each) and **Recommended, not applied** (user-scope).
-5. **Residual findings** — the top open items + a pointer to the report files.
-6. **Next steps** — apply the user-scope recommendations and re-run; `/clear` now.
+Exact shape:
 
-Write it to `<run>/final-report-<ts>.md` (this is your only `Write`). Then **print the final report to
-stdout** as your final message, ending: `Calibration complete. Run /clear when done; re-run /calibrate
-for another pass, or /calibrate restart for a fresh run.`
+```markdown
+# Calibration final report — <ts>
+
+**Intent:** <verbatim from plan.md ## Intent> _(<intent_source>)_
+**Scope:** <audit_scope>
+**Diagnostics still owed:** <list of `/doctor`, `/context all`, `/skills (t)`, `/mcp` if the
+  evaluator flagged `general:diagnostics-ask`; otherwise `— none`>
+
+## Severity
+
+| | Critical | High | Medium | Low |
+|-|---------:|-----:|-------:|----:|
+| Baseline | <Cb> | <Hb> | <Mb> | <Lb> |
+| After    | <Ca> | <Ha> | <Ma> | <La> |
+| Net      | <±N> | <±N> | <±N> | <±N> |
+
+## Applied (project)
+
+| id | bundle | file | change | verify |
+|----|--------|------|--------|--------|
+| 1  | …      | …    | …      | ✓ / ✗  |
+
+## Recommended (user-scope, not applied)
+
+| id | file | command-or-edit |
+|----|------|-----------------|
+| …  | ~/.claude/… | … |
+
+## Residual (open + new from delta)
+
+| status | sev | file | signature | detail |
+|--------|-----|------|-----------|--------|
+| open / new | … | … | … | … |
+
+## Next
+
+- Apply the user-scope recommendations above and re-run `/claude-calibration:calibration-diff`
+  to confirm.
+- Reports: `<run>/`.
+```
+
+Write it to `<run>/final-report-<ts>.md` (this is your only `Write` until Phase 8). **Do not
+print the full report to stdout** — Phase 8's summary is the user-facing close. Instead print
+one line: `✓ Final report: <run>/final-report-<ts>.md.` Then proceed straight to Phase 8.
+
+**Phase 8 — summary + close gate.** Compose the **Fixed / Left** summary from `plan.md`'s
+`## Improvement plan` table:
+
+- **Fixed** — rows where `status` is `done`.
+- **Left** — rows where `status` is `partial | skipped | pending` _plus_ the `new` rows from
+  the most recent `eval-delta-*.md`.
+
+Print exactly:
+
+```
+✓ Calibration complete.
+
+Fixed (<N>):                          Left (<M>):
+- <id> <sev> <one-line change>        - <id> <sev> <one-line reason>
+- …                                   - …
+
+Approve closing this run?
+Reply:
+  close  — prune intermediates (keep plan.md + final-report)
+  keep   — leave the run folder intact
+  skip   — no summary action
+```
+
+**Wait for the user's reply.** If `APPROVAL=auto` (the `--yes` flag was set at parse time),
+do not prompt — proceed as if the user replied `close`. Otherwise the reply maps to:
+
+- **`close`** —
+  1. Re-Write `plan.md`: set frontmatter `summary_status: completed`; in `## Contents` tick
+     `- [x] Phase 6 — final report` and replace `Final report: (pending)` with the actual
+     filename; append a new top-of-body section `## Summary` containing the Fixed/Left tables
+     verbatim from the print above.
+  2. Prune intermediates:
+     ```bash
+     rm <run>/eval-features-*.md <run>/eval-interactions-*.md \
+        <run>/eval-intent-flow-*.md <run>/eval-delta-*.md \
+        <run>/calibration-report-*.md
+     ```
+     Files that don't exist (e.g. a run with no calibrator pass) are not errors — `rm` will
+     warn; ignore. Never delete `plan.md` or `final-report-*.md`. Never touch anything
+     outside `<run>/`.
+  3. Print: `✓ Run closed. Kept: plan.md, final-report-<ts>.md. Pruned <N> intermediate
+     files. → /clear is safe now; re-run /calibrate for another pass.`
+
+- **`keep`** —
+  1. Re-Write `plan.md`: set frontmatter `summary_status: kept`; tick `- [x] Phase 6 — final
+     report`; replace `Final report: (pending)` with the actual filename; append
+     `## Summary` to the body as above (Fixed/Left tables).
+  2. No prune.
+  3. Print: `✓ Run kept intact at <run>/. Summary recorded; intermediates preserved. → /clear
+     is safe; re-run /claude-calibration:calibration-diff later to re-check.`
+
+- **`skip`** —
+  1. Do nothing to `plan.md` (`summary_status` stays `null`).
+  2. Print: `✓ Calibration complete. Summary step skipped. Run /calibrate to revisit.`
+
+When re-Writing `plan.md` for `close` or `keep`, you read the file first, swap the
+frontmatter field, swap the Contents lines, and append the `## Summary` section _before_ the
+existing `## Intent` section so the summary is the first thing a reader sees after the TOC.
+Everything else in the file is preserved verbatim — you are not allowed to reformat or
+re-order other sections.
+
+If the user types anything other than `close | keep | skip`, treat it as `keep` (the
+conservative default) and note the unexpected input one line.
 
 ## Status mode
 
 Read `CURRENT_RUN`'s `plan.md` (if none: "No calibration run found — run /calibrate to start"). Print:
-intent (and source) · log folder · `last_phase_completed` · the phase checklist with ✓/▢ · whether a
-final report exists · `baseline_severity` · `last_evaluation` (if set) · `touched_files` count. End with
-the `→ Next:` step (or "complete"). Stop.
+intent (and source) · log folder · `last_phase_completed` · the `## Contents` Progress block with
+✓/▢ · whether a final report exists · `summary_status` · `baseline_severity` · `last_evaluation`
+(if set) · `touched_files` count · improvement-plan status counts (e.g. `5 done · 1 partial · 2
+pending · 0 skipped`). End with the `→ Next:` step (or "complete"). Stop.
 
 ## Hard rules
 
-- You never `Edit`; you never modify a config file; you `Write` only `<run>/final-report-*.md`.
+- You never `Edit`; you never modify a config file. You `Write` only under `<run>/` — specifically
+  `<run>/final-report-*.md` in Phase 7 and (Phase 8 only, on `close` or `keep`) a rewritten
+  `<run>/plan.md` to bake in `summary_status` and the `## Summary` block.
 - You never apply config changes yourself — the calibrator does, post-approval.
+- Phase 8's `rm` is the only destructive action you may take, and it is bounded to
+  `<run>/eval-*.md` and `<run>/calibration-report-*.md`. Never delete `plan.md`,
+  `final-report-*.md`, or anything outside `<run>/`.
 - Subagent prompts always carry the run-folder path and the rubric dir as absolute paths.
 - Keep every inter-phase message to a few lines; detail lives in the run-folder files.
 - If a subagent says it couldn't write its files or read `plan.md`, stop and surface that — don't
