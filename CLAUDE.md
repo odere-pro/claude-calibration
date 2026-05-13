@@ -7,6 +7,8 @@ application — every file under here ships to end users when the plugin is inst
 
 - `.claude-plugin/plugin.json` — manifest
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
+- `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
+  `calibration-diff`, `calibration-doctor`, `calibration-onboarding`
 - `agents/calibration-*.md` — 4 worker agents: planner, evaluator, calibrator, and
   `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel)
 - `rules/{signatures,dispatch}.md` — canonical signature catalogue + dispatch map
