@@ -67,7 +67,9 @@ auto-fire a calibration skill (gate G4).
   existing history).
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org) —
   `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:`.
-- Add a bullet to `CHANGELOG.md` under `[Unreleased]` for any user-visible change.
+- For any user-visible change, add a `changelog/<NN>-<slug>.md` fragment (one bullet, no SHA prefix)
+  rather than editing `CHANGELOG.md` directly — see [`changelog/README.md`](changelog/README.md).
+  Doc-only PRs may skip it; gate G16 (`16-changelog-fragment-present.sh`) encodes the rule.
 
 ## Releasing
 

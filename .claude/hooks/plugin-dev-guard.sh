@@ -39,8 +39,11 @@ get_effective_content() {
   fi
 }
 
-# Guard 1: rules/ files must have paths: frontmatter
+# Guard 1: rules/ files must have paths: frontmatter.
+# Exempt CLAUDE.md — a per-directory briefing, not a path-scoped rule (matches gate G6).
 case "$FILE_PATH" in
+  */rules/CLAUDE.md)
+    ;;
   */rules/*.md)
     CONTENT=$(get_effective_content "$FILE_PATH")
     if printf '%s' "$CONTENT" | grep -qE '^---'; then

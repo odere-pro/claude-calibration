@@ -13,8 +13,16 @@ of record is `.claude-plugin/plugin.json` → `version` (the marketplace entry d
    - patch — doc fixes, lint-script tweaks, no behaviour change;
    - minor — a new bundle / flow / signature, backward-compatible;
    - major — a renamed signature or a breaking change to the run-folder/plan contract.
-2. **Update `CHANGELOG.md`**: move the `[Unreleased]` items into a new `## [X.Y.Z] - YYYY-MM-DD`
-   section and refresh the compare links at the bottom.
+2. **Aggregate the changelog fragments**, then cut the version section:
+
+   ```bash
+   bash scripts/changelog-aggregate.sh           # dry-run: preview the fragment bullets
+   bash scripts/changelog-aggregate.sh --apply    # inline them under [Unreleased] ### Added, remove fragments
+   ```
+
+   Then move the now-complete `[Unreleased]` items into a new `## [X.Y.Z] — YYYY-MM-DD` section and
+   refresh the compare links at the bottom. (Per-PR fragments live under `changelog/`; see
+   [`../changelog/README.md`](../changelog/README.md).)
 3. **Reconcile any count text** in `docs/install.md` and `README.md` if you added or removed a skill
    / agent / bundle (e.g. the "15 plugin skills" line).
 4. If you added a signature, confirm it is in sync across all four places (`rules/signatures.md`,

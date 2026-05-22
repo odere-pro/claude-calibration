@@ -1,0 +1,1 @@
+- Adopt a fragment-per-PR changelog with a complete `CHANGELOG.md` history; enrich the root `CLAUDE.md` (gate map, quick-recipes, source layout, vocabulary, per-directory briefings); add `skillOverrides` and the promised `/docs-status`, `/docs-update`, `/plugin-update` maintenance skills plus a `docs-fetcher` agent under `.claude/`.

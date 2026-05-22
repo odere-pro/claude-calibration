@@ -10,7 +10,8 @@
 
 - [ ] `bash tests/gates/run-all.sh` passes locally
 - [ ] Ran `/claude-calibration:calibration-audit` (read-only end-to-end smoke) under `--plugin-dir .`
-- [ ] Added a `CHANGELOG.md` entry under `[Unreleased]` for any user-visible change
+- [ ] Added a `changelog/<NN>-<slug>.md` fragment for any user-visible change (or the change is
+      doc-only — see `changelog/README.md`; gate G16 enforces this)
 - [ ] If a pattern signature changed: updated all four places — `rules/signatures.md`, the bundle's
       `reference.md`, the bundle's `scripts/lint.sh`, and `rules/dispatch.md`
 - [ ] If a bundle changed: it still ships `SKILL.md` (`disable-model-invocation: true`),

@@ -10,8 +10,30 @@
       "Bash(grep:*)",
       "Bash(wc:*)",
       "Bash(cat:*)",
-      "Bash(bash skills/calibrate-*/scripts/*.sh:*)"
+      "Bash(bash skills/calibrate-*/scripts/*.sh:*)",
+      "Bash(bash tests/gates/*.sh:*)",
+      "Bash(bash tests/gates/run-all.sh:*)",
+      "Bash(bash scripts/changelog-aggregate.sh:*)"
     ]
+  },
+  "skillOverrides": {
+    "learn": "off",
+    "learn-eval": "off",
+    "evolve": "off",
+    "instinct-import": "off",
+    "instinct-export": "off",
+    "instinct-status": "off",
+    "prune": "off",
+    "promote": "off",
+    "projects": "off",
+    "skill-create": "off",
+    "frontend-patterns": "off",
+    "multi-frontend": "off",
+    "backend-patterns": "off",
+    "multi-backend": "off",
+    "postgres-patterns": "off",
+    "database-migrations": "off",
+    "api-design": "off"
   },
   "hooks": {
     "PreToolUse": [

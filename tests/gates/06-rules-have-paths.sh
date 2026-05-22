@@ -11,7 +11,7 @@ while IFS= read -r f; do
   fm="$(gates_frontmatter "$f")"
   printf '%s\n' "$fm" | grep -qE '^paths:[[:space:]]*$' \
     || { echo "  FAIL: no 'paths:' frontmatter in $f"; fail=1; }
-done < <(find rules -type f -name '*.md' | sort)
+done < <(find rules -type f -name '*.md' -not -name 'CLAUDE.md' | sort)
 
 if [ "$fail" -ne 0 ]; then echo "G6 rules-have-paths: FAIL"; exit 1; fi
 echo "G6 rules-have-paths: ok"
