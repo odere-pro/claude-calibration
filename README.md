@@ -40,6 +40,22 @@ name. The full matrix (modes, arguments, per-feature shortcuts) is in
 
 ## How it works · why it's shaped this way
 
+```text
+your setup + a calibration goal
+        │
+        ▼
+  pick a workflow:
+    onboarding   first run — name the stack, suggest one step   (read-only)
+    doctor       ~5-second structural health check              (read-only)
+    audit        baseline evaluation — good CI gate             (read-only)
+    diff         what changed since the last run                (read-only)
+    calibrate    the full loop ▼
+
+  plan ─► evaluate ─► approve ─► calibrate ─► re-evaluate ─► report
+        │
+        └─ recurring finding? ─► scaffold enforcement (hook · rule · wrapper skill)
+```
+
 `/calibrate` chains worker agents — planner → evaluator (which fans out per-feature) → calibrator →
 a delta re-evaluation — persisting state in `.claude/calibration/<run>/` so a run survives `/clear`.
 Its highest-leverage move: when the same finding recurs, the planner stops emitting one-off fixes
