@@ -58,8 +58,8 @@ fuller treatment rather than restating it.
 - **Worker subagent** — one of `calibration-planner`, `calibration-evaluator`,
   `calibration-calibrator`, and the haiku-class `calibration-feature-evaluator` the evaluator fans
   out to. An agent the orchestrator/flows spawn **in its own context window** (so the parent stays
-  lean); invoked only by them, never by the user directly. See **Subagent** under
-  [Power words](#power-words).
+  lean); invoked only by them, never by the user directly. "Worker" (e.g. "the workers", "feature
+  workers") is the accepted shorthand. See **Subagent** under [Power words](#power-words).
 - **Pattern signature** — a stable `<feature>:<short-name>` identifier attached to every finding
   (e.g. `subagent:missing-tools`). The canonical catalogue is [`rules/signatures.md`](../rules/signatures.md).
 - **Recurrence** — the same signature firing ≥3× in one run or ≥2× across older runs; the planner
@@ -101,8 +101,9 @@ is easiest to lose.)
   **and** the reason you reach for one — isolate work in a fresh window so the parent's context stays
   lean (the evaluator fans nine feature audits out to haiku subagents). Claude Code's own term; see
   [features/subagents.md](features/subagents.md). Distinct from **Agent** — the two coexist.
-- **Fan out** — a parent spawning several subagents in parallel, each in its own context window, to
-  cover breadth cheaply (evaluator → `calibration-feature-evaluator` ×9).
+- **Fan-out** — a parent spawning several subagents in parallel, each in its own context window, to
+  cover breadth cheaply (evaluator → `calibration-feature-evaluator` ×9). Used as a noun; the verb
+  form is "fan out" / "fans out".
 - **Baseline** — Pass 1 of an evaluation: the full audit that later passes compare against.
 - **Delta** — Pass 2: a re-audit of the same scope, scored against the baseline
   (`resolved | partial | open | new`).

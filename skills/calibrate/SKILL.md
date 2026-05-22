@@ -80,7 +80,7 @@ spawn prompt — they need them to dispatch per-feature work to the right bundle
 ## Phases and state
 
 A run's state lives in `<run>/plan.md` (frontmatter + a `## Contents` TOC with Progress and
-Artifacts blocks; see the planner agent for the exact shape). The phases, in order, and the
+Artifacts blocks; see the planner subagent for the exact shape). The phases, in order, and the
 `last_phase_completed` value each one leaves behind:
 
 1. **planner-init** — planner creates the run folder, writes `plan.md`, writes `.claude/calibration/current`.

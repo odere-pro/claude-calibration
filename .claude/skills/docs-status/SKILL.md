@@ -41,5 +41,5 @@ N pages · M flagged STALE. Run /docs-update to refresh against the live docs.
 ## Notes
 
 - This skill only reads. The next step, `/docs-update`, fetches the live pages (via the
-  `docs-fetcher` agent) and proposes edits.
+  `docs-fetcher` subagent) and proposes edits.
 - A page with no `## Sources` block is skipped — it isn't grounded in an external doc.

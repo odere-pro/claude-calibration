@@ -60,15 +60,15 @@ For each finding, the remediation pattern is in `examples/<case>/`:
 
 - `subagent:missing-name` / `:missing-description` → add the frontmatter field.
 - `subagent:missing-tools` → see `examples/missing-tools/`: add an explicit `tools:` list. **This
-  is the single biggest footgun** — without it, the agent inherits every MCP server.
-- `subagent:body-over-200` → trim; move detail into a `reference.md` or out of the agent body.
+  is the single biggest footgun** — without it, the subagent inherits every MCP server.
+- `subagent:body-over-200` → trim; move detail into a `reference.md` or out of the subagent body.
 - `subagent:default-inherit-model` → set `model:` explicitly (usually `sonnet` or `haiku`).
 - `subagent:vague-description` → rewrite with routing words ("use when …", "after …", "before …").
-- `subagent:near-duplicate` → consolidate the two agents or rename to make routing unambiguous.
-- `subagent:bare-mcp-in-mcpjson` → move the MCP server from shared `.mcp.json` into this agent's
+- `subagent:near-duplicate` → consolidate the two subagents or rename to make routing unambiguous.
+- `subagent:bare-mcp-in-mcpjson` → move the MCP server from shared `.mcp.json` into this subagent's
   `mcpServers:` frontmatter (companion work in `calibrate-mcp`).
 - `subagent:plugin-ignored-frontmatter` → remove the silently-ignored frontmatter (`hooks:`,
-  `mcpServers:`, `permissionMode:` — plugin-shipped agents can't use these).
+  `mcpServers:`, `permissionMode:` — plugin-shipped subagents can't use these).
 
 ## 4. Create — `kind: create` rows
 
@@ -91,6 +91,6 @@ After every edit or create, re-run `bash <BUNDLE>/scripts/lint.sh <changed path>
 - `tools:` MUST be set explicitly — omitting it inherits every MCP server in scope.
 - `model:` should be explicit — default `inherit` silently picks up the parent's Opus.
 - Body ≤ ~200 lines; routing detail in the `description`, not the body.
-- Plugin-shipped agents must NOT include `hooks:` / `mcpServers:` / `permissionMode:` — those
+- Plugin-shipped subagents must NOT include `hooks:` / `mcpServers:` / `permissionMode:` — those
   fields are silently ignored.
 - Don't reformat unrelated content when applying a fix.

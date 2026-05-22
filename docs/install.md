@@ -69,7 +69,7 @@ In a Claude Code session after installing:
 ```text
 /plugin                 # lists installed plugins + which marketplace; confirms claude-calibration is enabled
 /skills                 # confirms /calibrate, /calibration, /claude-calibration:* are registered; press t to sort by token cost
-/agents                 # confirms the three calibration-* workers are registered
+/agents                 # confirms the four calibration-* workers are registered
 /context                # confirms the plugin adds ~zero standing context cost when idle
 ```
 
@@ -79,7 +79,7 @@ Expected after install (idle session):
   per-feature bundles) **with their token costs collapsed to ~0** — they are
   `disable-model-invocation: true` so their descriptions are removed from context. The three
   built-in modes (`tighten` / `harden` / `cost`) are arguments to `/calibrate`, not separate skills.
-- `/agents` shows the three workers; they do not contribute standing cost (Claude only sees their
+- `/agents` shows the four workers; they do not contribute standing cost (Claude only sees their
   name+description when routing a subagent task).
 - `/context` shows no measurable bump from this plugin.
 

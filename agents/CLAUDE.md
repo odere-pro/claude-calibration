@@ -28,14 +28,14 @@ Routing is encoded in the orchestrator's dispatch logic (`../skills/calibration/
 
 ## Invariants you must not break
 
-- **Frontmatter shape**: every agent declares `name`, `description`, `tools`, `model` (gate G5).
+- **Frontmatter shape**: every subagent declares `name`, `description`, `tools`, `model` (gate G5).
   Omitting `tools` would inherit every tool incl. MCP — the `subagent:missing-tools` anti-pattern.
 - **Model tiering**: workers are haiku/sonnet; only the planner is opus. The feature-evaluator stays
   haiku (cheap parallel fan-out).
 - **Invocation boundary**: only the skill layer spawns these. The feature-evaluator is spawned only
   by the evaluator, never by the orchestrator directly.
 - **The write-guards apply**: when `calibration-calibrator` is active, `hooks/calibrator-write-guard.sh`
-  fences its writes to the allow-list. Don't widen an agent's reach past what the guard expects.
+  fences its writes to the allow-list. Don't widen a subagent's reach past what the guard expects.
 
 ## Editing checklist
 

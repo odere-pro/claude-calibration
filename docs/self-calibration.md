@@ -20,7 +20,8 @@ Four read-first entry points, in increasing depth. All four are user-invocable a
 | `/claude-calibration:calibration-diff`          | _Did my edits actually resolve the findings?_        | no             | one delta pass |
 
 `doctor` is a structural smoke check, not a rubric audit; `audit` is the rubric audit with no edits;
-`/calibrate` is the only flow that changes files, and only after you approve the plan. See
+`/calibrate` (the orchestrator) is the only entry point that changes files, and only after you
+approve the plan. See
 [`usage.md` → Convenience flows](usage.md#convenience-flows) for per-flow detail and
 [`claude-evaluators.md`](claude-evaluators.md) for how these sit alongside the built-in evaluators
 (`/doctor`, `/context`, `/skills`, `/mcp`).
@@ -41,10 +42,11 @@ resumes from where it stopped.
 
 ### The workers
 
-The orchestrator spawns four agent types. Models are chosen for the job — Opus to reason about the
-plan, Haiku to grind through enumeration in parallel, Sonnet for the careful middle work.
+The chain runs on four worker subagents (the orchestrator spawns three; the evaluator fans the
+fourth out ×9). Models are chosen for the job — Opus to reason about the plan, Haiku to grind through
+enumeration in parallel, Sonnet for the careful middle work.
 
-| Agent                                                                       | Model  | Role                                                                                  | Writes                          |
+| Subagent                                                                    | Model  | Role                                                                                  | Writes                          |
 | --------------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------------------- | ------------------------------- |
 | [`calibration-planner`](../agents/calibration-planner.md)                   | Opus   | `init`: create run folder + `plan.md`. `improve`: group findings, build the plan.     | `<run>/` only                   |
 | [`calibration-evaluator`](../agents/calibration-evaluator.md)               | Sonnet | Audit conductor — fans out the feature workers, merges drafts, adds cross-feature reports. | `<run>/` eval reports        |

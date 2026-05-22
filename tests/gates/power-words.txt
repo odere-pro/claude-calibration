@@ -10,7 +10,7 @@ Worker subagent
 Orchestrator
 Dispatcher
 Flow
-Fan out
+Fan-out
 Baseline
 Delta
 Scaffold

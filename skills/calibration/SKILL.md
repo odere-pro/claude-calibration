@@ -76,7 +76,7 @@ When `$ARGUMENTS` is empty or matches a help keyword, print exactly this (Markdo
 - /claude-calibration:calibrate-rules       — every .claude/rules/**
 - /claude-calibration:calibrate-settings    — every settings.json layer
 - /claude-calibration:calibrate-skills      — every SKILL.md (also handles 3→4-layer promotion)
-- /claude-calibration:calibrate-subagents   — every agent .md
+- /claude-calibration:calibrate-subagents   — every subagent .md
 - /claude-calibration:calibrate-hooks       — every hooks block + standalone hook scripts
 - /claude-calibration:calibrate-mcp         — .mcp.json + subagent mcpServers frontmatter
 - /claude-calibration:calibrate-plugins     — enabled plugins + this plugin's own manifest
