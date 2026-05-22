@@ -69,7 +69,9 @@ bundle_lint_invoke() {
   local lint="skills/calibrate-${bundle}/scripts/lint.sh"
   [ -f "$lint" ] || return 0
   if [ "$bundle" = "general" ]; then
-    bash "$lint" "$EVAL_REPO_ROOT" 2>/dev/null || true
+    # general emits the project dir as its finding path; relativize the repo root to "." so
+    # snapshots / baseline.json stay portable (no absolute machine path baked in).
+    bash "$lint" "$EVAL_REPO_ROOT" 2>/dev/null | sed "s#^${EVAL_REPO_ROOT}#.#" || true
   else
     [ "$#" -gt 0 ] || return 0
     bash "$lint" "$@" 2>/dev/null || true

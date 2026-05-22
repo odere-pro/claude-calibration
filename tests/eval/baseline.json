@@ -1,8 +1,8 @@
 {
   "schema_version": "1",
-  "generated_at": "2026-05-22T21:54:30Z",
+  "generated_at": "2026-05-22T22:36:36Z",
   "git": {
-    "short_sha": "61b24fe",
+    "short_sha": "57d9ecb",
     "dirty": true
   },
   "scope": "shipped",
@@ -90,7 +90,7 @@
       {
         "gate": "16-changelog-fragment-present.sh",
         "exit": 0,
-        "status": "SKIP"
+        "status": "ok"
       },
       {
         "gate": "17-glossary-consistency.sh",
@@ -123,7 +123,7 @@
     ],
     "findings": [
       {
-        "path": "/Users/aleksandrderechei/Git/claude-calibration/.claude/worktrees/cheeky-churning-hellman",
+        "path": ".",
         "signature": "general:diagnostics-ask",
         "severity": "INFO",
         "detail": "paste /doctor /context all /skills (press t) /mcp for exact numbers"
