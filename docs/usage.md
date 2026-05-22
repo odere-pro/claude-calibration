@@ -278,6 +278,10 @@ revert.
 
 ## Auditing this plugin itself
 
+> For the full loop internals — the six phases, the worker agents and their models, and the
+> write-guards — see [`self-calibration.md`](self-calibration.md). This section covers the
+> plugin-self specifics.
+
 The plugin can audit its own setup — the eat-our-own-dogfood loop. When the project you're running
 `/calibrate` from is itself a plugin (a `.claude-plugin/plugin.json` exists at the root), three
 bundles automatically extend their scope to include plugin-root files:
@@ -362,7 +366,9 @@ The plugin is **structural** — it audits your config files and reasons over th
 - **Detect dynamic problems.** Things like "this hook is too slow", "this MCP server returns no
   data 30% of the time", or "this skill never actually fires" need a transcript scan or a live
   measurement — out of scope for a static audit. The `harness-optimizer` plugin agent does some of
-  this; this plugin focuses on the config files themselves.
+  this; this plugin focuses on the config files themselves. For a methodology to evaluate the
+  behaviour of multi-agent workflows themselves, see
+  [`evaluating-agentic-workflows.md`](evaluating-agentic-workflows.md).
 
 Once you have those four diagnostic outputs pasted in `<run>/eval-features-*.md`, the next run will
 have exact numbers rather than estimates.

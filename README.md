@@ -188,7 +188,9 @@ The plugin doesn't only clean up a setup — it **hardens** it.
 - **Audit the plugin against its own rubric.** `cd` into the plugin repo, run `claude --plugin-dir .`,
   then `/calibrate "audit this plugin's setup"` — three bundles auto-extend to find plugin-root
   files (`rules/`, `hooks/`, the manifest) and the calibrator's write-guard extends its allow-list
-  to permit fixes. See [**`docs/usage.md` → Auditing this plugin itself**](docs/usage.md#auditing-this-plugin-itself).
+  to permit fixes. See [**`docs/self-calibration.md`**](docs/self-calibration.md) for how the
+  evaluation loop works end to end, and [**`docs/usage.md` → Auditing this plugin itself**](docs/usage.md#auditing-this-plugin-itself)
+  for the plugin-self specifics.
 - Keep `docs/` and the plugin's bundles in step with the official docs:
   - `/docs-status` — read-only: per-page Sources URLs, last-touched date, a staleness flag.
   - `/docs-update` — fetches the official pages (via the `docs-fetcher` subagent, one page at a time)

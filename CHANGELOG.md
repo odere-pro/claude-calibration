@@ -20,6 +20,12 @@ The version of record is `.claude-plugin/plugin.json` → `version`. Each releas
   issue + pull-request templates.
 - CI: `tests/gates/` validation suite (`run-all.sh` + numbered gates) wired through
   `.github/workflows/ci.yml`; tag-triggered `.github/workflows/release.yml`.
+- `docs/self-calibration.md` — how the plugin evaluates a setup end to end (the four flows, the
+  6-phase loop, worker agents + models, signatures/dispatch, write-guards) and how to audit the
+  plugin against itself.
+- `docs/evaluating-agentic-workflows.md` — methodology for evaluating multi-agent / multi-skill
+  workflows at the node / edge / flow levels, reusing the severity + intent-flow scales, with a PR
+  code-review pipeline as the lead example.
 
 ### Fixed
 
