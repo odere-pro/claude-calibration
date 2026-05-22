@@ -85,5 +85,5 @@ the signature no longer fires (or `verify: ✗ <signature>` if it still does).
 
 - Never write a literal token into `.mcp.json` or a committed `mcpServers` block. Always use
   `${ENV_VAR}` substitution.
-- Don't move a server into a subagent's frontmatter unless exactly one agent uses it.
+- Don't move a server into a subagent's frontmatter unless exactly one subagent uses it.
 - Don't reformat unrelated keys in a `.mcp.json` when applying a fix.

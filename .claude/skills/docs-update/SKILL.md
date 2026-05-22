@@ -3,7 +3,7 @@ name: docs-update
 description: >-
   Author-only maintenance skill for the claude-calibration repo. Use when the docs/ rubric may have
   drifted from the official Claude Code docs. Refreshes the docs/ rubric against
-  the official Claude Code docs: fans out to the docs-fetcher agent (one page at a time), diffs the
+  the official Claude Code docs: spawns the docs-fetcher subagent (one page at a time), diffs the
   live facts against each local page, and updates docs/ in place — preserving the page template
   (Definition → Scope → Configure → Validate → Improve → Sources) and the `## Sources` block. Proposes
   edits and waits for approval. Invoke explicitly as /docs-update [page-or-feature].
@@ -25,7 +25,7 @@ With no argument, process every page that has a `## Sources` block. With an argu
 ## Steps
 
 1. **Enumerate** target pages and read each one's `## Sources` URLs.
-2. **Fetch, one page at a time.** For each source URL, spawn the `docs-fetcher` agent with that URL
+2. **Fetch, one page at a time.** For each source URL, spawn the `docs-fetcher` subagent with that URL
    (and the local page path for context). Do **not** fetch in parallel — one page per call keeps each
    fetch bounded and the diff focused. If a fetch returns `ERROR:`, skip that page and report it.
 3. **Diff the facts.** Compare the live normative facts (limits, required fields, file paths, command

@@ -16,8 +16,8 @@
 - `description` includes routing cues ("use when …", "after …", "before …") so Claude can route
   correctly.
 - Body ≤ ~200 lines; the description does the routing, the body does the work.
-- One agent per role; near-duplicate descriptions confuse routing.
-- MCP servers only the agent uses go in its `mcpServers:` frontmatter, not in shared `.mcp.json`.
+- One subagent per role; near-duplicate descriptions confuse routing.
+- MCP servers only the subagent uses go in its `mcpServers:` frontmatter, not in shared `.mcp.json`.
 
 ## Limits
 

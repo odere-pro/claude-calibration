@@ -1,0 +1,18 @@
+# Power words — each MUST be defined as a **bold** entry in docs/glossary.md.
+# Consumed by tests/gates/17-glossary-consistency.sh (G17). Blank lines and `#` lines are ignored.
+# This catalogue keeps the glossary's power-word vocabulary honest: add a term here and the gate
+# fails until the glossary defines it. `Agent` and `Subagent` are additionally checked to be two
+# DISTINCT entries (they coexist; a subagent is an agent that runs in its own context window).
+
+Agent
+Subagent
+Worker subagent
+Orchestrator
+Dispatcher
+Flow
+Fan-out
+Baseline
+Delta
+Scaffold
+Verify
+Rubric

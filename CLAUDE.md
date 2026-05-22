@@ -11,7 +11,7 @@ application — every file under here ships to end users when the plugin is inst
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
   `calibration-diff`, `calibration-doctor`, `calibration-onboarding`
-- `agents/calibration-*.md` — 4 worker agents: planner, evaluator, calibrator, and
+- `agents/calibration-*.md` — 4 worker subagents: planner, evaluator, calibrator, and
   `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel)
 - `rules/{signatures,dispatch}.md` — canonical signature catalogue + dispatch map
 - `hooks/{hooks.json,calibrator-write-guard.sh,audit-write-guard.sh}` — `PreToolUse` write-guards
@@ -37,7 +37,7 @@ application — every file under here ships to end users when the plugin is inst
 
 ## Agent routing
 
-The 4 worker agents (`calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
+The 4 worker subagents (`calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
 `calibration-feature-evaluator`) are invoked exclusively by the orchestrator skill at
 `skills/calibration/SKILL.md`. No root `AGENTS.md` is needed; routing is encoded in the
 orchestrator's dispatch logic, not a routing table.
@@ -91,6 +91,7 @@ Two files are authoritative; everything else defers to them:
 | G14 `14-doc-links` | no dangling intra-doc `.md` links | a broken doc/briefing link |
 | G15 `15-markdown-lint` (advisory) | markdown style | style nit |
 | G16 `16-changelog-fragment-present` | a PR with non-doc changes adds a `changelog/` fragment | missing fragment |
+| G17 `17-glossary-consistency` | `docs/glossary.md` defines the power-word vocabulary (`agent`/`subagent` distinct) AND prose uses it — drift is caught | a power word with no entry, or a banned synonym in prose (e.g. a worker subagent written as a plain `agent`) |
 
 ## Test / verify quick-recipes
 
@@ -128,7 +129,7 @@ claude --plugin-dir .                             # load the plugin against itse
 | -------- | ---------- |
 | a `calibrate-*` bundle | [`skills/CLAUDE.md`](skills/CLAUDE.md) + that bundle's `reference.md` + `.claude/rules/plugin-dev.md` |
 | a pattern signature | [`rules/CLAUDE.md`](rules/CLAUDE.md) (the four-places-in-sync rule) |
-| a worker agent | [`agents/CLAUDE.md`](agents/CLAUDE.md) |
+| a worker subagent | [`agents/CLAUDE.md`](agents/CLAUDE.md) |
 | a write-guard hook | [`hooks/CLAUDE.md`](hooks/CLAUDE.md) |
 | a CI gate | [`tests/gates/CLAUDE.md`](tests/gates/CLAUDE.md) |
 | the rubric vs upstream docs | run `/docs-status` → `/docs-update` → `/plugin-update` (author-only skills under `.claude/skills/`) |

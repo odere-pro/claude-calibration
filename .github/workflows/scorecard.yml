@@ -1,0 +1,48 @@
+name: scorecard
+
+# OpenSSF Scorecard analysis. Backs the "OpenSSF Scorecard" badge in README.md —
+# publish_results: true uploads the score to the public Scorecard API so the badge renders.
+# The badge only populates after the first run on the default branch (repo must be public).
+
+on:
+  schedule:
+    - cron: "27 4 * * 1" # weekly, Monday 04:27 UTC
+  push:
+    branches: ["main"]
+  branch_protection_rule:
+
+permissions: read-all
+
+jobs:
+  analysis:
+    name: scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # upload SARIF to code-scanning
+      id-token: write # publish results to the public Scorecard API
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-results
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif

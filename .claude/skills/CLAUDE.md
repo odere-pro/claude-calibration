@@ -8,11 +8,11 @@ loaded for someone who installs the `claude-calibration` plugin. Do not confuse 
 shipped `skills/calibrate*` bundles.
 
 - `docs-status/` — read-only staleness report for the `docs/` rubric.
-- `docs-update/` — refresh `docs/` against the official Claude Code docs (via the `docs-fetcher` agent).
+- `docs-update/` — refresh `docs/` against the official Claude Code docs (via the `docs-fetcher` subagent).
 - `plugin-update/` — realign the per-feature bundles' `reference.md` / `templates/` / `lint.sh` with
   the now-current `docs/`.
 
-The companion worker is `.claude/agents/docs-fetcher.md` (fetches one page over the network).
+The companion worker subagent is `.claude/agents/docs-fetcher.md` (fetches one page over the network).
 
 ## The maintenance loop
 
