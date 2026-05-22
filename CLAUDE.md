@@ -92,6 +92,7 @@ Two files are authoritative; everything else defers to them:
 | G15 `15-markdown-lint` (advisory) | markdown style | style nit |
 | G16 `16-changelog-fragment-present` | a PR with non-doc changes adds a `changelog/` fragment | missing fragment |
 | G17 `17-glossary-consistency` | `docs/glossary.md` defines the power-word vocabulary (`agent`/`subagent` distinct) AND prose uses it — drift is caught | a power word with no entry, or a banned synonym in prose (e.g. a worker subagent written as a plain `agent`) |
+| G18 `18-changelog-fragment-unique` | every `changelog/<NN>-<slug>.md` has a distinct `<NN>` | two in-flight PRs picked the same fragment number |
 
 ## Test / verify quick-recipes
 
