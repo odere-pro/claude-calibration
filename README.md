@@ -40,6 +40,7 @@ MCP server with no wrapper skill is the docs' own anti-pattern.
 |---|---|
 | `docs/` | The source rubric — a doc-set grounded in the official Claude Code docs (`code.claude.com/docs/*`). One page per feature with **Configure / Validate / Improve** sections + a `## Sources` block. Start at [`docs/README.md`](docs/README.md). Plugin walkthroughs live in [`docs/install.md`](docs/install.md) and [`docs/usage.md`](docs/usage.md). |
 | `.claude-plugin/plugin.json` | Plugin manifest (`v0.2.0`). |
+| `.claude-plugin/marketplace.json` | Single-plugin marketplace manifest — lets users `/plugin marketplace add odere-pro/claude-calibration`. |
 | `skills/calibrate/` | The orchestrator — `/calibrate`. |
 | `skills/calibration/` | The top-level dispatcher — `/claude-calibration:calibration` (menu / shortcut / intent forwarder above `/calibrate`). |
 | `skills/calibration-{audit,diff,doctor,onboarding}/` × 4 | Convenience flow skills — slim, all `disable-model-invocation: true`. `audit` and `diff` spawn the worker agents; `doctor` runs a ~5-second structural health check (`scripts/doctor.sh`); `onboarding` is a stateless first-time setup guide. The three other shortcuts — `tighten`, `harden`, `cost` — are argument-token modes inside `/calibrate` rather than separate skills. |
@@ -51,13 +52,20 @@ MCP server with no wrapper skill is the docs' own anti-pattern.
 
 ## Use it
 
-In a Claude Code session:
+In a Claude Code session, install it from the marketplace:
+
+```text
+/plugin marketplace add odere-pro/claude-calibration
+/plugin install claude-calibration@odere-pro
+```
+
+…or, for development, load a local checkout for one session:
 
 ```bash
 claude --plugin-dir /path/to/claude-calibration
 ```
 
-…or install via `/plugin`. Full lifecycle (install / verify / update / uninstall) is in
+Full lifecycle (install / verify / update / uninstall) is in
 [**`docs/install.md`**](docs/install.md); a walkthrough of every flow (intents, recurrence →
 enforcement-creation, per-feature shortcuts, reading the run-folder files) is in
 [**`docs/usage.md`**](docs/usage.md).

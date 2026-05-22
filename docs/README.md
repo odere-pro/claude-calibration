@@ -5,21 +5,22 @@ to **validate** it, how to **improve** it, and its **scoping**. Facts are ground
 docs (`code.claude.com/docs/*`) and `agents.md`; every page carries a **Sources** section.
 
 Start with [**`glossary.md`**](glossary.md) (the vocabulary, aligned with Claude Code's own terms),
-then [**`general-setup.md`**](general-setup.md) (the whole picture), then the [feature](#features)
+then [**`claude-structure.md`**](claude-structure.md) (the whole picture), then the [feature](#features)
 you care about.
 
 For driving the `claude-calibration` plugin that _uses_ this doc-set, see
 [**`install.md`**](install.md) (install / verify / update / uninstall) and
 [**`usage.md`**](usage.md) (intents, the recurrence → enforcement-creation flow, per-feature
-shortcuts, reading the run-folder files).
+shortcuts, reading the run-folder files). Maintaining or releasing the plugin? See
+[**`RELEASING.md`**](RELEASING.md).
 
 ## How these docs are organized
 
 - **One page per thing**, organized vertically: read a feature's page and you have its whole story
   — definition, scope, configure, validate, improve — without jumping around.
 - **DRY**: a fact lives in exactly one page; other pages link to it. Scope / precedence / layering
-  rules live in `general-setup.md` (or the owning feature page) and are linked, not restated.
-- **One template** for every feature page (and `general-setup.md`):
+  rules live in `claude-structure.md` (or the owning feature page) and are linked, not restated.
+- **One template** for every feature page:
 
   ```
   # <Feature>            — the official feature name
@@ -37,12 +38,12 @@ shortcuts, reading the run-folder files).
 
 ## Index
 
-| Page                                   | Covers                                                                                                                                                                                                   |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`glossary.md`](glossary.md)           | The vocabulary: feature, scope, layering, precedence, CLAUDE.md, auto memory, importing AGENTS.md, frontmatter, built-in command, bundled skill, marketplace, context cost                               |
-| [`general-setup.md`](general-setup.md) | The setup as a whole — the extension layer, the `.claude/` layout, scopes & precedence & layering, the `AGENTS.md` import, the context-cost model, the always-on checklist; how to validate & improve it |
-| [`install.md`](install.md)             | Driving the plugin — install via marketplace / `--plugin-dir` / `--plugin-url`, enable/disable/uninstall, verify (`/plugin`, `/skills`, `/agents`, `/context`), update, troubleshooting                  |
-| [`usage.md`](usage.md)                 | Driving the plugin — your first run, setting an intent, resume/restart/status, per-feature usage, the recurrence → enforcement-creation flow, reading the run-folder files, reverting, limits            |
+| Page                                       | Covers                                                                                                                                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`glossary.md`](glossary.md)               | The vocabulary: feature, scope, layering, precedence, CLAUDE.md, auto memory, importing AGENTS.md, frontmatter, built-in command, bundled skill, marketplace, context cost                               |
+| [`claude-structure.md`](claude-structure.md) | The setup as a whole — config across global / project / plugin / enterprise layers, the `.claude/` layout, scopes & precedence & layering, the context-cost model                                       |
+| [`install.md`](install.md)                 | Driving the plugin — install via marketplace / `--plugin-dir` / `--plugin-url`, enable/disable/uninstall, verify (`/plugin`, `/skills`, `/agents`, `/context`), update, troubleshooting                  |
+| [`usage.md`](usage.md)                     | Driving the plugin — your first run, setting an intent, resume/restart/status, per-feature usage, the recurrence → enforcement-creation flow, reading the run-folder files, reverting, limits            |
 
 ### Features
 
@@ -51,19 +52,27 @@ shortcuts, reading the run-folder files).
 | [`features/claude-md.md`](features/claude-md.md) | `CLAUDE.md` (+ `CLAUDE.local.md`, auto memory, importing `AGENTS.md`)             |
 | [`features/rules.md`](features/rules.md)         | `.claude/rules/` — topic / path-scoped instruction files                          |
 | [`features/settings.md`](features/settings.md)   | `.claude/settings.json` (+ `.local`, managed)                                     |
-| [`features/commands.md`](features/commands.md)   | Built-in commands & bundled skills (the `/…` reference); custom commands → skills |
 | [`features/skills.md`](features/skills.md)       | `.claude/skills/<name>/SKILL.md` authoring (+ legacy `.claude/commands/*.md`)     |
 | [`features/subagents.md`](features/subagents.md) | `.claude/agents/*.md`                                                             |
 | [`features/hooks.md`](features/hooks.md)         | `.claude/hooks/` + `settings.json` → `hooks`                                      |
 | [`features/mcp.md`](features/mcp.md)             | `.mcp.json` (+ `~/.claude.json`, `managed-mcp.json`)                              |
 | [`features/plugins.md`](features/plugins.md)     | Plugin layout, marketplaces, lifecycle                                            |
+| [`features/general.md`](features/general.md)     | Cross-cutting: total context budget, layering hazards, the four diagnostics ask  |
 
-### Reference
+### Reference & deep dives
 
-| Page                                                       | Covers                                                                                                       |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| [`reference/agents-md.md`](reference/agents-md.md)         | The `AGENTS.md` open standard + how Claude Code maps to it (import / symlink, behavioral equivalence)        |
-| [`reference/beyond-config.md`](reference/beyond-config.md) | Tools that evaluate **code** or a **running app** — out of scope of `.claude/` config, kept for completeness |
+Longer-form companion guides. They predate the per-feature pages above and go wider (whole-machine
+structure, command/evaluator catalogues, the `AGENTS.md` standard); the feature pages are the
+quick, vertical reference.
+
+| Page                                                               | Covers                                                                                                |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
+| [`claude-project-configuration.md`](claude-project-configuration.md) | Configuring Claude Code for a single repository — the project-scoped slice, end to end                |
+| [`claude-config-best-practices.md`](claude-config-best-practices.md) | Per-entity Must / Should hygiene to keep the harness fast, cheap, and predictable                     |
+| [`claude-config-commands.md`](claude-config-commands.md)           | Every built-in command (and bundled skill) that creates / edits / improves a config entity            |
+| [`claude-evaluators.md`](claude-evaluators.md)                     | Everything that evaluates, audits, scores, or recommends — grouped by what it acts on                 |
+| [`claude-agents-mapping.md`](claude-agents-mapping.md)             | Claude Code ↔ the `AGENTS.md` open standard — feature mapping (import / symlink, behavioral equivalence) |
+| [`agents-md-structure.md`](agents-md-structure.md)                 | The `AGENTS.md` open standard itself — what it is and how it's structured                             |
 
 ## Sources
 

@@ -4,6 +4,9 @@
 # Local transient analysis / scratch
 tmp/
 
+# Transient git worktrees created by agent sessions
+.claude/worktrees/
+
 # Personal, machine-local settings
 .claude/settings.local.json
 CLAUDE.local.md

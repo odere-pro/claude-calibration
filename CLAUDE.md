@@ -5,7 +5,9 @@ application — every file under here ships to end users when the plugin is inst
 
 ## What ships
 
-- `.claude-plugin/plugin.json` — manifest
+- `.claude-plugin/plugin.json` — manifest (version of record)
+- `.claude-plugin/marketplace.json` — single-plugin marketplace manifest (`source: "./"`); version
+  is omitted here on purpose — `plugin.json` wins
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
   `calibration-diff`, `calibration-doctor`, `calibration-onboarding`
@@ -17,9 +19,15 @@ application — every file under here ships to end users when the plugin is inst
 
 ## What doesn't
 
-- `.claude/` (this dir's project config — only for plugin authors, not shipped)
+- `.claude/` (this dir's project config — only for plugin authors, not loaded for end users)
 - `tmp/` (scratch)
 - `.claude/calibration/` (run artifacts)
+
+> Note: Claude Code clones the **whole** repo into the plugin cache — there is no ship-whitelist or
+> `.claudeignore`. So author-only files (`.claude/`, `tests/gates/`, `.github/`, `CONTRIBUTING.md`,
+> `SECURITY.md`, `CHANGELOG.md`, `SOFTWARE-3-0.md`, …) are copied but never *loaded* — Claude only
+> loads recognized component dirs (`skills/`, `agents/`, `rules/`, `hooks/`, `commands/`) plus the
+> manifest. They cost nothing at runtime, so we don't add a build/packaging step to strip them.
 
 ## Pointers
 

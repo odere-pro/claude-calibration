@@ -1,0 +1,52 @@
+name: release
+
+# A "release" for this plugin is a git tag + a GitHub Release. Marketplace consumers track the
+# repo and update by re-pulling the tagged commit; there is no package-registry publish step.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install jq and shellcheck
+        run: sudo apt-get update && sudo apt-get install -y jq shellcheck
+
+      - name: Verify tag matches plugin.json version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest="$(jq -r '.version' .claude-plugin/plugin.json)"
+          echo "tag=$tag  plugin.json=$manifest"
+          if [ "$tag" != "$manifest" ]; then
+            echo "::error::tag v$tag does not match plugin.json version $manifest"
+            exit 1
+          fi
+
+      - name: Run gate suite
+        run: bash tests/gates/run-all.sh
+
+      - name: Extract changelog section
+        id: notes
+        run: |
+          ver="$(jq -r '.version' .claude-plugin/plugin.json)"
+          awk -v v="$ver" '
+            $0 ~ "^## \\[" v "\\]" { grab=1; next }
+            grab && /^## \[/ { exit }
+            grab { print }
+          ' CHANGELOG.md > release-notes.md
+          echo "wrote $(wc -l < release-notes.md) lines"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file release-notes.md
