@@ -4,6 +4,9 @@
 # Local transient analysis / scratch
 tmp/
 
+# Per-run eval snapshots (the tracked time series lives in tests/eval/history.jsonl + baseline.json)
+tests/eval/snapshots/
+
 # Transient git worktrees created by agent sessions
 .claude/worktrees/
 

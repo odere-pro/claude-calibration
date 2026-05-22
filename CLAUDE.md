@@ -100,6 +100,10 @@ bash tests/gates/run-all.sh                       # full gate suite
 bash tests/gates/07-signature-dispatch-integrity.sh   # one gate, standalone
 bash scripts/changelog-aggregate.sh               # preview pending changelog fragments
 
+bash tests/eval/run-eval.sh --scope shipped --durability   # deterministic snapshot: floor + scoped lint + durability
+bash tests/eval/compare-eval.sh --vs-baseline              # track improvement/regression vs tests/eval/baseline.json
+bash tests/eval/run-eval.sh --scope all --no-write         # diagnostic: what an unscoped audit would see (incl. cache)
+
 claude --plugin-dir .                             # load the plugin against itself, then in-session:
 #   /reload-plugins                               #   pick up edits
 #   /claude-calibration:calibration-audit         #   read-only end-to-end smoke
@@ -118,6 +122,7 @@ claude --plugin-dir .                             # load the plugin against itse
 | `hooks/` | the two `PreToolUse` write-guards | yes |
 | `docs/` | the rubric the plugin grades against | yes |
 | `tests/gates/` | the CI validation suite (`run-all.sh` + numbered gates) | author-only |
+| `tests/eval/` | deterministic eval harness (`run-eval.sh` / `compare-eval.sh` + `baseline.json` + `history.jsonl`) | author-only |
 | `scripts/` | maintenance scripts (`changelog-aggregate.sh`) | author-only |
 | `changelog/` | per-PR changelog fragments | author-only |
 | `.claude/` | this repo's own project config + maintenance skills/agent | author-only |
