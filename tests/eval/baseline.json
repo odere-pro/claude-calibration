@@ -1,14 +1,14 @@
 {
   "schema_version": "1",
-  "generated_at": "2026-05-22T17:38:19Z",
+  "generated_at": "2026-05-22T21:54:30Z",
   "git": {
-    "short_sha": "8d09012",
+    "short_sha": "61b24fe",
     "dirty": true
   },
   "scope": "shipped",
   "degraded": false,
   "floor": {
-    "passed": 16,
+    "passed": 18,
     "failed": 0,
     "green": true,
     "gates": [
@@ -91,15 +91,23 @@
         "gate": "16-changelog-fragment-present.sh",
         "exit": 0,
         "status": "SKIP"
+      },
+      {
+        "gate": "17-glossary-consistency.sh",
+        "exit": 0,
+        "status": "ok"
+      },
+      {
+        "gate": "18-changelog-fragment-unique.sh",
+        "exit": 0,
+        "status": "ok"
       }
     ]
   },
   "lint": {
-    "total_findings": 15,
+    "total_findings": 11,
     "by_severity": {
-      "INFO": 10,
-      "LOW": 4,
-      "MEDIUM": 1
+      "INFO": 11
     },
     "by_signature": [
       {
@@ -108,61 +116,17 @@
         "count": 1
       },
       {
-        "signature": "general:nested-claude-md-conflict",
-        "severity": "LOW",
-        "count": 1
-      },
-      {
-        "signature": "hook:not-locally-sourced",
-        "severity": "LOW",
-        "count": 2
-      },
-      {
-        "signature": "skill:cli-not-wrapped",
-        "severity": "LOW",
-        "count": 1
-      },
-      {
         "signature": "skill:in-repo-only-ok",
         "severity": "INFO",
-        "count": 9
-      },
-      {
-        "signature": "subagent:vague-description",
-        "severity": "MEDIUM",
-        "count": 1
+        "count": 10
       }
     ],
     "findings": [
       {
-        "path": "/Users/aleksandrderechei/Git/claude-calibration/.claude/worktrees/rosy-wishing-gray",
+        "path": "/Users/aleksandrderechei/Git/claude-calibration/.claude/worktrees/cheeky-churning-hellman",
         "signature": "general:diagnostics-ask",
         "severity": "INFO",
         "detail": "paste /doctor /context all /skills (press t) /mcp for exact numbers"
-      },
-      {
-        "path": "/Users/aleksandrderechei/Git/claude-calibration/.claude/worktrees/rosy-wishing-gray",
-        "signature": "general:nested-claude-md-conflict",
-        "severity": "LOW",
-        "detail": "7 nested CLAUDE.md files under project root — consolidate or accept the layered design"
-      },
-      {
-        "path": "hooks/audit-write-guard.sh",
-        "signature": "hook:not-locally-sourced",
-        "severity": "LOW",
-        "detail": "script calls '\"$RUN\"/*)' from PATH — prefer ${CLAUDE_PROJECT_DIR}/... or ${CLAUDE_PLUGIN_ROOT}/..."
-      },
-      {
-        "path": "hooks/calibrator-write-guard.sh",
-        "signature": "hook:not-locally-sourced",
-        "severity": "LOW",
-        "detail": "script calls '\"$PROJECT/CLAUDE.md\"' from PATH — prefer ${CLAUDE_PROJECT_DIR}/... or ${CLAUDE_PLUGIN_ROOT}/..."
-      },
-      {
-        "path": "skills/calibration-onboarding/SKILL.md",
-        "signature": "skill:cli-not-wrapped",
-        "severity": "LOW",
-        "detail": "body shells out to 'pnpm' but allowed-tools has no scoped Bash(pnpm *) — 3→4-layer wrapper candidate"
       },
       {
         "path": "skills/calibrate-claude-md/SKILL.md",
@@ -213,16 +177,16 @@
         "detail": "skill is in-repo-only — correctly 3-layer; no promotion needed"
       },
       {
-        "path": "skills/calibration/SKILL.md",
+        "path": "skills/calibration-track/SKILL.md",
         "signature": "skill:in-repo-only-ok",
         "severity": "INFO",
         "detail": "skill is in-repo-only — correctly 3-layer; no promotion needed"
       },
       {
-        "path": "agents/calibration-feature-evaluator.md",
-        "signature": "subagent:vague-description",
-        "severity": "MEDIUM",
-        "detail": "description lacks routing words (use/when/after/before) or is < 80 chars — Claude can't route on it"
+        "path": "skills/calibration/SKILL.md",
+        "signature": "skill:in-repo-only-ok",
+        "severity": "INFO",
+        "detail": "skill is in-repo-only — correctly 3-layer; no promotion needed"
       }
     ]
   },

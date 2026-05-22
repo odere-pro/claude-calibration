@@ -96,10 +96,15 @@ for f in "$@"; do
   # contradicts-nested: only firable when ≥2 CLAUDE.md exist at different levels and share a header line — best-effort here
   # (calibrator does a cross-file diff; this lint emits a stub when there's a parent CLAUDE.md)
   parent_dir=$(dirname "$(dirname "$f")")
-  if [ -f "$parent_dir/CLAUDE.md" ] && [ "$parent_dir/CLAUDE.md" != "$f" ]; then
-    shared=$(grep -hE '^#+\s' "$f" "$parent_dir/CLAUDE.md" 2>/dev/null | sort | uniq -d | head -1 || true)
+  parent_md="$parent_dir/CLAUDE.md"
+  # -ef compares device+inode, so a root-level file passed as a relative path ("CLAUDE.md") is
+  # recognised as the same file as "./CLAUDE.md" — not diffed against itself (a false positive).
+  if [ -f "$parent_md" ] && [ ! "$parent_md" -ef "$f" ]; then
+    # Real markdown headers shared by both files. FNR==1 resets the fence flag per file so a shell
+    # comment like '# do x' inside a ``` fence is not mistaken for a heading.
+    shared=$(awk 'FNR==1{fence=0} /^[[:space:]]*```/{fence=!fence; next} fence{next} /^#+[[:space:]]/{print}' "$f" "$parent_md" 2>/dev/null | sort | uniq -d | head -1 || true)
     if [ -n "$shared" ]; then
-      emit "$f" "claude-md:contradicts-nested" MEDIUM "shares header '$shared' with $parent_dir/CLAUDE.md — verify rules don't conflict"
+      emit "$f" "claude-md:contradicts-nested" MEDIUM "shares header '$shared' with $parent_md — verify rules don't conflict"
     fi
   fi
 done

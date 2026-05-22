@@ -1,1 +1,2 @@
 {"schema_version":"1","generated_at":"2026-05-22T17:38:19Z","short_sha":"8d09012","scope":"shipped","floor_green":true,"findings_total":15,"by_severity":{"INFO":10,"LOW":4,"MEDIUM":1},"snapshot":"snapshots/20260522T173819Z-8d09012.json","degraded":false}
+{"schema_version":"1","generated_at":"2026-05-22T21:54:30Z","short_sha":"61b24fe","scope":"shipped","floor_green":true,"findings_total":11,"by_severity":{"INFO":11},"snapshot":"snapshots/20260522T215430Z-61b24fe.json","degraded":false}
