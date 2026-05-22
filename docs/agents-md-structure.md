@@ -1,3 +1,5 @@
+[← README](README.md) · [Claude ↔ AGENTS.md](claude-agents-mapping.md) · [Glossary](glossary.md)
+
 # `AGENTS.md` — the Open Standard
 
 `AGENTS.md` is a vendor-neutral, open convention for giving AI coding agents the context and

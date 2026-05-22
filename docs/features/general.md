@@ -5,7 +5,8 @@ patterns, and the diagnostics-ask reminder.
 
 ## Definition
 
-- **Not a feature** — a synthesizer over all the other feature reports.
+- **Not a feature** — a synthesizer over all the other feature reports. The `Configure` and
+  `Validate` sections below describe this bundle's own synthesis logic, not user-facing settings.
 - **What it does** — rolls up "the standing context is too big across rules + CLAUDE.md", "this
   rule says 'always' but no hook enforces it", "managed setting silently overrides project value".
 

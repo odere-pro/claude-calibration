@@ -5,6 +5,38 @@
 A walkthrough of how to drive the plugin, from your first run to the per-feature shortcuts and the
 recurrence → enforcement-creation flow that's its highest-leverage feature.
 
+**On this page:** [First run](#your-first-run) · [Setting an intent](#setting-an-intent) ·
+[Resume / restart / status](#resuming-restarting-status) · [Per-feature usage](#per-feature-usage) ·
+[Recurrence → enforcement](#the-recurrence--enforcement-creation-flow) ·
+[3-vs-4-layer call](#the-3-vs-4-layer-call) · [Convenience flows](#convenience-flows) ·
+[Run-folder files](#reading-the-run-folder-files) · [Reverting](#reverting) ·
+[Auditing this plugin](#auditing-this-plugin-itself) · [Limits](#limits)
+
+At a glance — the use-cases (which workflow to run) and how the full loop flows:
+
+```text
+   your Claude Code setup  +  a calibration intent
+                    │
+                    ▼
+            pick a workflow
+                    │
+   ┌─ onboarding            first run — name the stack, suggest one step
+   ├─ doctor                ~5-second structural health check
+   ├─ audit                 read-only baseline evaluation (good CI gate)
+   ├─ diff                  what changed since the last run
+   ├─ calibrate-<feature>   clean up a single feature on its own
+   └─ calibrate             the full loop:
+
+        plan ──► evaluate ──► approve ──► calibrate ──► re-evaluate ──► report
+
+   (onboarding · doctor · audit · diff are read-only — they never edit your config)
+
+   recurrence → enforcement: a finding that keeps recurring — same signature
+   ≥3× in a run, or ≥2× across past runs — is promoted from a one-off fix to a
+   new *enforcing* feature (a hook, a path-scoped rule, or a wrapper skill) so
+   it can't come back.
+```
+
 ## Your first run
 
 ```text

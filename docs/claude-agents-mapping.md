@@ -1,3 +1,5 @@
+[← README](README.md) · [AGENTS.md standard](agents-md-structure.md) · [Setup structure](claude-structure.md)
+
 # Claude Code ↔ `AGENTS.md` Open Standard — Feature Mapping
 
 > Open standard: <https://agents.md> · Claude config layout: see `claude-structure.md`

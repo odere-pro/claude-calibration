@@ -1,3 +1,5 @@
+[← README](README.md) · [Setup structure](claude-structure.md) · [Config commands](claude-config-commands.md)
+
 # Config best practices — keeping the harness at peak performance
 
 Per-entity requirements and recommendations. The goal: a configuration that stays **fast**,

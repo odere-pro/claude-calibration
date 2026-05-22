@@ -1,4 +1,4 @@
-[← docs README](README.md) · [Install](install.md) · [Changelog](../CHANGELOG.md)
+[← README](README.md) · [Install](install.md) · [Changelog](../CHANGELOG.md)
 
 # Releasing `claude-calibration`
 

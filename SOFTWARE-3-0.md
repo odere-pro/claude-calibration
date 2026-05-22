@@ -37,6 +37,27 @@ stopped. The contracts between stages — the pattern-signature strings, the `pl
 TSV that `lint.sh` emits — are stable enough that each agent can pick up the previous one's output
 without a human in the loop.
 
+## Its docs are authored for agents
+
+The `docs/` set looks like human reference. It isn't, primarily — it is the **rubric the evaluator
+executes**. Each bundle's `reference.md` is extracted from the matching `docs/features/*.md`, and
+when the bundles are unreachable the evaluator and planner fall back to reading those feature pages
+directly. The first reader of a doc page here is an agent grading a setup against it.
+
+That changes how the pages are written. They are authored for **deterministic parsing, not
+browsing**: a one-line definition front-loaded under the title, one fixed per-feature template
+(Definition / Scope / Configure / Validate / Improve / Sources), Must / Should / Limit tables with
+concrete numbers, pattern-signature strings written verbatim as a stable contract, and one fact per
+page reached by anchored links rather than restated. An agent should land, parse, and score without
+reading to the end. The principles are catalogued in
+[`docs/README.md`](docs/README.md) and the program obeys them the way it asks others to.
+
+The human-facing `README.md` is deliberately the **thin** half: enough to decide to run the plugin,
+then a pointer inward. The structured depth lives in the agent-facing doc-set — the same way a 3.0
+program's prose source is written for the model that runs it, not the person skimming it.
+
+> The README is for the human deciding to run it; the doc-set is for the agent that does.
+
 ## It calibrates other 3.0 setups
 
 The thing being audited is *also* prose-as-program: someone's `CLAUDE.md`, their rules, their skills
@@ -71,6 +92,11 @@ out-of-bounds write.
 > The plugin doesn't only clean up a setup — it **hardens** it, by turning the rules you keep
 > breaking into rules you can't.
 
+The same move generalises beyond static config: see
+[`docs/evaluating-agentic-workflows.md`](docs/evaluating-agentic-workflows.md) for how
+recurrence → enforcement applies to live multi-agent / multi-skill workflows, not just the
+prompt-programs the plugin grades today.
+
 ## The thesis applied to itself
 
 The same discipline that the plugin recommends, it obeys:
@@ -87,6 +113,9 @@ when idle is not an optimisation here — it is the thesis, applied to the progr
 
 ## See also
 
-- [`README.md`](README.md) — the architecture and the calibration loop.
+- [`README.md`](README.md) — the human entry point: pitch, install, command quickref.
+- [`docs/README.md`](docs/README.md) — the authoring principles the agent-facing doc-set follows.
 - [`rules/dispatch.md`](rules/dispatch.md) — the recurrence → enforcement archetypes.
 - [`docs/glossary.md`](docs/glossary.md) — the vocabulary (enforcement-creation, recurrence, signature).
+- [`docs/evaluating-agentic-workflows.md`](docs/evaluating-agentic-workflows.md) — the same
+  recurrence → enforcement discipline generalised from static config to live agentic workflows.
