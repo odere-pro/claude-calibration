@@ -10,7 +10,7 @@ application — every file under here ships to end users when the plugin is inst
   is omitted here on purpose — `plugin.json` wins
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
-  `calibration-diff`, `calibration-doctor`, `calibration-onboarding`
+  `calibration-diff`, `calibration-track`, `calibration-doctor`, `calibration-onboarding`
 - `agents/calibration-*.md` — 4 worker subagents: planner, evaluator, calibrator, and
   `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel)
 - `rules/{signatures,dispatch}.md` — canonical signature catalogue + dispatch map
@@ -117,7 +117,7 @@ claude --plugin-dir .                             # load the plugin against itse
 | Path | Role | Ships? |
 | ---- | ---- | ------ |
 | `.claude-plugin/` | `plugin.json` + `marketplace.json` | yes |
-| `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 4 flows, 9 per-feature bundles | yes |
+| `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 5 flows, 9 per-feature bundles | yes |
 | `agents/` | the 4 worker subagents | yes |
 | `rules/` | `signatures.md` + `dispatch.md` (path-scoped) | yes |
 | `hooks/` | the two `PreToolUse` write-guards | yes |
