@@ -24,7 +24,7 @@ while IFS= read -r f; do
       fail=1
     fi
   done < <(grep -oE '\]\([^)]+\)' "$f" | sed -E 's/^\]\(//; s/\)$//')
-done < <( { find docs rules -type f -name '*.md'; find . -maxdepth 1 -type f -name '*.md'; } | sort -u)
+done < <( { find docs rules -type f -name '*.md'; find . -maxdepth 1 -type f -name '*.md'; find skills agents hooks tests -type f -name 'CLAUDE.md'; } | sort -u)
 
 if [ "$fail" -ne 0 ]; then echo "G14 doc-links: FAIL"; exit 1; fi
 echo "G14 doc-links: ok"

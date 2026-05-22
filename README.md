@@ -39,7 +39,7 @@ MCP server with no wrapper skill is the docs' own anti-pattern.
 | Path | What |
 |---|---|
 | `docs/` | The source rubric — a doc-set grounded in the official Claude Code docs (`code.claude.com/docs/*`). One page per feature with **Configure / Validate / Improve** sections + a `## Sources` block. Start at [`docs/README.md`](docs/README.md). Plugin walkthroughs live in [`docs/install.md`](docs/install.md) and [`docs/usage.md`](docs/usage.md). |
-| `.claude-plugin/plugin.json` | Plugin manifest (`v0.2.0`). |
+| `.claude-plugin/plugin.json` | Plugin manifest (`v0.1.0`). |
 | `.claude-plugin/marketplace.json` | Single-plugin marketplace manifest — lets users `/plugin marketplace add odere-pro/claude-calibration`. |
 | `skills/calibrate/` | The orchestrator — `/calibrate`. |
 | `skills/calibration/` | The top-level dispatcher — `/claude-calibration:calibration` (menu / shortcut / intent forwarder above `/calibrate`). |
