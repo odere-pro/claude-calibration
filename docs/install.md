@@ -1,4 +1,4 @@
-[← README](README.md) · [Usage](usage.md) · [Glossary](glossary.md) · [General setup](general-setup.md)
+[← README](README.md) · [Usage](usage.md) · [Glossary](glossary.md) · [Setup structure](claude-structure.md)
 
 # Install — `claude-calibration`
 
@@ -14,8 +14,9 @@ specific invocations for this plugin.
   tighten`, `/calibrate harden`, `/calibrate cost`.
 - **1 user-invocable dispatcher** — `/calibration` (menu / shortcut over the orchestrator;
   `disable-model-invocation: true`).
-- **2 convenience flow skills** — `/claude-calibration:calibration-audit` and `-diff` (slim
-  orchestrators that spawn their own subagent chain; `disable-model-invocation: true`).
+- **4 convenience flow skills** — `/claude-calibration:calibration-{audit, diff, doctor, onboarding}`
+  (slim orchestrators / guides; all `disable-model-invocation: true`). `audit` and `diff` spawn the
+  worker-agent chain; `doctor` runs a ~5-second structural check; `onboarding` is a stateless guide.
 - **9 per-feature calibration skills** — `/claude-calibration:calibrate-{claude-md, rules, settings,
   skills, subagents, hooks, mcp, plugins, general}` (each `disable-model-invocation: true`).
 - **3 worker subagents** — `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`
@@ -34,8 +35,8 @@ them. Run `/context` after enabling to confirm.
 ### Via a marketplace (recommended)
 
 ```text
-/plugin marketplace add <marketplace-url-or-repo>     # if you haven't already
-/plugin install claude-calibration@<marketplace>
+/plugin marketplace add odere-pro/claude-calibration   # if you haven't already
+/plugin install claude-calibration@odere-pro
 ```
 
 `/plugin` opens an interactive browser; once installed it is enabled in this scope (user-wide by
@@ -73,7 +74,7 @@ In a Claude Code session after installing:
 
 Expected after install (idle session):
 
-- `/skills` shows the 13 plugin skills (`/calibrate`, `/calibration`, 2 convenience flows, 9
+- `/skills` shows the 15 plugin skills (`/calibrate`, `/calibration`, 4 convenience flows, 9
   per-feature bundles) **with their token costs collapsed to ~0** — they are
   `disable-model-invocation: true` so their descriptions are removed from context. The three
   built-in modes (`tighten` / `harden` / `cost`) are arguments to `/calibrate`, not separate skills.
@@ -101,7 +102,7 @@ the plugin.
 |---|---|
 | You're developing the plugin under `--plugin-dir` and just edited a SKILL.md / agent / lint script. | `/reload-plugins` (the orchestrator picks up the edit immediately). |
 | You added a **brand-new** top-level directory (e.g. a new bundle under `skills/`). | Restart the session. |
-| You bumped `.claude-plugin/plugin.json` `version` and pushed to the marketplace. | Marketplace users next-pull via `/plugin update claude-calibration@<marketplace>`. |
+| You bumped `.claude-plugin/plugin.json` `version` and pushed a `vX.Y.Z` tag to the marketplace repo. | Marketplace users next-pull via `/plugin update claude-calibration@odere-pro`. |
 | The plugin's *rubric* drifts from upstream (the official Claude Code docs). | Run `/docs-update` (re-fetches `docs/features/*.md` from `code.claude.com/docs/*`) and then `/plugin-update` (realigns the per-feature bundles' `reference.md` / `templates/` / `scripts/lint.sh` to the now-current `docs/`). These are maintenance skills shipped under `.claude/skills/`, not under the plugin payload. |
 
 ## Removing run artifacts
@@ -128,12 +129,12 @@ already there.
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `/calibrate` not in the skill list. | Plugin not enabled, or not loaded yet. | `/plugin` to confirm it's enabled; `/reload-plugins` if you just installed it; restart if you added the plugin via a new top-level `skills/` dir. |
-| `/context` shows the plugin costing thousands of tokens when idle. | The `disable-model-invocation` frontmatter didn't load — check that you're on the marketplace-installed version (not a stale fork). | `/plugin uninstall claude-calibration && /plugin install claude-calibration@<marketplace>`. |
+| `/context` shows the plugin costing thousands of tokens when idle. | The `disable-model-invocation` frontmatter didn't load — check that you're on the marketplace-installed version (not a stale fork). | `/plugin uninstall claude-calibration && /plugin install claude-calibration@odere-pro`. |
 | `/calibrate` complains it can't read `docs/` or `BUNDLES_DIR=UNKNOWN`. | The plugin's `${CLAUDE_SKILL_DIR}` resolution failed (rare; usually a packaging issue). | Run the orchestrator with `--plugin-dir` for one session to confirm the layout is what's on disk; if it works there, reinstall via the marketplace. |
 | The calibrator wrote outside the expected paths. | The shipped safety hooks didn't load. | Confirm `hooks/hooks.json` is present in your installed copy; `/hooks` will list every active hook — the two `claude-calibration` entries should appear. |
 
 ## Sources
 
 - Plugin layout, manifest, lifecycle, `/plugin`, `--plugin-dir`, `--plugin-url`, `/reload-plugins` — [`features/plugins.md`](features/plugins.md) (and its upstream sources: <https://code.claude.com/docs/en/plugins>).
-- `/skills` / `/agents` / `/context` / `/doctor` — [`general-setup.md`](general-setup.md).
+- `/skills` / `/agents` / `/context` / `/doctor` — [`claude-config-commands.md`](claude-config-commands.md) and [`claude-evaluators.md`](claude-evaluators.md).
 - Hooks (`PreToolUse`, scoping, exit codes) — [`features/hooks.md`](features/hooks.md).

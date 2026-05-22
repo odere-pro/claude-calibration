@@ -1,4 +1,4 @@
-[← README](README.md) · [Install](install.md) · [Glossary](glossary.md) · [General setup](general-setup.md)
+[← README](README.md) · [Install](install.md) · [Glossary](glossary.md) · [Setup structure](claude-structure.md)
 
 # Usage — `claude-calibration`
 
@@ -151,8 +151,8 @@ hand.
 How it works:
 
 1. The evaluator emits a **pattern signature** with every finding (e.g. `subagent:missing-tools`,
-   `skill:cli-not-wrapped`, `claude-md:vague-rules`). The signatures are listed in
-   [`docs/general-setup.md`](general-setup.md) and in each bundle's `reference.md`.
+   `skill:cli-not-wrapped`, `claude-md:vague-rules`). The signatures are catalogued in
+   [`rules/signatures.md`](../rules/signatures.md) and in each bundle's `reference.md`.
 2. The planner groups findings by signature. A signature with **≥ 3 occurrences in this plan** or
    **≥ 2 occurrences across older runs** is a recurrence.
 3. Each recurrence emits a `kind: create` row in addition to the per-instance `kind: edit` rows.
@@ -189,8 +189,8 @@ Claude Code capabilities have two valid shapes:
   discoverable and useful to Claude (recipe library, schema docs, common-query patterns). Right
   when the same external tool is touched repeatedly.
 
-The evaluator scores each capability against the right rubric (see
-[`docs/general-setup.md`](general-setup.md) for the call). The two flagging signatures:
+The evaluator scores each capability against the right rubric (see the [`layer`](glossary.md)
+glossary entry for the call). The two flagging signatures:
 
 - **`skill:cli-not-wrapped`** — a skill body shells out to `gh` / `kubectl` / `aws` / `pnpm` /
   `gcloud` / `docker` / `terraform` / `helm` repeatedly without a scoped `Bash(<tool> *)`
