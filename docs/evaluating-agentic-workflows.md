@@ -154,6 +154,40 @@ The runtime building blocks already exist elsewhere and are catalogued under
 (structured eval / verify-retry loops), and `e2e-runner` (end-to-end flows). `harness-optimizer`
 already reasons about agent definitions and model routing across a setup.
 
+## Concrete interfaces (proposed — not yet shipped)
+
+The config-side iteration track now ships (`/calibration-track`, see
+[usage.md](usage.md#tracking-improvement-across-iterations)): it snapshots config quality
+deterministically and reports improvement vs a baseline and vs the previous iteration. The
+behavioural harness is the **next phase** — these are the three interfaces it needs, specified here
+so a later PR can build them. None of these components ship yet; the plugin is still static-config
+only.
+
+1. **`calibration-flow-evaluator` (a worker subagent).** Input: a workflow id (the orchestrating
+   skill/agent under test), a **case set** path, and the run folder. It drives the workflow over each
+   case, diffs actual findings against expected, and writes the report below. Mirrors the contract of
+   the existing `calibration-evaluator` ([`../agents/calibration-evaluator.md`](../agents/calibration-evaluator.md))
+   but points at behaviour, not files.
+
+2. **`eval-flow-<ts>.md` (a report type).** One section per level, reusing the shared scales:
+   - **Node** — per component: `recall`, `precision`, `scope`; findings tagged `<area>:<short-name>`
+     at `CRITICAL > HIGH > MEDIUM > LOW > INFO`.
+   - **Edge** — per handoff: contract check (artifact shape passed vs expected), with
+     `handoff:*` signatures (`handoff:ac-not-passed`, `handoff:finding-dropped`, …).
+   - **Flow** — the intent-flow table (`met | partial | blocked | unknown` per acceptance criterion)
+     plus `Intent service score: <low|mid|high>` — verbatim the evaluator's `eval-intent-flow-*.md`
+     format, so behavioural and config runs read the same.
+
+3. **`fixtures/` (a golden-case harness).** A directory of cases, each
+   `fixtures/<case>/{input, expected.md}`, covering the four input classes from
+   [You can't grade behaviour statically](#you-cant-grade-behaviour-statically--use-cases):
+   known-good, known-defect, adversarial, AC-mismatch. `expected.md` lists which node should catch
+   each planted defect, at what severity — the oracle the evaluator diffs against.
+
+With those three, the same recurrence → enforcement loop applies: a recurring `handoff:*` or
+`<area>:*` signature promotes to a durable fix (a handoff contract check, a deterministic gate),
+exactly as config recurrences promote today.
+
 ## Scope & limits
 
 This is **behavioural** evaluation and sits outside what `/calibrate` does — see

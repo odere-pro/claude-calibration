@@ -41,6 +41,7 @@ name. The full matrix (modes, arguments, per-feature shortcuts) is in
 | `/claude-calibration:calibration` | **Dispatcher** — prints the menu, delegates to a flow, or forwards free text as the intent. |
 | `/claude-calibration:calibration-audit` | Read-only baseline evaluation — no plan, no edits. Good as a CI gate. |
 | `/claude-calibration:calibration-diff` | "What changed since the last run?" — re-evaluates against the previous baseline. |
+| `/claude-calibration:calibration-track` | "Is calibration actually improving my setup?" — a deterministic snapshot compared vs a baseline anchored to the last PR merged onto `main` **and** vs the previous iteration. Independent of `/calibrate`'s built-in delta. |
 | `/claude-calibration:calibration-doctor` | ~5-second structural health check: JSON parses, hooks executable, frontmatter valid. |
 | `/claude-calibration:calibration-onboarding` | First-time setup guide — detects your stack, recommends one next step. |
 | `/claude-calibration:calibrate-<feature>` | Nine per-feature bundles you can run on their own: `skills`, `subagents`, `claude-md`, `rules`, `settings`, `hooks`, `mcp`, `plugins`, `general`. |

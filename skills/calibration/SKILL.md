@@ -8,7 +8,7 @@ description: >-
   skill (or to /calibrate with the matching mode token). With any other input, treats it as the
   intent and forwards to /calibrate "<input>". Pure routing — no orchestration logic of its own.
   Use this when you don't remember which slash command runs which flow.
-argument-hint: "[audit | tighten | harden | diff | cost | <intent text>]"
+argument-hint: "[audit | tighten | harden | diff | track | cost | <intent text>]"
 disable-model-invocation: true
 model: sonnet
 allowed-tools: Skill
@@ -33,6 +33,7 @@ Resolve `$ARGUMENTS` (case-insensitive, trim whitespace):
 | `help` / `?` / `menu` / `list`                                                                        | Print the **menu**. Stop.                                                                                |
 | `audit`                                                                                               | Invoke `Skill(skill="calibration-audit")`.                                                               |
 | `diff`                                                                                                | Invoke `Skill(skill="calibration-diff")`.                                                                |
+| `track`                                                                                               | Invoke `Skill(skill="calibration-track")`.                                                               |
 | `doctor`                                                                                              | Invoke `Skill(skill="calibration-doctor")`.                                                              |
 | `onboarding` / `onboard` / `setup`                                                                    | Invoke `Skill(skill="calibration-onboarding")`.                                                          |
 | `tighten`                                                                                             | Invoke `Skill(skill="calibrate", args="tighten")` (rewrites to intent `"tighten standards"`).            |
@@ -68,6 +69,7 @@ When `$ARGUMENTS` is empty or matches a help keyword, print exactly this (Markdo
 ## Convenience flows (separate skills — multi-phase, need their own preprocessing)
 - /claude-calibration:calibration-audit         — read-only baseline; no plan, no edits (Phase 1+2 of /calibrate)
 - /claude-calibration:calibration-diff          — evaluator pass-2 against the previous run's baseline only
+- /claude-calibration:calibration-track         — deterministic improvement track: snapshot vs base (last main merge) + vs previous iteration
 - /claude-calibration:calibration-doctor        — fast structural health check (~5s; broken/warn/ok triage; not a rubric audit)
 - /claude-calibration:calibration-onboarding    — first-time setup guide; detects state, names one next step
 
