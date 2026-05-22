@@ -30,7 +30,7 @@
 | --------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------- |
 | `general:context-budget-overflow`       | Estimated always-on cost > ~5,000 tokens                                                      | MEDIUM           |
 | `general:must-rule-with-no-hook`        | CLAUDE.md or rules contain "always"/"never"/"must" lines but no hooks block exists            | MEDIUM           |
-| `general:nested-claude-md-conflict`     | ≥ 3 nested CLAUDE.md files below project root                                                 | LOW              |
+| `general:nested-claude-md-conflict`     | ≥ 3 nested CLAUDE.md the root CLAUDE.md does not index by path (undocumented layering)         | LOW              |
 | `general:settings-precedence-surprise`  | A project setting is silently overridden by a managed setting                                 | LOW              |
 | `general:no-gitignore-for-claude-local` | `.gitignore` doesn't cover `CLAUDE.local.md` / `.claude/settings.local.json` / `.claude/calibration/` | LOW       |
 | `general:diagnostics-ask`               | (Always emitted) Reminder that the four CLI outputs should be pasted into the report          | INFO             |

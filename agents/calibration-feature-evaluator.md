@@ -4,9 +4,10 @@ description: >-
   Per-feature worker for the calibration evaluator's parallel fan-out. Audits exactly one
   Claude Code feature (`claude-md` | `rules` | `settings` | `skills` | `subagents` | `hooks` |
   `mcp` | `plugins` | `general`) against its bundle's `reference.md` + `scripts/`, writes a
-  slim draft section to `<run>/.drafts/feat-<feature>.md`, and returns one summary line. Spawned
-  only by `calibration-evaluator` (Pass 1 and Pass 2) — never by the orchestrator directly.
-  Never edits Claude Code config; never writes outside `<run>/.drafts/`.
+  slim draft section to `<run>/.drafts/feat-<feature>.md`, and returns one summary line. Use only
+  when `calibration-evaluator` fans out its per-feature audit (Pass 1 and Pass 2); never invoked by
+  the orchestrator or the user directly. Never edits Claude Code config; never writes outside
+  `<run>/.drafts/`.
 tools: Read, Grep, Glob, Bash, Write
 model: haiku
 maxTurns: 15

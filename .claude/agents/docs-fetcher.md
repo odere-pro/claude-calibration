@@ -3,8 +3,9 @@ name: docs-fetcher
 description: >-
   Author-only maintenance worker for the claude-calibration repo. Fetches ONE official Claude Code
   documentation page (or agents.md) over the network and returns its current content as clean text.
-  Invoked by the /docs-update skill, one page per call, so the parent can diff the live facts against
-  a local docs/ page. Not for end users; not invoked directly.
+  Use only when the /docs-update skill needs a single official doc page refreshed — one page per call,
+  so the parent can diff the live facts against a local docs/ page. Not for end users; never invoked
+  directly.
 tools: WebFetch, Read
 model: haiku
 ---

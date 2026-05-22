@@ -46,15 +46,18 @@ for f in "$@"; do
     emit "$f" "claude-md:over-${OVER_200}" MEDIUM "effective $effective lines > $OVER_200 (trim or move topic blocks out)"
   fi
 
-  # vague rules: aspirational verbs without nearby specifics
-  if grep -niE '\b(test your changes|format code|be careful|always|never|must|should)\b' "$f" >/dev/null; then
-    # weak signal — only fire if the line lacks a concrete verb / command / path
-    vague_hits=$(grep -niE '\b(test your changes|format code|be careful|always|never|must|should)\b' "$f" \
-      | grep -vE '`[^`]+`|/[A-Za-z0-9_./-]+|\b(run|use|pnpm|npm|yarn|cargo|go|gh|kubectl|aws|docker|terraform|prettier|eslint|tsc|jest|vitest|pytest)\b' \
-      | wc -l | tr -d ' ' || true)
-    if [ "${vague_hits:-0}" -gt 0 ]; then
-      emit "$f" "claude-md:vague-rules" MEDIUM "$vague_hits aspirational lines without specifics — rewrite as concrete verifiable rules"
-    fi
+  # vague rules: aspirational phrasing without specifics ("test your changes", "be careful", …).
+  # Scan prose only — strip fenced code blocks and markdown headers (neither is a rule), then skip
+  # lines that already carry a concrete anchor (backtick code, path, or command word). Bare modal
+  # verbs (must/never/always/should) are NOT vague on their own — a precise prohibition is concrete —
+  # so they no longer trigger this; that matches the rubric's definition in reference.md.
+  vague_re='\b(test your changes|format code|be careful|best practices|make sure|do it properly|done properly|appropriately|as needed|as appropriate|good (practice|hygiene)|clean code|keep in mind|where possible|when possible|follow conventions|use common sense)\b'
+  prose=$(awk 'BEGIN{fence=0} /^[[:space:]]*```/{fence=!fence; next} fence{next} /^[[:space:]]*#/{next} {print}' "$f")
+  vague_hits=$(printf '%s\n' "$prose" | grep -niE "$vague_re" \
+    | grep -vE '`[^`]+`|/[A-Za-z0-9_./-]+|\b(run|use|pnpm|npm|yarn|cargo|go|gh|kubectl|aws|docker|terraform|prettier|eslint|tsc|jest|vitest|pytest)\b' \
+    | wc -l | tr -d ' ' || true)
+  if [ "${vague_hits:-0}" -gt 0 ]; then
+    emit "$f" "claude-md:vague-rules" MEDIUM "$vague_hits aspirational lines without specifics — rewrite as concrete verifiable rules"
   fi
 
   # must-rule with no enforcement hook (heuristic: file has must/always/never AND no .claude/hooks/ exists nearby)

@@ -150,8 +150,8 @@ for f in "$@"; do
         esac
         first=$(echo "$line" | awk '{print $1}')
         case "$first" in
-          \$\{CLAUDE_PROJECT_DIR\}*|\$\{CLAUDE_PLUGIN_ROOT\}*|/*|./*|\$*|"") continue ;;
-          if|then|fi|else|elif|for|while|do|done|case|esac|return|exit|local|export|set|trap|read|declare|function|\[|\[\[|\}|\{) continue ;;
+          \#*|\$\{CLAUDE_PROJECT_DIR\}*|\$\{CLAUDE_PLUGIN_ROOT\}*|/*|./*|\$*|\"*|*\)|";;"|"") continue ;;  # comment / path / var / quoted / case-label / terminator
+          if|then|fi|else|elif|for|while|do|done|case|esac|return|exit|break|continue|shift|unset|eval|local|export|set|trap|read|declare|function|\[|\[\[|\}|\{) continue ;;
           *=*) continue ;;  # variable assignment
         esac
         if ! echo "$first" | grep -qE "$KNOWN_TOOLS_RE"; then
