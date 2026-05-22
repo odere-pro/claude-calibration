@@ -32,7 +32,7 @@ and the cost-mode lint.
 
 | Must                                | Should                                            | Limit                |
 | ----------------------------------- | ------------------------------------------------- | -------------------- |
-| `.gitignore` covers `CLAUDE.local.md`, | Keep standing context ≤ ~5,000 tokens          | ≤ 3 nested CLAUDE.md |
+| `.gitignore` covers `CLAUDE.local.md`, | Keep standing context ≤ ~5,000 tokens          | ≤ 3 unindexed nested CLAUDE.md |
 | `.claude/settings.local.json`,      | When "must"/"always"/"never" rules exist,         |                      |
 | `.claude/calibration/`              | scaffold an enforcement hook                      |                      |
 

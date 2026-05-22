@@ -12,17 +12,17 @@ for f in \
 done
 
 if [ -d "$PROJECT/.claude/hooks" ]; then
-  find "$PROJECT/.claude/hooks" -type f -print 2>/dev/null \
+  find "$PROJECT/.claude/hooks" -type f ! -name 'CLAUDE.md' ! -name 'README.md' -print 2>/dev/null \
     | while read -r f; do emit script "$f"; done
 fi
 if [ -d "$HOME/.claude/hooks" ]; then
-  find "$HOME/.claude/hooks" -type f -print 2>/dev/null \
+  find "$HOME/.claude/hooks" -type f ! -name 'CLAUDE.md' ! -name 'README.md' -print 2>/dev/null \
     | while read -r f; do emit script-user "$f"; done
 fi
 # Plugin self: when PROJECT is itself a plugin, enumerate its shipped hooks/ — the `hooks.json` and
 # any standalone scripts. Plugin-shipped hooks load for every user who enables the plugin, so they
 # need to be in scope for the rubric (especially the `if`-field scoping and `exit 2` checks).
 if [ -f "$PROJECT/.claude-plugin/plugin.json" ] && [ -d "$PROJECT/hooks" ]; then
-  find "$PROJECT/hooks" -type f -print 2>/dev/null \
+  find "$PROJECT/hooks" -type f ! -name 'CLAUDE.md' ! -name 'README.md' -print 2>/dev/null \
     | while read -r f; do emit plugin-self "$f"; done
 fi

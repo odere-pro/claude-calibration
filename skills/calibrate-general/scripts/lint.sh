@@ -49,15 +49,21 @@ if [ "$tokens" -gt "$BUDGET_TOKENS" ]; then
 fi
 
 # --- nested-claude-md-conflict ---
-# Count CLAUDE.md files BELOW the project root (exclude the root file itself).
-nested_count=0
+# Count nested CLAUDE.md (below the root) that the root CLAUDE.md does NOT index by path. Layering the
+# root documents is intentional ("accept the layered design"); only undocumented sprawl is flagged.
+nested_unref=0
+root_cm="$PROJECT/CLAUDE.md"
 if [ -d "$PROJECT" ]; then
-  nested_count=$(find "$PROJECT" -mindepth 2 -name 'CLAUDE.md' -not -path '*/node_modules/*' -not -path '*/.git/*' 2>/dev/null | wc -l | tr -d ' ')
-  nested_count=${nested_count:-0}
+  while IFS= read -r nf; do
+    [ -n "$nf" ] || continue
+    rel=${nf#"$PROJECT"/}
+    if [ -f "$root_cm" ] && grep -qF "$rel" "$root_cm" 2>/dev/null; then continue; fi
+    nested_unref=$((nested_unref + 1))
+  done < <(find "$PROJECT" -mindepth 2 -name 'CLAUDE.md' -not -path '*/node_modules/*' -not -path '*/.git/*' -not -path '*/.claude/calibration/*' -not -path '*/.claude/worktrees/*' 2>/dev/null)
 fi
-if [ "$nested_count" -ge 3 ]; then
+if [ "$nested_unref" -ge 3 ]; then
   emit "$PROJECT" "general:nested-claude-md-conflict" LOW \
-    "$nested_count nested CLAUDE.md files under project root — consolidate or accept the layered design"
+    "$nested_unref nested CLAUDE.md not indexed by the root CLAUDE.md — document the layering in CLAUDE.md or consolidate"
 fi
 
 # --- no-gitignore-for-claude-local ---

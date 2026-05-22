@@ -112,12 +112,15 @@ for f in "$@"; do
     done
   fi
 
-  # CLI usage in body without a scoped Bash(<tool> *) allowed-tools entry
+  # CLI usage in body without a scoped Bash(<tool> *) allowed-tools entry.
+  # Only a real shell-out when the skill has bare, unscoped `Bash` (so it could actually run the CLI).
+  # A skill whose allowed-tools lists only scoped Bash(...) entries can't invoke an unlisted CLI, so a
+  # body mention is documentation/example, not a shell-out.
   body_clis=$(printf '%s\n' "$bd" | grep -oE '\b(gh|kubectl|aws|pnpm|gcloud|docker|terraform|helm)\b' | sort -u || true)
-  if [ -n "$body_clis" ]; then
+  if [ -n "$body_clis" ] && printf '%s' "$allowed" | grep -qE '(^|[,[:space:]])Bash([,[:space:]]|$)'; then
     for cli in $body_clis; do
       if ! printf '%s' "$allowed" | grep -qE "Bash\([[:space:]]*${cli}[[:space:]]"; then
-        emit "$f" "skill:cli-not-wrapped" LOW "body shells out to '$cli' but allowed-tools has no scoped Bash($cli *) — 3→4-layer wrapper candidate"
+        emit "$f" "skill:cli-not-wrapped" LOW "body shells out to '$cli' under bare unscoped Bash and no scoped Bash($cli *) — 3→4-layer wrapper candidate"
       fi
     done
   fi
