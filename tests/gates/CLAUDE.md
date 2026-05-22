@@ -12,6 +12,8 @@ the root [`../../CLAUDE.md`](../../CLAUDE.md) "Gate map".
   `GATES_SIG_PREFIXES`); sourced, never executed.
 - `power-words.txt` — data sidecar for G17: the power-word catalogue; each term must be defined as a
   `**bold**` entry in `docs/glossary.md`.
+- `forbidden-terms.txt` — data sidecar for G17: `<forbidden-ERE> => <canonical>` rules for phrases
+  that are always wrong; G17 scans shipped/author prose for them (this is what catches usage drift).
 
 ## Convention
 

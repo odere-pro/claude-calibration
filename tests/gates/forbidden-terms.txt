@@ -1,0 +1,18 @@
+# Forbidden term => canonical. Consumed by tests/gates/17-glossary-consistency.sh (G17).
+# Each line: an extended regex (matched case-insensitively) that is ALWAYS wrong, then ' => ', then
+# the canonical term to use (which must appear in docs/glossary.md). Blank/`#` lines are ignored.
+#
+# Scanned across *.md in docs/ skills/ agents/ rules/ hooks/ .claude/ and the CLAUDE.md files.
+# Skipped: lines under examples/ or templates/ (intentional fixtures) and any line containing a URL
+# (`://`) — the latter so the legitimate code.claude.com/docs/en/sub-agents URL isn't flagged.
+#
+# Only list phrases with NO legitimate use. Do NOT add bare `agent`: the `Agent` tool, the `agents/`
+# path, `AGENTS.md`, the generic agents feature, and external named agents all use it correctly.
+# This is the layer that catches USAGE drift (the structural checks only verify the glossary defines
+# the vocabulary). When you add a rule, keep its regex tight and its canonical a real glossary term.
+
+worker[ -]?agents? => worker subagent
+sub[- ]agents? => subagent
+\bcoordinator\b => orchestrator
+\bhelper agents? => subagent
+\bchild agents? => subagent

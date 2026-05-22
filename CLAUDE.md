@@ -91,7 +91,7 @@ Two files are authoritative; everything else defers to them:
 | G14 `14-doc-links` | no dangling intra-doc `.md` links | a broken doc/briefing link |
 | G15 `15-markdown-lint` (advisory) | markdown style | style nit |
 | G16 `16-changelog-fragment-present` | a PR with non-doc changes adds a `changelog/` fragment | missing fragment |
-| G17 `17-glossary-consistency` | `docs/glossary.md` defines the power-word vocabulary (`agent`/`subagent` as distinct entries) | a power word with no glossary entry |
+| G17 `17-glossary-consistency` | `docs/glossary.md` defines the power-word vocabulary (`agent`/`subagent` distinct) AND prose uses it — drift is caught | a power word with no entry, or a banned synonym in prose (e.g. a worker subagent written as a plain `agent`) |
 
 ## Test / verify quick-recipes
 
