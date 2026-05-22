@@ -119,7 +119,9 @@ entities) · [`claude-structure.md`](claude-structure.md) (where every file live
 ## Beyond config
 
 These evaluate **code** or a **running app**, not `.claude/`. Built-ins are tagged; the rest are
-plugin/setup-provided.
+plugin/setup-provided. To evaluate a multi-agent **workflow** that chains several of these together
+(e.g. a PR code-review pipeline), see
+[`evaluating-agentic-workflows.md`](evaluating-agentic-workflows.md).
 
 ### Code
 
