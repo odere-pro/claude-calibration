@@ -53,8 +53,8 @@ fuller treatment rather than restating it.
 - **Orchestrator** — `/calibrate`: the opus entry point that chains planner → evaluator → calibrator
   → delta-eval → report and persists run state.
 - **Dispatcher** — `/calibration`: the top-level menu/router above `/calibrate`.
-- **Flow** — a standalone multi-phase skill that spawns its own subagent chain:
-  `calibration-{audit,diff,doctor,onboarding}`.
+- **Flow** — a standalone multi-phase skill that spawns its own subagent chain (or, for the lighter
+  ones, just runs a script and formats): `calibration-{audit,diff,track,doctor,onboarding}`.
 - **Worker subagent** — one of `calibration-planner`, `calibration-evaluator`,
   `calibration-calibrator`, and the haiku-class `calibration-feature-evaluator` the evaluator fans
   out to. An agent the orchestrator/flows spawn **in its own context window** (so the parent stays
@@ -85,6 +85,13 @@ fuller treatment rather than restating it.
   (`all` / `safe-only` / `project-only` / `<ids>` / `skip`), unless `--yes` is set.
 - **Intent** — the calibration goal driving a run (stated, or guessed if unset); shapes scope and
   whether recurrences auto-promote to enforcement.
+- **Iteration track** — `/calibration-track`: a deterministic snapshot (the doctor floor +
+  signature-keyed lint over the nine features) compared vs a **track baseline** anchored to the last
+  PR merged onto `main`, and vs the previous iteration. Persisted under `.claude/calibration/track/`
+  (gitignored). It exists to judge improvement *independently* of the orchestrator's circular
+  built-in **Delta** — see [usage.md](usage.md#tracking-improvement-across-iterations). The track
+  baseline is a cross-run, git-anchored reference, distinct from the evaluator's within-run
+  **Baseline** pass.
 
 ## Power words
 

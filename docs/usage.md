@@ -251,6 +251,7 @@ spawn their own subagent chain and need their own preprocessing block:
 | `/calibrate cost` | Runs `calibrate-general/scripts/lint.sh` + the diagnostics ask. No run, no subagents, no edits. | The single-number standing-context-cost check. |
 | `/claude-calibration:calibration-audit` | Runs `/calibrate` through Phase 2 only — baseline evaluation, no improvement plan, no edits. Pure read-only audit. Enforced read-only by the audit-write-guard hook. | Periodic health check; CI gate; "just tell me what's wrong". |
 | `/claude-calibration:calibration-diff` | Evaluator pass-2 against the previous run's baseline; no planner / calibrator. | "What's changed since last calibration?" — useful between runs or after manual edits. |
+| `/claude-calibration:calibration-track` | Deterministic snapshot (doctor floor + signature-keyed lint over all nine features) compared vs a baseline anchored to the last PR merged onto `main` **and** vs the previous iteration. No subagents, no edits. See [Tracking improvement across iterations](#tracking-improvement-across-iterations). | "Is calibration actually improving my setup, run over run?" |
 | `/claude-calibration:calibration-doctor` | Fast structural health check (~5s). Runs `scripts/doctor.sh`: JSON parses, hook scripts exist + executable, frontmatter is valid, MCP commands resolve, `.gitignore` covers `.claude/calibration/`. Triage list (broken/warn/ok). No rubric grading. | Pre-commit / pre-push smoke check; after a hand-edit; CI smoke gate. |
 | `/claude-calibration:calibration-onboarding` | First-time setup guide. Detects existing config + stack signals (TS/Python/Go/Rust/etc.) and names a single minimal next step. Pure guidance — never writes a config file. | Picking up a project with no Claude Code setup; orienting a teammate before they run `/calibrate`. |
 
@@ -286,6 +287,53 @@ What to look at when:
 
 `plan.md`'s `last_evaluation` field is the **durable record** across `/clear` — read it for the
 before→after counts without needing the full delta file.
+
+## Tracking improvement across iterations
+
+`/calibrate`'s built-in before→after delta answers "did this run resolve the findings it planned?",
+but it is **circular** — the same evaluator and rubric the calibrator optimises against scores both
+passes, and it is non-deterministic. To answer the harder question — *"is calibration actually
+improving my setup, iteration over iteration?"* — use `/claude-calibration:calibration-track`.
+
+Each run takes a **deterministic** snapshot of the setup:
+
+- a **structural floor** — the `broken / warn / ok` tally from `calibration-doctor` (a check going
+  `ok → broken` is the regression veto), and
+- **signature-keyed lint** over all nine features (the same `lint.sh` scripts the evaluator uses),
+  scoped by default to *this* project's `.claude/**` so the measure is reproducible.
+
+It then prints two comparisons:
+
+- **vs base** — the snapshot is compared against the config **as of the last PR merged onto `main`**
+  (resolved with `git log --first-parent --merges` and materialised with `git archive`). When `main`
+  advances, the base auto-re-syncs. This is the "did we improve on what shipped?" view.
+- **vs previous iteration** — compared against the last snapshot in the local ledger. This is the
+  "did the change I just made help?" view.
+
+The verdict is `IMPROVED` (floor recovered or net findings down, no new high-severity), `REGRESSION`
+(floor broke, or a new/risen `CRITICAL`/`HIGH`), or `no change of note`. A regression in either
+comparison wins and points you back at `/calibrate`.
+
+Snapshots and the ledger live under `<project>/.claude/calibration/track/` (gitignored, like other
+run artifacts):
+
+```
+.claude/calibration/track/
+├── baseline.json        # the base, keyed by the last-main-merge ref SHA (auto-re-synced)
+├── history.jsonl        # append-only, one compact line per iteration = the time series
+└── snapshots/<ts>.json  # the full per-iteration snapshot
+```
+
+Because the measure is independent of what the calibrator optimises against, a sustained downward
+trend in the ledger is real evidence calibration is paying off — not the loop grading its own work.
+Flags: `--vs-baseline` (show only the base comparison), `--reset-baseline` (re-anchor now),
+`--scope all` (widen lint to user config + installed-plugin cache — a diagnostic sweep, not the
+tracked project measure).
+
+> Scope: this tracks **config quality** (does the setup get tighter and safer). It does **not**
+> measure the runtime *behaviour* of a workflow — whether a code-review setup actually catches more
+> bugs is behavioural evaluation, covered as methodology in
+> [evaluating-agentic-workflows.md](evaluating-agentic-workflows.md).
 
 ## Reverting
 
