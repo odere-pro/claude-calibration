@@ -35,7 +35,10 @@ while IFS= read -r term; do
     || { echo "  FAIL: power word '${term}' is not defined (**${term}**) in $GLOSSARY"; fail=1; }
 done < "$WORDS"
 
-# (c) no forbidden phrase in prose (skip examples/templates fixtures, worktrees, and URL lines)
+# (c) no forbidden phrase in prose (skip examples/templates fixtures, worktrees, URL lines, and
+#     transient gitignored run artifacts under .claude/calibration/ — generated output, not source
+#     prose; note .claude/calibration shares its basename with the shipped skills/calibration/ dir,
+#     so it must be excluded by path, not --exclude-dir)
 while IFS= read -r line; do
   case "$line" in ''|'#'*) continue ;; esac
   case "$line" in *' => '*) : ;; *) echo "  FAIL: malformed forbidden rule (no ' => '): $line"; fail=1; continue ;; esac
@@ -44,7 +47,7 @@ while IFS= read -r line; do
   grep -qiF -- "$good" "$GLOSSARY" \
     || { echo "  FAIL: forbidden-terms canonical '$good' not found in $GLOSSARY"; fail=1; }
   hits="$(grep -rniE --include='*.md' --exclude-dir=examples --exclude-dir=templates --exclude-dir=worktrees \
-            -- "$bad" $SCAN_DIRS 2>/dev/null | grep -vE '://' || true)"
+            -- "$bad" $SCAN_DIRS 2>/dev/null | grep -vE '://' | grep -vE '^\.claude/calibration/' || true)"
   if [ -n "$hits" ]; then
     while IFS= read -r h; do
       [ -n "$h" ] || continue
