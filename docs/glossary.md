@@ -45,7 +45,7 @@ fuller treatment rather than restating it.
 ## Calibration plugin
 
 - **Layer / 3-layer / 4-layer** — the plugin's architecture has three layers (per-feature skill
-  bundles → worker agents → the `/calibrate` entry point); a capability becomes **4-layer** when it
+  bundles → worker subagents → the `/calibrate` entry point); a capability becomes **4-layer** when it
   also integrates an external system (CLI / MCP → skill → agent → entry point). The evaluator grades
   each capability against the rubric for the pattern it actually uses. See the [README](../README.md).
 - **Bundle** — a `skills/calibrate-<feature>/` directory: one per feature, shipping `SKILL.md`,
@@ -55,9 +55,11 @@ fuller treatment rather than restating it.
 - **Dispatcher** — `/calibration`: the top-level menu/router above `/calibrate`.
 - **Flow** — a standalone multi-phase skill that spawns its own subagent chain:
   `calibration-{audit,diff,doctor,onboarding}`.
-- **Worker agent** — one of `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
-  and the haiku-class `calibration-feature-evaluator` the evaluator fans out to. Invoked only by the
-  orchestrator/flows, never by the user directly.
+- **Worker subagent** — one of `calibration-planner`, `calibration-evaluator`,
+  `calibration-calibrator`, and the haiku-class `calibration-feature-evaluator` the evaluator fans
+  out to. An agent the orchestrator/flows spawn **in its own context window** (so the parent stays
+  lean); invoked only by them, never by the user directly. See **Subagent** under
+  [Power words](#power-words).
 - **Pattern signature** — a stable `<feature>:<short-name>` identifier attached to every finding
   (e.g. `subagent:missing-tools`). The canonical catalogue is [`rules/signatures.md`](../rules/signatures.md).
 - **Recurrence** — the same signature firing ≥3× in one run or ≥2× across older runs; the planner
@@ -83,6 +85,43 @@ fuller treatment rather than restating it.
   (`all` / `safe-only` / `project-only` / `<ids>` / `skip`), unless `--yes` is set.
 - **Intent** — the calibration goal driving a run (stated, or guessed if unset); shapes scope and
   whether recurrences auto-promote to enforcement.
+
+## Power words
+
+Power words are the precise terms whose deliberate, consistent use steers Claude accurately. Swap one
+for a vaguer synonym and the skill or agent loses the intent it carried — so skills and agents use
+these **verbatim**. (The terms above are power words too; the entries here are the ones whose meaning
+is easiest to lose.)
+
+- **Agent** — a unit defined by a system prompt + `tools` + `model` that performs a task. The
+  user-facing entry points (`/calibrate`, `/calibration`) are *skills*, not agents; the actual
+  agents ship under `agents/`. See [Subagent](#power-words) for the narrower term.
+- **Subagent** — an **agent the parent runs in its own context window**, invoked via the `Agent`
+  tool, never by the user. The "sub" is the power word: it encodes the parent→child relationship
+  **and** the reason you reach for one — isolate work in a fresh window so the parent's context stays
+  lean (the evaluator fans nine feature audits out to haiku subagents). Claude Code's own term; see
+  [features/subagents.md](features/subagents.md). Distinct from **Agent** — the two coexist.
+- **Fan out** — a parent spawning several subagents in parallel, each in its own context window, to
+  cover breadth cheaply (evaluator → `calibration-feature-evaluator` ×9).
+- **Baseline** — Pass 1 of an evaluation: the full audit that later passes compare against.
+- **Delta** — Pass 2: a re-audit of the same scope, scored against the baseline
+  (`resolved | partial | open | new`).
+- **Scaffold** — generate a new artifact (a hook, path-scoped rule, or wrapper skill) from a
+  template — the `kind: create` action, as opposed to editing an existing one.
+- **Verify** — re-run the relevant `scripts/lint.sh` after a change and confirm the signature no
+  longer fires.
+- **Rubric** — a bundle's `reference.md`: the Must/Should/Limit standard a feature is graded against.
+
+### Don't confuse
+
+| Use this | …not this | Because |
+| --- | --- | --- |
+| **subagent** | agent | a subagent runs in its **own context window**; "agent" drops that intent |
+| **orchestrator** (`/calibrate`) | dispatcher / flow | the orchestrator chains the whole loop; the **dispatcher** (`/calibration`) only routes; a **flow** is one standalone multi-phase skill |
+| **`kind: create`** | edit | `create` **scaffolds enforcement**; `edit` fixes one instance |
+| **delta** | baseline | the delta is the re-eval; the baseline is the first pass it compares against |
+| **evaluate** | audit | the evaluator runs both passes; `audit` is the read-only pass-1-only flow |
+| **change scope** / **audit scope** | scope | reserve bare **scope** for *where config lives* |
 
 ## Sources
 

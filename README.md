@@ -63,7 +63,7 @@ your setup + a calibration goal
         └─ recurring finding? ─► scaffold enforcement (hook · rule · wrapper skill)
 ```
 
-`/calibrate` chains worker agents — planner → evaluator (which fans out per-feature) → calibrator →
+`/calibrate` chains worker subagents — planner → evaluator (which fans out per-feature) → calibrator →
 a delta re-evaluation — persisting state in `.claude/calibration/<run>/` so a run survives `/clear`.
 Its highest-leverage move: when the same finding recurs, the planner stops emitting one-off fixes
 and **scaffolds a feature that enforces the standard** (a hook, a path-scoped rule, a wrapper skill)

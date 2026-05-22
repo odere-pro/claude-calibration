@@ -10,8 +10,8 @@ the root [`../../CLAUDE.md`](../../CLAUDE.md) "Gate map".
 - `run-all.sh` — runs every `[0-9][0-9]-*.sh` in order; non-zero exit from a gate fails the suite.
 - `lib.sh` — shared helpers (`gates_repo_root`, `gates_frontmatter`, `GATES_FEATURES`,
   `GATES_SIG_PREFIXES`); sourced, never executed.
-- `glossary-aliases.txt` — data sidecar for G17: `<forbidden-ERE> => <canonical>` rules whose
-  canonical term must exist in `docs/glossary.md`.
+- `power-words.txt` — data sidecar for G17: the power-word catalogue; each term must be defined as a
+  `**bold**` entry in `docs/glossary.md`.
 
 ## Convention
 

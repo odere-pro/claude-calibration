@@ -2,7 +2,7 @@
 
 ## Scope
 
-The four **worker agents** the orchestrator dispatches. They ship with the plugin and are invoked
+The four **worker subagents** the orchestrator dispatches. They ship with the plugin and are invoked
 **only** by the skill layer — never by the user directly, never auto-fired.
 
 - `calibration-planner.md` (opus) — writes `plan.md`; init mode (skeleton) + improve mode (recurrence

@@ -310,7 +310,7 @@ revert.
 
 ## Auditing this plugin itself
 
-> For the full loop internals — the six phases, the worker agents and their models, and the
+> For the full loop internals — the six phases, the worker subagents and their models, and the
 > write-guards — see [`self-calibration.md`](self-calibration.md). This section covers the
 > plugin-self specifics.
 
@@ -408,7 +408,7 @@ have exact numbers rather than estimates.
 ## Sources
 
 - The orchestrator's behaviour — [`../skills/calibrate/SKILL.md`](../skills/calibrate/SKILL.md).
-- The worker agents — [`../agents/calibration-planner.md`](../agents/calibration-planner.md),
+- The worker subagents — [`../agents/calibration-planner.md`](../agents/calibration-planner.md),
   [`../agents/calibration-evaluator.md`](../agents/calibration-evaluator.md),
   [`../agents/calibration-calibrator.md`](../agents/calibration-calibrator.md),
   [`../agents/calibration-feature-evaluator.md`](../agents/calibration-feature-evaluator.md)

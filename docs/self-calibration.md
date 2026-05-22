@@ -142,7 +142,7 @@ skill that never fires) need a transcript scan or live measurement and are out o
 ## Sources
 
 - The orchestrator and its phases — [`../skills/calibrate/SKILL.md`](../skills/calibrate/SKILL.md).
-- The worker agents — [`../agents/calibration-planner.md`](../agents/calibration-planner.md),
+- The worker subagents — [`../agents/calibration-planner.md`](../agents/calibration-planner.md),
   [`../agents/calibration-evaluator.md`](../agents/calibration-evaluator.md),
   [`../agents/calibration-feature-evaluator.md`](../agents/calibration-feature-evaluator.md),
   [`../agents/calibration-calibrator.md`](../agents/calibration-calibrator.md).

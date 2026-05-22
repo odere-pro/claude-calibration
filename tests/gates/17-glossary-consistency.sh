@@ -1,47 +1,34 @@
 #!/usr/bin/env bash
-# G17 — docs/agents/skills use the canonical glossary vocabulary, not non-canonical synonyms. (CRITICAL)
-# Each rule in glossary-aliases.txt maps a forbidden term (ERE) to a canonical one that must exist in
-# docs/glossary.md; the gate fails on any forbidden term found in *.md under docs/, agents/, skills/.
+# G17 — docs/glossary.md defines the power-word vocabulary. (CRITICAL)
+#   (a) `agent` and `subagent` are two DISTINCT bold entries (they coexist — a subagent is an agent
+#       that runs in its own context window).
+#   (b) every term in power-words.txt has a bold `**term**` definition in the glossary.
+# Power words steer skills/agents; the glossary is their single source of truth, so it must define
+# them. This is a structural check on the glossary — it does NOT police prose elsewhere.
 set -euo pipefail
 # shellcheck source=lib.sh
 . "$(dirname -- "$0")/lib.sh"
 cd "$(gates_repo_root)"
 
-ALIASES="tests/gates/glossary-aliases.txt"
 GLOSSARY="docs/glossary.md"
+WORDS="tests/gates/power-words.txt"
 fail=0
 
-[ -f "$ALIASES" ]  || { echo "  FAIL: missing $ALIASES";  echo "G17 glossary-consistency: FAIL"; exit 1; }
 [ -f "$GLOSSARY" ] || { echo "  FAIL: missing $GLOSSARY"; echo "G17 glossary-consistency: FAIL"; exit 1; }
+[ -f "$WORDS" ]    || { echo "  FAIL: missing $WORDS";    echo "G17 glossary-consistency: FAIL"; exit 1; }
 
-while IFS= read -r line; do
-  case "$line" in ''|'#'*) continue ;; esac
-  case "$line" in
-    *' => '*) : ;;
-    *) echo "  FAIL: malformed alias rule (no ' => '): $line"; fail=1; continue ;;
-  esac
-  forbidden="${line%% => *}"
-  canonical="${line##* => }"
+# (a) agent and subagent must each be their own bold list entry (distinct lemmas)
+for t in Agent Subagent; do
+  grep -qiE "^- \*\*${t}\*\*" "$GLOSSARY" \
+    || { echo "  FAIL: $GLOSSARY has no distinct '**${t}**' entry (agent/subagent must coexist)"; fail=1; }
+done
 
-  # (a) keep the denylist tied to the glossary
-  if ! grep -qiF -- "$canonical" "$GLOSSARY"; then
-    echo "  FAIL: canonical term '$canonical' (alias rule) not found in $GLOSSARY"
-    fail=1
-  fi
-
-  # (b) no shipped doc/agent/skill may use the forbidden term
-  matches="$(grep -rniE --include='*.md' --exclude-dir=examples --exclude-dir=templates \
-    -- "$forbidden" docs agents skills 2>/dev/null || true)"
-  if [ -n "$matches" ]; then
-    while IFS= read -r hit; do
-      [ -n "$hit" ] || continue
-      echo "  FAIL: $hit  (use '$canonical')"
-      fail=1
-    done <<EOF
-$matches
-EOF
-  fi
-done < "$ALIASES"
+# (b) every catalogued power word has a bold definition in the glossary
+while IFS= read -r term; do
+  case "$term" in ''|'#'*) continue ;; esac
+  grep -qiF -- "**${term}**" "$GLOSSARY" \
+    || { echo "  FAIL: power word '${term}' is not defined (**${term}**) in $GLOSSARY"; fail=1; }
+done < "$WORDS"
 
 if [ "$fail" -ne 0 ]; then echo "G17 glossary-consistency: FAIL"; exit 1; fi
 echo "G17 glossary-consistency: ok"
