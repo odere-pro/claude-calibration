@@ -1,0 +1,14 @@
+# Glossary canonical-term denylist — consumed by tests/gates/17-glossary-consistency.sh (G17).
+#
+# Format: one rule per line, `<forbidden-ERE> => <canonical>`.
+#   <forbidden-ERE>  an extended regex, matched case-insensitively against *.md under
+#                    docs/ agents/ skills/ (examples/ and templates/ fixtures excluded).
+#   <canonical>      the term to use instead; MUST appear in docs/glossary.md — the gate asserts
+#                    this, so the denylist can never drift from the canonical vocabulary.
+# Blank lines and lines starting with `#` are ignored. The ` => ` separator is literal.
+#
+# Keep rules precise to avoid false positives. For example, do NOT add a `sub-agent => subagent`
+# rule: "sub-agent" appears legitimately inside the code.claude.com/docs/en/sub-agents URL in many
+# doc Sources blocks.
+
+worker[ -]?subagents? => worker agent

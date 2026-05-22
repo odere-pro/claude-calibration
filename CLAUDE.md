@@ -91,6 +91,7 @@ Two files are authoritative; everything else defers to them:
 | G14 `14-doc-links` | no dangling intra-doc `.md` links | a broken doc/briefing link |
 | G15 `15-markdown-lint` (advisory) | markdown style | style nit |
 | G16 `16-changelog-fragment-present` | a PR with non-doc changes adds a `changelog/` fragment | missing fragment |
+| G17 `17-glossary-consistency` | docs/agents/skills use canonical `docs/glossary.md` terms | a non-canonical synonym (e.g. "worker subagent") |
 
 ## Test / verify quick-recipes
 
@@ -112,7 +113,7 @@ claude --plugin-dir .                             # load the plugin against itse
 | ---- | ---- | ------ |
 | `.claude-plugin/` | `plugin.json` + `marketplace.json` | yes |
 | `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 4 flows, 9 per-feature bundles | yes |
-| `agents/` | the 4 worker subagents | yes |
+| `agents/` | the 4 worker agents | yes |
 | `rules/` | `signatures.md` + `dispatch.md` (path-scoped) | yes |
 | `hooks/` | the two `PreToolUse` write-guards | yes |
 | `docs/` | the rubric the plugin grades against | yes |

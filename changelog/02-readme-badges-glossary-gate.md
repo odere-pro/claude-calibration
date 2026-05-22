@@ -1,0 +1,1 @@
+- README badges + canonical glossary: add a shields badge row (incl. live `gates` + OpenSSF Scorecard), standardize the "worker agent" term across docs/agents, and add gate G17 enforcing `docs/glossary.md` vocabulary across docs/agents/skills.

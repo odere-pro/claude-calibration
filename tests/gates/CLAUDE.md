@@ -6,10 +6,12 @@ The repo's CI validation suite: numbered shell gates (`NN-<slug>.sh`) that each 
 Author-only (not shipped/loaded for plugin users). The full lookup of which gate guards what lives in
 the root [`../../CLAUDE.md`](../../CLAUDE.md) "Gate map".
 
-- `NN-<slug>.sh` — one gate per invariant, numbered (01–16).
+- `NN-<slug>.sh` — one gate per invariant, numbered (01–17).
 - `run-all.sh` — runs every `[0-9][0-9]-*.sh` in order; non-zero exit from a gate fails the suite.
 - `lib.sh` — shared helpers (`gates_repo_root`, `gates_frontmatter`, `GATES_FEATURES`,
   `GATES_SIG_PREFIXES`); sourced, never executed.
+- `glossary-aliases.txt` — data sidecar for G17: `<forbidden-ERE> => <canonical>` rules whose
+  canonical term must exist in `docs/glossary.md`.
 
 ## Convention
 

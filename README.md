@@ -1,5 +1,12 @@
 # claude-calibration
 
+[![for Claude Code](https://img.shields.io/badge/for-Claude%20Code-d97757?logo=claude&logoColor=white)](https://code.claude.com/docs)
+[![type](https://img.shields.io/badge/type-plugin-555)](https://github.com/odere-pro/claude-calibration)
+[![status](https://img.shields.io/badge/status-pre--release-1f6feb)](https://github.com/odere-pro/claude-calibration/releases)
+[![license](https://img.shields.io/badge/license-MIT-e3b341)](LICENSE)
+[![gates](https://img.shields.io/github/actions/workflow/status/odere-pro/claude-calibration/ci.yml?branch=main&label=gates)](https://github.com/odere-pro/claude-calibration/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/odere-pro/claude-calibration/badge)](https://scorecard.dev/viewer/?uri=github.com/odere-pro/claude-calibration)
+
 A Claude Code **plugin** that calibrates your setup — it runs an **evaluate → plan → calibrate →
 re-evaluate** loop against a stated (or guessed) **intent**, produces a report, and — when the
 intent calls for it — **scaffolds new config that stops the same issues recurring**.

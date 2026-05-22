@@ -19,8 +19,9 @@ specific invocations for this plugin.
   worker-agent chain; `doctor` runs a ~5-second structural check; `onboarding` is a stateless guide.
 - **9 per-feature calibration skills** — `/claude-calibration:calibrate-{claude-md, rules, settings,
   skills, subagents, hooks, mcp, plugins, general}` (each `disable-model-invocation: true`).
-- **3 worker subagents** — `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`
-  (only invoked by the orchestrator; their `name + description` is the only standing cost).
+- **4 worker agents** — `calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
+  `calibration-feature-evaluator` (only invoked by the orchestrator/flows; their `name + description`
+  is the only standing cost).
 - **2 path-scoped rules** — `rules/signatures.md`, `rules/dispatch.md` — load only when files under
   `.claude/calibration/**` or `skills/calibrate-*/**` are open. Zero cost in normal sessions.
 - **2 safety hooks** — `PreToolUse` write-guards scoped to the calibrator subagent and to the

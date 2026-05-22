@@ -16,7 +16,9 @@ fuller treatment rather than restating it.
 - **Scope** — *where* a piece of config lives and therefore *who* it applies to: **user** (`~/.claude/`),
   **project** (`.claude/` in the repo), **local** (`*.local` / `.claude/settings.local.json`, not
   committed), **managed** (enterprise/admin), and **plugin-self** (files a plugin ships). See
-  [claude-structure.md](claude-structure.md).
+  [claude-structure.md](claude-structure.md). This *config* scope is distinct from a plan row's
+  **change scope** (`scope: project|user` — the target of a fix) and a run's **audit scope** (the
+  breadth of what was evaluated).
 - **Layering** — how two config files at different scopes combine: **additive** (both apply) or
   **override-by-name** (the higher-precedence one wins). See [claude-structure.md](claude-structure.md).
 - **Precedence** — the order scopes win in a conflict (broadly: managed → local → project → user).
@@ -63,6 +65,12 @@ fuller treatment rather than restating it.
 - **Enforcement-creation** — promoting a recurrence into a `kind: create` row that scaffolds a new
   feature (a hook, path-scoped rule, or wrapper skill) so the issue stops recurring. This is the
   plugin's core move — see [SOFTWARE-3-0.md](../SOFTWARE-3-0.md).
+- **Auto-promote** — the planner rule that, under enforcing intents (`enforce | tighten | prevent
+  recurrence | standardize | harden`), elevates a recurrence straight to a `kind: create` row rather
+  than leaving it as an opt-in. See [usage.md](usage.md).
+- **Enforcement opportunity** — a `kind: create` row the planner surfaced but did **not**
+  auto-promote; listed under `### Enforcement opportunities` in `plan.md` for you to opt into by id
+  at the approval gate.
 - **`kind: edit` vs `kind: create`** — an improvement-plan row that fixes one instance (`edit`) vs.
   one that scaffolds an enforcing artifact (`create`).
 - **Dispatch map** — [`rules/dispatch.md`](../rules/dispatch.md): maps each signature (or family) to
