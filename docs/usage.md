@@ -5,6 +5,13 @@
 A walkthrough of how to drive the plugin, from your first run to the per-feature shortcuts and the
 recurrence → enforcement-creation flow that's its highest-leverage feature.
 
+**On this page:** [First run](#your-first-run) · [Setting an intent](#setting-an-intent) ·
+[Resume / restart / status](#resuming-restarting-status) · [Per-feature usage](#per-feature-usage) ·
+[Recurrence → enforcement](#the-recurrence--enforcement-creation-flow) ·
+[3-vs-4-layer call](#the-3-vs-4-layer-call) · [Convenience flows](#convenience-flows) ·
+[Run-folder files](#reading-the-run-folder-files) · [Reverting](#reverting) ·
+[Auditing this plugin](#auditing-this-plugin-itself) · [Limits](#limits)
+
 ## Your first run
 
 ```text

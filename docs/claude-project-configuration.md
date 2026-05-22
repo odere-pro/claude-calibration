@@ -1,3 +1,5 @@
+[← README](README.md) · [Setup structure](claude-structure.md) · [Best practices](claude-config-best-practices.md)
+
 # Claude Code — Project Configuration
 
 How to configure Claude Code _for a repository_. This compiles the project-scoped slice of

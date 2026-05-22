@@ -1,3 +1,5 @@
+[← README](README.md) · [Glossary](glossary.md) · [Best practices](claude-config-best-practices.md)
+
 # Claude Code Configuration Structure
 
 Everything Claude Code reads to configure the harness, split into **global** (machine-wide),

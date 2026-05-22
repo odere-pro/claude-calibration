@@ -16,11 +16,32 @@ shortcuts, reading the run-folder files). Maintaining or releasing the plugin? S
 
 ## How these docs are organized
 
-- **One page per thing**, organized vertically: read a feature's page and you have its whole story
-  — definition, scope, configure, validate, improve — without jumping around.
-- **DRY**: a fact lives in exactly one page; other pages link to it. Scope / precedence / layering
-  rules live in `claude-structure.md` (or the owning feature page) and are linked, not restated.
-- **One template** for every feature page:
+The primary reader of these pages is an **agent** grading a setup against them — each bundle's
+`reference.md` is extracted from the matching `features/*.md`, and the evaluator falls back to
+reading the feature pages directly. So the pages are authored to be **parsed deterministically, not
+just browsed**. See [`SOFTWARE-3-0.md`](../SOFTWARE-3-0.md) for *why* the doc-set is shaped for
+agents.
+
+### Authoring principles
+
+1. **Front-load.** A one-line definition sits directly under the title; the most load-bearing fact
+   leads each section. An agent should land, parse, and score without reading to the end.
+2. **One page per thing**, organized vertically: a feature's page carries its whole story —
+   definition, scope, configure, validate, improve — without jumping around.
+3. **One fact, one page (DRY).** A fact lives in exactly one page; others link to it. Scope /
+   precedence / layering live in `claude-structure.md` (or the owning feature page) and are linked,
+   not restated. Cross-links are **anchored** (`page.md#section`) so navigation is deterministic.
+4. **One fixed shape per page-type.** Feature pages use the template below; reference pages use
+   purpose-line → sections → Sources.
+5. **Machine-readable rubric.** `Must` / `Should` / `Limit` tables carry concrete numbers; pattern
+   signatures are written **verbatim**.
+6. **Signatures are a stable contract.** A signature (`<feature>:<short-name>`) is never renamed —
+   it ties a page to its bundle's `reference.md`, `scripts/lint.sh`, and `rules/dispatch.md` (see
+   the [signature contract](../CONTRIBUTING.md#the-signature-contract-read-before-touching-findings)).
+7. **Consistent navigation.** Every non-feature page opens with the same breadcrumb; every page
+   ends with a **Sources** block of official doc links.
+
+The feature-page template:
 
   ```
   # <Feature>            — the official feature name
@@ -46,6 +67,7 @@ shortcuts, reading the run-folder files). Maintaining or releasing the plugin? S
 | [`usage.md`](usage.md)                     | Driving the plugin — your first run, setting an intent, resume/restart/status, per-feature usage, the recurrence → enforcement-creation flow, reading the run-folder files, reverting, limits            |
 | [`self-calibration.md`](self-calibration.md) | How the plugin evaluates a setup — the four flows (doctor/audit/calibrate/diff), the 6-phase loop, worker agents + models, signatures/dispatch, write-guards, and auditing this plugin against itself     |
 | [`evaluating-agentic-workflows.md`](evaluating-agentic-workflows.md) | Methodology for evaluating multi-agent / multi-skill workflows (e.g. a PR code-review pipeline) — the node / edge / flow levels, reusing the severity + intent-flow scales, case sets, and recurrence → enforcement |
+| [`RELEASING.md`](RELEASING.md)             | Maintainers — versioning, the gate suite, tagging, and publishing to the marketplace                                                                                                                    |
 
 ### Features
 

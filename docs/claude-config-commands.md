@@ -1,3 +1,5 @@
+[← README](README.md) · [Best practices](claude-config-best-practices.md) · [Evaluators](claude-evaluators.md)
+
 # Config commands — native ways to update / improve each entity
 
 Every built-in command (and the skills that go with it) that **creates, edits, updates, or

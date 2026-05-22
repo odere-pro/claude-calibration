@@ -1,3 +1,5 @@
+[← README](README.md) · [Config commands](claude-config-commands.md) · [Self-calibration](self-calibration.md)
+
 # Evaluators — Claude Code skills, agents & commands
 
 Everything that **evaluates, audits, scores, or recommends** — grouped by what it acts on.

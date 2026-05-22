@@ -1,4 +1,4 @@
-[← docs README](README.md) · [Install](install.md) · [Usage](usage.md) · [Setup structure](claude-structure.md)
+[← README](README.md) · [Install](install.md) · [Usage](usage.md) · [Setup structure](claude-structure.md)
 
 # Glossary
 
