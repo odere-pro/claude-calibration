@@ -2,7 +2,8 @@
   "name": "odere-pro",
   "owner": {
     "name": "odere",
-    "email": "odere.pro@gmail.com"
+    "email": "odere.pro@gmail.com",
+    "url": "https://github.com/odere-pro"
   },
   "plugins": [
     {

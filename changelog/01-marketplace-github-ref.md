@@ -1,0 +1,1 @@
+- Reference the odere-pro GitHub account in the manifests: add `owner.url` to `marketplace.json`, fix the `plugin.json` `author` block (`name` had held an email) into name/email/url, and point `homepage` at the repository.
