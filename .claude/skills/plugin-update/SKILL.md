@@ -8,7 +8,7 @@ description: >-
   after /docs-update. Invoke explicitly as /plugin-update [feature].
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Read, Grep, Glob, Edit, Bash(bash skills/calibrate-*/scripts/*.sh:*)
+allowed-tools: Read, Grep, Glob, Edit(skills/calibrate-*/**), Edit(.claude-plugin/plugin.json), Bash(bash skills/calibrate-*/scripts/*.sh:*)
 ---
 
 # plugin-update

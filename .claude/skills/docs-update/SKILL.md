@@ -1,7 +1,8 @@
 ---
 name: docs-update
 description: >-
-  Author-only maintenance skill for the claude-calibration repo. Refreshes the docs/ rubric against
+  Author-only maintenance skill for the claude-calibration repo. Use when the docs/ rubric may have
+  drifted from the official Claude Code docs. Refreshes the docs/ rubric against
   the official Claude Code docs: fans out to the docs-fetcher agent (one page at a time), diffs the
   live facts against each local page, and updates docs/ in place — preserving the page template
   (Definition → Scope → Configure → Validate → Improve → Sources) and the `## Sources` block. Proposes

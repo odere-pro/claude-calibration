@@ -51,7 +51,7 @@ for f in "$@"; do
     # weak signal — only fire if the line lacks a concrete verb / command / path
     vague_hits=$(grep -niE '\b(test your changes|format code|be careful|always|never|must|should)\b' "$f" \
       | grep -vE '`[^`]+`|/[A-Za-z0-9_./-]+|\b(run|use|pnpm|npm|yarn|cargo|go|gh|kubectl|aws|docker|terraform|prettier|eslint|tsc|jest|vitest|pytest)\b' \
-      | wc -l | tr -d ' ')
+      | wc -l | tr -d ' ' || true)
     if [ "${vague_hits:-0}" -gt 0 ]; then
       emit "$f" "claude-md:vague-rules" MEDIUM "$vague_hits aspirational lines without specifics — rewrite as concrete verifiable rules"
     fi
@@ -94,9 +94,13 @@ for f in "$@"; do
   # (calibrator does a cross-file diff; this lint emits a stub when there's a parent CLAUDE.md)
   parent_dir=$(dirname "$(dirname "$f")")
   if [ -f "$parent_dir/CLAUDE.md" ] && [ "$parent_dir/CLAUDE.md" != "$f" ]; then
-    shared=$(grep -hE '^#+\s' "$f" "$parent_dir/CLAUDE.md" 2>/dev/null | sort | uniq -d | head -1)
+    shared=$(grep -hE '^#+\s' "$f" "$parent_dir/CLAUDE.md" 2>/dev/null | sort | uniq -d | head -1 || true)
     if [ -n "$shared" ]; then
       emit "$f" "claude-md:contradicts-nested" MEDIUM "shares header '$shared' with $parent_dir/CLAUDE.md — verify rules don't conflict"
     fi
   fi
 done
+
+# A clean file emits nothing; honour the always-exit-0 contract the evaluator/gates rely on
+# (a trailing no-match grep above would otherwise leak rc=1).
+exit 0
