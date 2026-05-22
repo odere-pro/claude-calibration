@@ -5,7 +5,7 @@
 [![status](https://img.shields.io/badge/status-pre--release-1f6feb)](https://github.com/odere-pro/claude-calibration/releases)
 [![license](https://img.shields.io/badge/license-MIT-e3b341)](LICENSE)
 [![gates](https://img.shields.io/github/actions/workflow/status/odere-pro/claude-calibration/ci.yml?branch=main&label=gates)](https://github.com/odere-pro/claude-calibration/actions/workflows/ci.yml)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/odere-pro/claude-calibration/badge)](https://scorecard.dev/viewer/?uri=github.com/odere-pro/claude-calibration)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/odere-pro/claude-calibration/badge)](https://scorecard.dev/viewer/?uri=github.com/odere-pro/claude-calibration)
 
 A Claude Code **plugin** that calibrates your setup — it runs an **evaluate → plan → calibrate →
 re-evaluate** loop against a stated (or guessed) **intent**, produces a report, and — when the
