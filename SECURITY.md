@@ -41,8 +41,8 @@ fenced by deterministic guards, and so that nothing it ships reaches the network
 
 | Version | Supported |
 | ------- | --------- |
-| 0.2.x   | ✅        |
-| < 0.2   | ❌        |
+| 0.1.x   | ✅        |
+| < 0.1   | ❌        |
 
 ## Reporting a vulnerability
 

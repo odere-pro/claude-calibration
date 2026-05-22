@@ -29,6 +29,14 @@ merge_base="$(git merge-base "$base_ref" HEAD 2>/dev/null || true)"
 changed="$(git diff --name-only "${merge_base}...HEAD")"
 [ -n "$changed" ] || skip "empty diff against $base_ref"
 
+# Release commit: bumping plugin.json + editing CHANGELOG.md consumes fragments (aggregate --apply),
+# it does not add one. Waive the fragment requirement for that shape.
+if printf '%s\n' "$changed" | grep -qx 'CHANGELOG.md' && \
+   printf '%s\n' "$changed" | grep -qx '.claude-plugin/plugin.json'; then
+  echo "G16 changelog-fragment: ok (release commit — version bump + CHANGELOG; fragments consumed)"
+  exit 0
+fi
+
 # Doc-only paths need no fragment.
 is_doc_only() {
   case "$1" in
