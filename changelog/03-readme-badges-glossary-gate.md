@@ -1,1 +1,0 @@
-- README badges + power-words glossary: add a shields badge row (incl. live `gates` + OpenSSF Scorecard), define the project's power-word vocabulary in `docs/glossary.md` (notably **agent** vs **subagent** as distinct terms — a subagent is an agent that runs in its own context window), and add gate G17 asserting the glossary defines that vocabulary.
