@@ -68,6 +68,7 @@ The feature-page template:
 | [`self-calibration.md`](self-calibration.md) | How the plugin evaluates a setup — the four entry points (doctor/audit/calibrate/diff), the 6-phase loop, worker subagents + models, signatures/dispatch, write-guards, and auditing this plugin against itself     |
 | [`evaluating-agentic-workflows.md`](evaluating-agentic-workflows.md) | Evaluating multi-agent / multi-skill workflows (e.g. a PR code-review pipeline) — the node / edge / flow levels, reusing the severity + intent-flow scales, case sets, and recurrence → enforcement. Ships as `/calibration-flow`. |
 | [`RELEASING.md`](RELEASING.md)             | Maintainers — versioning, the gate suite, tagging, and publishing to the marketplace                                                                                                                    |
+| [`openssf-badge.md`](openssf-badge.md)     | OpenSSF Best Practices Badge — the passing-level self-assessment, criterion-by-criterion with in-repo evidence                                                                                           |
 
 ### Features
 

@@ -1,0 +1,1 @@
+- Document the OpenSSF Best Practices passing-level self-assessment: add `docs/openssf-badge.md` and link it from the docs index.
