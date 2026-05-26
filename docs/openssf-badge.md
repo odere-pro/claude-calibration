@@ -16,8 +16,9 @@ Badge](https://www.bestpractices.dev/) **passing** criteria. Every criterion is 
   (`ci.yml`, `codeql.yml`, `scorecard.yml`, `release.yml`). The facts below derive entirely from
   files in this repository.
 
-This is a docs-only record. The badge image is added to [`README.md`](../README.md) once a BadgeApp
-project entry exists and a project ID is issued (separate from the existing OpenSSF Scorecard badge).
+This is a docs-only record. The badge is shown in [`README.md`](../README.md) and links to the
+[BadgeApp project entry](https://www.bestpractices.dev/projects/12996) (separate from the existing
+OpenSSF Scorecard badge).
 
 ## Basics
 
