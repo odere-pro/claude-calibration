@@ -15,6 +15,19 @@ The version of record is `.claude-plugin/plugin.json` → `version`. Each releas
 
 ## [Unreleased]
 
+## [0.1.1] — 2026-05-26
+
+### Added
+
+- `1f84973` — Reference the odere-pro GitHub account in the manifests: add `owner.url` to `marketplace.json`, fix the `plugin.json` `author` block (`name` had held an email) into name/email/url, and point `homepage` at the repository.
+- `ea809f7` — Make the calibrate self-audit return clean on a correctly-built repo by fixing the defects and false positives dogfooding surfaced: `calibrate-claude-md`'s `lint.sh` no longer aborts mid-loop under `set -e`/`pipefail` (honours the always-exit-0 contract) and only flags genuinely aspirational prose for `vague-rules` (skips markdown headers, fenced code, and precise modal prohibitions); the `subagents`/`rules`/`hooks` `enumerate.sh` scripts skip `CLAUDE.md`/`README.md` so memory/doc files aren't audited as components; the hooks script-scan no longer mistakes `case` labels, quoted strings, comments, and `break`/`continue`/`;;` for PATH commands; `skill:cli-not-wrapped` only fires when a skill has bare unscoped `Bash` (so it could actually shell out); and `general:nested-claude-md-conflict` now counts only nested `CLAUDE.md` the root `CLAUDE.md` doesn't index, so documented layering isn't flagged as sprawl.
+- `5d489e1` — README badges + power-words glossary: add a shields badge row (incl. live `gates` + OpenSSF Scorecard), define the project's power-word vocabulary in `docs/glossary.md` (notably **agent** vs **subagent** as distinct terms — a subagent is an agent that runs in its own context window), and add gate G17 asserting the glossary defines that vocabulary.
+- `5d489e1` — Add an author-only deterministic eval harness (`tests/eval/`): `run-eval.sh` scores the plugin's own shipped payload (gate floor + correctly-scoped lint + adversarial durability checks) into a versioned JSON snapshot, and `compare-eval.sh` diffs snapshots to track improvement/regression across runs, with the time series stored in `tests/eval/history.jsonl` + a blessed `baseline.json`.
+- `5d489e1` — Harden the plugin via a self-calibration run: add CRITICAL gate **G18** (`18-changelog-fragment-unique`) asserting every `changelog/<NN>-<slug>.md` carries a distinct `<NN>` (and renumber the duplicate `02-readme-badges-glossary-gate` fragment to `03` so it passes), and make gate **G17** skip the gitignored `.claude/calibration/` run artifacts so a local self-calibration run no longer trips the glossary scan — closing two unenforced/over-broad spots the dogfood surfaced.
+- `fd18948` — Track whether calibration improves a setup over iterations: add the `/calibration-track` flow and its `snapshot.sh` / `compare.sh` engine — a deterministic config-quality snapshot (doctor floor + signature-keyed lint over all nine features) compared vs a baseline anchored to the last PR merged onto `main` and vs the previous iteration, persisted in a local gitignored ledger and independent of `/calibrate`'s circular built-in delta.
+- `57d9ecb` — Fix a `claude-md:contradicts-nested` false positive in `calibrate-claude-md`'s lint: it diffed a root `CLAUDE.md` against itself (relative-path string comparison) and read shell comments inside fenced code blocks as headings — now compares by inode identity (`-ef`) and strips fenced blocks before extracting headers, so the signature only fires on genuine cross-level header collisions.
+- `1ce0d38` — Add `/calibration-flow`, a shipped behavioural-flow evaluation capability: it drives a multi-step workflow over a case set of golden fixtures and grades whether the chain delivers intent and keeps its handoffs sound (node recall/precision, edge `handoff:*` contracts, flow intent), reusing the existing severity/signature/recurrence vocabulary. The verdict comes from a pure, deterministic scorer (`score-flow.sh`) — no LLM, no network — so it can be wired as both a CI gate (G19, via `lint-fixtures.sh`) and an on-demand run, with a `calibration-flow-evaluator` worker producing the findings the scorer judges.
+
 ## [0.1.0] — 2026-05-22
 
 First public release. Everything below ships in `v0.1.0`.
@@ -87,5 +100,6 @@ First public release. Everything below ships in `v0.1.0`.
   plugin skill count in `docs/install.md` (15 skills / four flows).
 - `3ebeb47` — Corrected the marketplace `owner.email` to `odere.pro@gmail.com`.
 
-[Unreleased]: https://github.com/odere-pro/claude-calibration/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/odere-pro/claude-calibration/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/odere-pro/claude-calibration/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/odere-pro/claude-calibration/releases/tag/v0.1.0
