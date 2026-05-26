@@ -10,9 +10,11 @@ application — every file under here ships to end users when the plugin is inst
   is omitted here on purpose — `plugin.json` wins
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
-  `calibration-diff`, `calibration-track`, `calibration-doctor`, `calibration-onboarding`
-- `agents/calibration-*.md` — 4 worker subagents: planner, evaluator, calibrator, and
-  `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel)
+  `calibration-diff`, `calibration-track`, `calibration-flow`, `calibration-doctor`,
+  `calibration-onboarding`
+- `agents/calibration-*.md` — 5 worker subagents: planner, evaluator, calibrator,
+  `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel), and
+  `calibration-flow-evaluator` (sonnet worker the `/calibration-flow` behavioural flow spawns)
 - `rules/{signatures,dispatch}.md` — canonical signature catalogue + dispatch map
 - `hooks/{hooks.json,calibrator-write-guard.sh,audit-write-guard.sh}` — `PreToolUse` write-guards
 - `docs/` — human-readable rubric (the doc-set the plugin grades against)
@@ -37,9 +39,11 @@ application — every file under here ships to end users when the plugin is inst
 
 ## Agent routing
 
-The 4 worker subagents (`calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
-`calibration-feature-evaluator`) are invoked exclusively by the orchestrator skill at
-`skills/calibration/SKILL.md`. No root `AGENTS.md` is needed; routing is encoded in the
+The 5 worker subagents (`calibration-planner`, `calibration-evaluator`, `calibration-calibrator`,
+`calibration-feature-evaluator`, `calibration-flow-evaluator`) are invoked exclusively by the skill
+layer — the `/calibrate` orchestrator and the standalone flows (`calibration-flow` spawns
+`calibration-flow-evaluator`); never by the user directly. No root `AGENTS.md` is needed; routing is
+encoded in the
 orchestrator's dispatch logic, not a routing table.
 
 ## House rules
@@ -93,6 +97,7 @@ Two files are authoritative; everything else defers to them:
 | G16 `16-changelog-fragment-present` | a PR with non-doc changes adds a `changelog/` fragment | missing fragment |
 | G17 `17-glossary-consistency` | `docs/glossary.md` defines the power-word vocabulary (`agent`/`subagent` distinct) AND prose uses it — drift is caught | a power word with no entry, or a banned synonym in prose (e.g. a worker subagent written as a plain `agent`) |
 | G18 `18-changelog-fragment-unique` | every `changelog/<NN>-<slug>.md` has a distinct `<NN>` | two in-flight PRs picked the same fragment number |
+| G19 `19-flow-fixture-integrity` | behavioural-flow fixtures have `input/` + a parseable `expected.md` oracle naming only catalogued signatures; the scorer can score each shipped example | a fixture with no `expected.md`, an unparseable oracle, or a signature not in `signatures.md` |
 
 ## Test / verify quick-recipes
 
@@ -104,6 +109,7 @@ bash scripts/changelog-aggregate.sh               # preview pending changelog fr
 bash tests/eval/run-eval.sh --scope shipped --durability   # deterministic snapshot: floor + scoped lint + durability
 bash tests/eval/compare-eval.sh --vs-baseline              # track improvement/regression vs tests/eval/baseline.json
 bash tests/eval/run-eval.sh --scope all --no-write         # diagnostic: what an unscoped audit would see (incl. cache)
+bash tests/eval/score-flow-cases.sh                        # deterministic unit tests for the behavioural-flow scorer (no LLM)
 
 claude --plugin-dir .                             # load the plugin against itself, then in-session:
 #   /reload-plugins                               #   pick up edits
@@ -117,8 +123,8 @@ claude --plugin-dir .                             # load the plugin against itse
 | Path | Role | Ships? |
 | ---- | ---- | ------ |
 | `.claude-plugin/` | `plugin.json` + `marketplace.json` | yes |
-| `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 5 flows, 9 per-feature bundles | yes |
-| `agents/` | the 4 worker subagents | yes |
+| `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 6 flows, 9 per-feature bundles | yes |
+| `agents/` | the 5 worker subagents | yes |
 | `rules/` | `signatures.md` + `dispatch.md` (path-scoped) | yes |
 | `hooks/` | the two `PreToolUse` write-guards | yes |
 | `docs/` | the rubric the plugin grades against | yes |

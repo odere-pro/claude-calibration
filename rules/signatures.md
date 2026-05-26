@@ -149,6 +149,50 @@ Each row: `signature · default severity · what it flags`.
 | `general:must-rule-with-no-hook`        | MEDIUM | CLAUDE.md or rules contain "must"/"always"/"never" lines but no hooks block exists                    |
 | `general:diagnostics-ask`               | INFO   | (Always emitted) Reminder that the four CLI outputs should be pasted into the report                  |
 
+## Behavioural flow signatures (`calibration-flow` capability)
+
+These grade workflow **behaviour**, not static config, and are owned by the shipped
+`calibration-flow` capability — **not** by a `calibrate-<feature>` bundle (the nine features are
+fixed). Their prefixes (`review:`, `handoff:`, `flow:`) are deliberately kept out of
+`GATES_SIG_PREFIXES`, so the config-side integrity gate **G7** ignores them; the behavioural
+integrity gate **G19** (`tests/gates/19-flow-fixture-integrity.sh`) checks them instead. The
+`flow:fixture-*` rows are emitted by `skills/calibration-flow/scripts/lint-fixtures.sh`; the rest are
+emitted by the `calibration-flow-evaluator` into `actual.tsv` / `eval-flow-*.md`.
+
+### Node — `review:*` (per-component recall/precision)
+
+| Signature                | Sev    | Trigger                                                                             |
+| ------------------------ | ------ | ----------------------------------------------------------------------------------- |
+| `review:security-missed` | HIGH   | A planted security defect was not caught by the responsible node (CRITICAL when the missed defect is CRITICAL) |
+| `review:quality-missed`  | MEDIUM | A planted code-quality defect was not caught                                        |
+| `review:false-positive`  | LOW    | A node raised a finding on a known-good input (precision miss)                       |
+| `review:scope-overlap`   | MEDIUM | Two nodes flagged the same defect — duplicated coverage with conflicting severities |
+
+### Edge — `handoff:*` (contract across a seam)
+
+| Signature                  | Sev    | Trigger                                                                       |
+| -------------------------- | ------ | ----------------------------------------------------------------------------- |
+| `handoff:finding-dropped`  | HIGH   | A finding a node produced never reached the orchestrator's synthesis          |
+| `handoff:ac-not-passed`    | HIGH   | The acceptance criteria / ticket was not passed to the downstream node        |
+| `handoff:diff-not-passed`  | HIGH   | The same diff revision did not reach a sub-reviewer                            |
+| `handoff:severity-drift`   | MEDIUM | A finding's severity changed across the seam (not normalised onto one scale)  |
+| `handoff:contract-mismatch`| MEDIUM | The consumer expected structured findings; the producer emitted prose         |
+| `handoff:duplicated-work`  | LOW    | Two nodes audited the same thing — paid for twice                             |
+
+### Flow — `flow:*` (end-to-end intent + fixture integrity)
+
+| Signature                       | Sev      | Trigger                                                                          |
+| ------------------------------- | -------- | -------------------------------------------------------------------------------- |
+| `flow:intent-unmet`             | HIGH     | The chain did not deliver an acceptance criterion the intent required            |
+| `flow:coverage-gap`             | HIGH     | A concern the intent needs has no owning node (`owner_node: UNOWNED`)            |
+| `flow:workflow-error`           | HIGH     | The workflow-under-test errored on a case; recorded so the run continues         |
+| `flow:case-truncated`           | LOW      | A case (e.g. an oversized adversarial diff) was truncated rather than looped     |
+| `flow:fixture-missing-input`    | HIGH     | A fixture case has no `input/` directory                                         |
+| `flow:fixture-missing-expected` | HIGH     | A fixture case has no `expected.md` oracle                                       |
+| `flow:fixture-unparseable`      | HIGH     | An oracle's frontmatter, class, signature shape, or table values do not parse    |
+| `flow:fixture-bad-severity`     | HIGH     | A planted-defect severity is not in `CRITICAL\|HIGH\|MEDIUM\|LOW\|INFO`          |
+| `flow:fixture-unknown-signature`| CRITICAL | An oracle names a signature not present in this catalogue                        |
+
 ## Severity scale (use these literal values)
 
 - **CRITICAL** — secret in a committed file; `--dangerously-skip-permissions`; destructive op

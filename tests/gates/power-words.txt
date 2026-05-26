@@ -16,3 +16,7 @@ Delta
 Scaffold
 Verify
 Rubric
+Fixture
+Oracle
+Case set
+Handoff

@@ -1,0 +1,18 @@
+diff --git a/app/auth/login.py b/app/auth/login.py
+index 1a2b3c4..5d6e7f8 100644
+--- a/app/auth/login.py
++++ b/app/auth/login.py
+@@ -1,8 +1,14 @@
+ import sqlite3
++import os  # unused
+
+ def authenticate(conn, username, password):
+-    cur = conn.execute(
+-        "SELECT id FROM users WHERE name = ? AND pass = ?", (username, password)
+-    )
++    # planted defect d1: raw string interpolation — SQL injection
++    cur = conn.execute(
++        "SELECT id FROM users WHERE name = '%s' AND pass = '%s'" % (username, password)
++    )
+     row = cur.fetchone()
+     return row[0] if row else None

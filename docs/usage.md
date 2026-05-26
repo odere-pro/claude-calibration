@@ -332,8 +332,8 @@ tracked project measure).
 
 > Scope: this tracks **config quality** (does the setup get tighter and safer). It does **not**
 > measure the runtime *behaviour* of a workflow — whether a code-review setup actually catches more
-> bugs is behavioural evaluation, covered as methodology in
-> [evaluating-agentic-workflows.md](evaluating-agentic-workflows.md).
+> bugs is behavioural evaluation, which ships separately as `/calibration-flow` (see
+> [evaluating-agentic-workflows.md](evaluating-agentic-workflows.md)).
 
 ## Reverting
 
@@ -446,9 +446,9 @@ The plugin is **structural** — it audits your config files and reasons over th
 - **Detect dynamic problems.** Things like "this hook is too slow", "this MCP server returns no
   data 30% of the time", or "this skill never actually fires" need a transcript scan or a live
   measurement — out of scope for a static audit. The `harness-optimizer` plugin agent does some of
-  this; this plugin focuses on the config files themselves. For a methodology to evaluate the
-  behaviour of multi-agent workflows themselves, see
-  [`evaluating-agentic-workflows.md`](evaluating-agentic-workflows.md).
+  this; this plugin focuses on the config files themselves. To evaluate the *behaviour* of
+  multi-agent workflows over a case set, run `/calibration-flow` (see
+  [`evaluating-agentic-workflows.md`](evaluating-agentic-workflows.md)).
 
 Once you have those four diagnostic outputs pasted in `<run>/eval-features-*.md`, the next run will
 have exact numbers rather than estimates.

@@ -142,36 +142,36 @@ This mirrors the plugin's `kind: edit` vs `kind: create` split
   check, a lint rule, a `PreToolUse`/`Stop` hook — so the workflow _cannot_ regress on it. Agents are
   probabilistic; the things you can make deterministic, you should.
 
-## How this could grow into the plugin
+## How this grew into the plugin
 
-Today this is methodology, not a feature — the calibration plugin is static-config only and does
-**not** run workflow evaluations. A future capability would need three things the static engine
-doesn't have: a **flow-evaluator** agent that drives a workflow over a case set, an `eval-flow-*.md`
-report type, and a **fixtures / golden-case harness** to hold the known-good / known-defect inputs.
-The runtime building blocks already exist elsewhere and are catalogued under
+This now ships as **`/calibration-flow`**. The capability needed three things the static engine
+didn't have, and all three are built (next section): a **flow-evaluator** subagent that drives a
+workflow over a case set, an `eval-flow-*.md` report type, and a **fixtures / golden-case harness**
+to hold the known-good / known-defect inputs. The verdict is computed by a deterministic scorer, so
+the behavioural cross-check stays honest even though driving the workflow is non-deterministic.
+The runtime building blocks it draws on are catalogued under
 [`claude-evaluators.md` → Beyond config](claude-evaluators.md#beyond-config): `gan-evaluator`
 (drives a live app, scores against a rubric, feeds back), `eval-harness` and `verification-loop`
 (structured eval / verify-retry loops), and `e2e-runner` (end-to-end flows). `harness-optimizer`
 already reasons about agent definitions and model routing across a setup.
 
-## Concrete interfaces (proposed — not yet shipped)
+## Shipped interfaces (`/calibration-flow`)
 
-The config-side iteration track now ships (`/calibration-track`, see
-[usage.md](usage.md#tracking-improvement-across-iterations)): it snapshots config quality
-deterministically and reports improvement vs a baseline and vs the previous iteration. The
-behavioural harness is the **next phase** — these are the three interfaces it needs, specified here
-so a later PR can build them. None of these components ship yet; the plugin is still static-config
-only.
+The config-side iteration track ships as `/calibration-track` (see
+[usage.md](usage.md#tracking-improvement-across-iterations)). The behavioural harness now ships too,
+as `/calibration-flow`, built from these three interfaces:
 
-1. **`calibration-flow-evaluator` (a worker subagent).** Input: a workflow id (the orchestrating
-   skill/agent under test), a **case set** path, and the run folder. It drives the workflow over each
-   case, diffs actual findings against expected, and writes the report below. Mirrors the contract of
-   the existing `calibration-evaluator` ([`../agents/calibration-evaluator.md`](../agents/calibration-evaluator.md))
-   but points at behaviour, not files.
+1. **`calibration-flow-evaluator` (a worker subagent,
+   [`../agents/calibration-flow-evaluator.md`](../agents/calibration-flow-evaluator.md)).** Input: a
+   workflow id (the orchestrating skill/agent under test), a **case set** path, and the run folder.
+   It drives the workflow over each case, records the findings to `actual.tsv`, diffs them against the
+   oracle via the deterministic scorer, and writes the report below. Mirrors the contract of
+   `calibration-evaluator` ([`../agents/calibration-evaluator.md`](../agents/calibration-evaluator.md))
+   but points at behaviour, not files — and its verdict is the scorer's, never its own.
 
 2. **`eval-flow-<ts>.md` (a report type).** One section per level, reusing the shared scales:
    - **Node** — per component: `recall`, `precision`, `scope`; findings tagged `<area>:<short-name>`
-     at `CRITICAL > HIGH > MEDIUM > LOW > INFO`.
+     at `CRITICAL > HIGH > MEDIUM > LOW > INFO` (the `review:*` family).
    - **Edge** — per handoff: contract check (artifact shape passed vs expected), with
      `handoff:*` signatures (`handoff:ac-not-passed`, `handoff:finding-dropped`, …).
    - **Flow** — the intent-flow table (`met | partial | blocked | unknown` per acceptance criterion)
@@ -179,22 +179,30 @@ only.
      format, so behavioural and config runs read the same.
 
 3. **`fixtures/` (a golden-case harness).** A directory of cases, each
-   `fixtures/<case>/{input, expected.md}`, covering the four input classes from
+   `<case>/{input/, expected.md}`, covering the four input classes from
    [You can't grade behaviour statically](#you-cant-grade-behaviour-statically--use-cases):
-   known-good, known-defect, adversarial, AC-mismatch. `expected.md` lists which node should catch
-   each planted defect, at what severity — the oracle the evaluator diffs against.
+   known-good, known-defect, adversarial, AC-mismatch. The **oracle** (`expected.md`) lists which
+   node should catch each planted defect at what severity, which handoff contracts must hold, and the
+   expected status of each acceptance criterion — what the scorer (`score-flow.sh`) diffs against. A
+   worked pair ships under [`../skills/calibration-flow/examples/`](../skills/calibration-flow/examples/);
+   you author your own under `.claude/fixtures/`. Fixture integrity is enforced deterministically by
+   gate G19, so a broken oracle is caught before any workflow runs.
 
 With those three, the same recurrence → enforcement loop applies: a recurring `handoff:*` or
 `<area>:*` signature promotes to a durable fix (a handoff contract check, a deterministic gate),
-exactly as config recurrences promote today.
+exactly as config recurrences promote today — the archetypes live in
+[`../rules/dispatch.md`](../rules/dispatch.md).
 
 ## Scope & limits
 
 This is **behavioural** evaluation and sits outside what `/calibrate` does — see
-[`usage.md` → Limits](usage.md#limits) ("this skill never actually fires … need a transcript scan or
-a live measurement"). The vocabulary here (severity, intent-flow scoring, signatures, recurrence) is
-shared with the config side so the two stay consistent; the _mechanism_ (running a workflow over
-cases) is yours to build with the tools above.
+[`usage.md` → Limits](usage.md#limits). `/calibration-flow` ships the **scoring + oracle + report**
+scaffolding (deterministic `score-flow.sh`, the `expected.md` schema, `eval-flow-*.md`, gate G19) and
+one worked driver pattern (PR code-review). It is a **cross-check, not a gate**: driving the workflow
+runs LLM agents, so it is non-deterministic — the deterministic guarantee lives in G19 (fixture
+integrity) and the scorer, never in a live run. How to actually invoke *your* workflow over each case
+(spawn a skill, run an agent, shell a CLI) stays yours to wire — the vocabulary (severity, intent-flow
+scoring, signatures, recurrence) is shared with the config side so the two read the same.
 
 ## Sources
 
