@@ -1,0 +1,5 @@
+# want-exit: 1
+node	security-reviewer	recall	0/1	precision	n/a	scope	ok
+node	code-reviewer	recall	1/1	precision	1/1	scope	ok
+verdict	fail
+intent	low

@@ -6,10 +6,14 @@ The repo's CI validation suite: numbered shell gates (`NN-<slug>.sh`) that each 
 Author-only (not shipped/loaded for plugin users). The full lookup of which gate guards what lives in
 the root [`../../CLAUDE.md`](../../CLAUDE.md) "Gate map".
 
-- `NN-<slug>.sh` — one gate per invariant, numbered (01–17).
+- `NN-<slug>.sh` — one gate per invariant, numbered (01–19).
 - `run-all.sh` — runs every `[0-9][0-9]-*.sh` in order; non-zero exit from a gate fails the suite.
 - `lib.sh` — shared helpers (`gates_repo_root`, `gates_frontmatter`, `GATES_FEATURES`,
-  `GATES_SIG_PREFIXES`); sourced, never executed.
+  `GATES_SIG_PREFIXES`); sourced, never executed. **`GATES_SIG_PREFIXES` is the nine config
+  features only** — the behavioural prefixes (`review`/`handoff`/`flow`) are deliberately excluded so
+  G7 stays scoped to config; G19 (`19-flow-fixture-integrity.sh`) validates the behavioural family
+  against the catalogue with its own local regex. Don't add them here or G7 will demand bundle
+  ownership for a family that has none.
 - `power-words.txt` — data sidecar for G17: the power-word catalogue; each term must be defined as a
   `**bold**` entry in `docs/glossary.md`.
 - `forbidden-terms.txt` — data sidecar for G17: `<forbidden-ERE> => <canonical>` rules for phrases

@@ -53,6 +53,20 @@ table:
 | `settings:permissions-empty` (×N projects)    | `calibrate-settings`                  | a baseline `permissions.allow` block via `calibrate-settings/templates/settings.json.tmpl`                                                |
 | `general:must-rule-with-no-hook`              | `calibrate-hooks`                     | rolled-up version of the per-feature one — the planner usually emits one or the other, not both                                           |
 
+### Behavioural-flow recurrences (`calibration-flow`)
+
+The shipped `calibration-flow` capability emits behavioural signatures (`review:*`, `handoff:*`,
+`flow:*` — see [`signatures.md`](signatures.md)). They have no `calibrate-<feature>` lint of their
+own, but a **recurring** behavioural defect promotes to a durable fix through the same planner
+recurrence engine. The fix lives in whichever config bundle can make the seam deterministic:
+
+| Recurring signature                       | Create-row bundle     | Template / durable fix                                                                                       |
+| ----------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `handoff:finding-dropped` (×N)            | `calibrate-hooks`     | a `Stop` hook asserting every sub-reviewer CRITICAL appears in the final synthesis                           |
+| `handoff:ac-not-passed` (×N)              | `calibrate-subagents` | tighten the orchestrator's spawn contract so the AC / ticket reaches the downstream node                     |
+| `flow:coverage-gap` (×N for same concern) | `calibrate-subagents` | add a node that owns the unowned concern (the "no node evaluates X" case)                                    |
+| `review:security-missed` (×N)             | `calibrate-subagents` | sharpen the security node — add a tool, narrow its scope, or strengthen its prompt                           |
+
 ## Cross-bundle hand-offs
 
 Some `edit`-row findings produce work in _two_ bundles:
@@ -85,6 +99,12 @@ Every signature belongs to exactly one bundle (which owns its `lint.sh`). Cross-
 | `mcp:*`       | `calibrate-mcp`                                                    |
 | `plugin:*`    | `calibrate-plugins`                                                |
 | `general:*`   | `calibrate-general` (cross-cutting; rolls up per-feature findings) |
+
+The behavioural prefixes (`review:*`, `handoff:*`, `flow:*`) sit **outside** this nine-bundle
+ownership model — they are owned by the `calibration-flow` capability and routed to a config bundle
+only for the *fix* (see [Behavioural-flow recurrences](#behavioural-flow-recurrences-calibration-flow)
+above). They are intentionally absent from `GATES_SIG_PREFIXES`, so gate G7 does not treat them as
+config signatures; gate G19 validates them instead.
 
 ## When a new dispatch rule is needed
 

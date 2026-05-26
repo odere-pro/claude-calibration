@@ -1,0 +1,22 @@
+diff --git a/app/util/slug.py b/app/util/slug.py
+index 0000000..1111111 100644
+--- a/app/util/slug.py
++++ b/app/util/slug.py
+@@ -1,3 +1,8 @@
+ import re
+
++def slugify(text):
++    """Lowercase, hyphenate, strip non-alphanumerics."""
++    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
++
+ def is_slug(text):
+     return bool(re.fullmatch(r"[a-z0-9-]+", text))
+diff --git a/tests/test_slug.py b/tests/test_slug.py
+index 0000000..2222222 100644
+--- a/tests/test_slug.py
++++ b/tests/test_slug.py
+@@ -0,0 +1,5 @@
++from app.util.slug import slugify
++
++def test_slugify_basic():
++    assert slugify("Hello World!") == "hello-world"

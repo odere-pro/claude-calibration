@@ -84,9 +84,11 @@ If the run folder already contains a `plan.md`, return
 
 ### Step 1 — read the evaluator's reports
 
-Glob `<Run folder>/eval-features-*.md`, `eval-interactions-*.md`, `eval-intent-flow-*.md`. Each
-finding carries a pattern signature (`<feature>:<short-name>`) and a severity
-(`CRITICAL | HIGH | MEDIUM | LOW | INFO`). Collect them all.
+Glob `<Run folder>/eval-features-*.md`, `eval-interactions-*.md`, `eval-intent-flow-*.md`, and
+`eval-flow-*.md` (the last is present only when a `/calibration-flow` behavioural run shares this run
+folder). Each finding carries a pattern signature (`<feature>:<short-name>`, or a behavioural
+`review:*` / `handoff:*` / `flow:*`) and a severity (`CRITICAL | HIGH | MEDIUM | LOW | INFO`).
+Collect them all.
 
 ### Step 2 — recurrence detection
 
@@ -99,7 +101,10 @@ The signature is the recurrence key. Two sources:
 
 For each recurring signature, look up its archetype in `<Bundles dir>/../rules/dispatch.md` →
 **Create-row dispatch** table. That file is the canonical map and lists the create-row bundle
-and template the calibrator should use.
+and template the calibrator should use. Recurring behavioural signatures (`handoff:*`, `flow:*`,
+`review:*`) resolve via the **Behavioural-flow recurrences** subsection there — e.g. a recurring
+`handoff:finding-dropped` promotes to a `calibrate-hooks` `Stop`-hook contract check, exactly as
+config recurrences promote.
 
 ### Step 3 — auto-promote vs enforcement opportunity
 

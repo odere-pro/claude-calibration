@@ -1,0 +1,3 @@
+node	signature	severity	detail
+security-reviewer	review:security-missed	CRITICAL	SQL injection via string interpolation in login.py
+code-reviewer	review:quality-missed	MEDIUM	unused import os added in the diff

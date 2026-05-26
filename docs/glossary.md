@@ -54,7 +54,10 @@ fuller treatment rather than restating it.
   → delta-eval → report and persists run state.
 - **Dispatcher** — `/calibration`: the top-level menu/router above `/calibrate`.
 - **Flow** — a standalone multi-phase skill that spawns its own subagent chain (or, for the lighter
-  ones, just runs a script and formats): `calibration-{audit,diff,track,doctor,onboarding}`.
+  ones, just runs a script and formats): `calibration-{audit,diff,track,doctor,onboarding,flow}`.
+  Distinct from the **flow level** of behavioural evaluation (end-to-end intent delivery, the third of
+  node/edge/flow) — disambiguate by context: "a flow" is a skill, "the flow level" is an eval lens.
+  See [evaluating-agentic-workflows.md](evaluating-agentic-workflows.md).
 - **Worker subagent** — one of `calibration-planner`, `calibration-evaluator`,
   `calibration-calibrator`, and the haiku-class `calibration-feature-evaluator` the evaluator fans
   out to. An agent the orchestrator/flows spawn **in its own context window** (so the parent stays
@@ -92,6 +95,22 @@ fuller treatment rather than restating it.
   built-in **Delta** — see [usage.md](usage.md#tracking-improvement-across-iterations). The track
   baseline is a cross-run, git-anchored reference, distinct from the evaluator's within-run
   **Baseline** pass.
+- **Behavioural-flow evaluation** — `/calibration-flow`: grading a multi-step workflow's *behaviour*
+  (does the chain deliver intent; are the handoffs sound) rather than static config. It drives the
+  workflow over a **Case set**, diffs findings against each **Oracle**, and scores node/edge/flow.
+  The verdict is the deterministic scorer's, never the LLM's. See
+  [evaluating-agentic-workflows.md](evaluating-agentic-workflows.md).
+- **Case set** — the unit of a behavioural evaluation: a directory of **Fixture** cases the workflow
+  is run over (the behavioural analogue of a static lint). Covers known-good, known-defect,
+  adversarial, and AC-mismatch inputs.
+- **Fixture** — one behavioural case: `<case>/{input/, expected.md}`. `input/` is the stimulus the
+  workflow consumes; `expected.md` is its **Oracle**.
+- **Oracle** — a fixture's `expected.md`: the ground truth a run is diffed against — which node
+  should catch each planted defect at what severity, which handoff contracts must hold, and the
+  expected status of each acceptance criterion.
+- **Handoff** — a seam between two nodes in a workflow (agent→agent or agent→skill): a contract where
+  the producer emits an artifact and the consumer expects a shape. The recurring failure modes are
+  catalogued as `handoff:*` signatures (`handoff:finding-dropped`, `handoff:ac-not-passed`, …).
 
 ## Power words
 

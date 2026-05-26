@@ -2,7 +2,7 @@
 
 ## Scope
 
-The four **worker subagents** the orchestrator dispatches. They ship with the plugin and are invoked
+The five **worker subagents** the skill layer dispatches. They ship with the plugin and are invoked
 **only** by the skill layer — never by the user directly, never auto-fired.
 
 - `calibration-planner.md` (opus) — writes `plan.md`; init mode (skeleton) + improve mode (recurrence
@@ -13,6 +13,9 @@ The four **worker subagents** the orchestrator dispatches. They ship with the pl
   parallel, one per feature.
 - `calibration-calibrator.md` (sonnet) — applies approved plan rows, dispatching through each
   bundle's templates/examples.
+- `calibration-flow-evaluator.md` (sonnet) — grades workflow **behaviour**: drives a workflow over a
+  case set, scores findings against each oracle via `score-flow.sh`, writes `eval-flow-*.md`. Spawned
+  only by the `/calibration-flow` flow, never by the orchestrator.
 
 ## Map
 
@@ -21,6 +24,9 @@ The four **worker subagents** the orchestrator dispatches. They ship with the pl
    ├─ calibration-planner        (init, then improve)
    ├─ calibration-evaluator      ──▶ 9× calibration-feature-evaluator (parallel, one per feature)
    └─ calibration-calibrator     (walks the approved plan)
+
+/calibration-flow (behavioural flow)
+   └─ calibration-flow-evaluator (drives a workflow over a case set; scores via score-flow.sh)
 ```
 
 Routing is encoded in the orchestrator's dispatch logic (`../skills/calibration/SKILL.md` and

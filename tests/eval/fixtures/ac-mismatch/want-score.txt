@@ -1,0 +1,4 @@
+# want-exit: 0
+flow	audit-logging	met	mismatch
+verdict	pass
+intent	mid
