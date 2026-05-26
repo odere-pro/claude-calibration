@@ -8,13 +8,17 @@ on:
     tags: ["v*"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub Release and upload assets
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
       - name: Install jq and shellcheck
         run: sudo apt-get update && sudo apt-get install -y jq shellcheck
@@ -43,10 +47,36 @@ jobs:
           ' CHANGELOG.md > release-notes.md
           echo "wrote $(wc -l < release-notes.md) lines"
 
+      - name: Package release tarball
+        id: hash
+        run: |
+          tarball="claude-calibration-${GITHUB_REF_NAME}.tar.gz"
+          git archive --format=tar.gz \
+            --prefix="claude-calibration-${GITHUB_REF_NAME#v}/" \
+            -o "$tarball" HEAD
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+          # base64 of `sha256sum <artifact>` — the subject format the SLSA generator expects
+          echo "hashes=$(sha256sum "$tarball" | base64 -w0)" >> "$GITHUB_OUTPUT"
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" \
             --title "$GITHUB_REF_NAME" \
-            --notes-file release-notes.md
+            --notes-file release-notes.md \
+            "${{ steps.hash.outputs.tarball }}"
+
+  # Generates SLSA build provenance for the release tarball and attaches the *.intoto.jsonl
+  # provenance as a release asset. Pinned to a semantic-version tag by design — the SLSA
+  # reusable workflow self-verifies and refuses commit-SHA refs.
+  provenance:
+    needs: [release]
+    permissions:
+      actions: read # read the workflow run for provenance
+      id-token: write # keyless signing via OIDC
+      contents: write # upload provenance to the release
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: "${{ needs.release.outputs.hashes }}"
+      upload-assets: true

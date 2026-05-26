@@ -1,0 +1,13 @@
+version: 2
+
+# This plugin has no package manifests (Markdown + Bash + JSON). The only versioned
+# dependencies are the GitHub Actions used in CI/release/scorecard/codeql workflows, which
+# are pinned by commit SHA. Dependabot watches that ecosystem and bumps the SHA pins (it
+# updates the pin and the trailing `# vX.Y.Z` comment together).
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "ci"

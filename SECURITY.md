@@ -46,7 +46,7 @@ fenced by deterministic guards, and so that nothing it ships reaches the network
 
 ## Reporting a vulnerability
 
-Please report privately via **GitHub Security Advisories** on
-`odere-pro/claude-calibration` ("Report a vulnerability"), rather than opening a public issue. We
-aim to acknowledge within a few days and to fix or mitigate confirmed issues before any public
-disclosure.
+Please report privately via **GitHub Security Advisories** —
+<https://github.com/odere-pro/claude-calibration/security/advisories/new> — rather than opening a
+public issue. You can also reach the maintainer at <odere.pro@gmail.com>. We aim to acknowledge
+within a few days and to fix or mitigate confirmed issues before any public disclosure.
