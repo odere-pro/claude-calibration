@@ -50,20 +50,31 @@ name. The full matrix (modes, arguments, per-feature shortcuts) is in
 
 ## How it works · why it's shaped this way
 
-```text
-your setup + a calibration goal
-        │
-        ▼
-  pick a workflow:
-    onboarding   first run — name the stack, suggest one step   (read-only)
-    doctor       ~5-second structural health check              (read-only)
-    audit        baseline evaluation — good CI gate             (read-only)
-    diff         what changed since the last run                (read-only)
-    calibrate    the full loop ▼
+```mermaid
+flowchart TD
+    start([your setup + a calibration goal])
+    pick{pick a workflow}
+    start --> pick
 
-  plan ─► evaluate ─► approve ─► calibrate ─► re-evaluate ─► report
-        │
-        └─ recurring finding? ─► scaffold enforcement (hook · rule · wrapper skill)
+    pick --> onboarding["<b>onboarding</b><br/>first run — name the stack, suggest one step"]
+    pick --> doctor["<b>doctor</b><br/>~5-second structural health check"]
+    pick --> audit["<b>audit</b><br/>baseline evaluation — good CI gate"]
+    pick --> diff["<b>diff</b><br/>what changed since the last run"]
+    pick --> calibrate["<b>calibrate</b><br/>the full loop"]
+
+    calibrate --> plan[plan]
+    plan --> evaluate[evaluate]
+    evaluate --> approve[approve]
+    approve --> calibrateStep[calibrate]
+    calibrateStep --> reEvaluate[re-evaluate]
+    reEvaluate --> report([report])
+
+    plan -.->|recurring finding?| scaffold["scaffold enforcement<br/>hook · rule · wrapper skill"]
+
+    classDef readonly fill:#eef6ff,stroke:#5a82b8,color:#0b2545
+    classDef loop fill:#fff4e6,stroke:#b87333,color:#3a1f00
+    class onboarding,doctor,audit,diff readonly
+    class calibrate,plan,evaluate,approve,calibrateStep,reEvaluate,report,scaffold loop
 ```
 
 `/calibrate` chains worker subagents — planner → evaluator (which fans out per-feature) → calibrator →
