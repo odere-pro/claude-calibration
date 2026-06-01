@@ -1,0 +1,1465 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>
+      claude-calibration — audit, fix &amp; enforce your Claude Code setup
+    </title>
+    <meta
+      name="description"
+      content="claude-calibration is a Claude Code plugin that audits your whole setup — CLAUDE.md, rules, settings, skills, subagents, hooks, MCP, plugins — against your intent, fixes findings surgically, and scaffolds hooks, rules, and wrapper skills so recurring problems can't come back. It also grades multi-step workflows with a deterministic scorer."
+    />
+    <link rel="canonical" href="https://odere-pro.github.io/claude-calibration/" />
+    <meta name="theme-color" content="#1c1714" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="application-name" content="claude-calibration" />
+    <meta name="author" content="odere" />
+    <meta
+      name="keywords"
+      content="claude code plugin, calibrate claude code, claude code config audit, claude.md linter, claude code context cost, claude code skills audit, claude code subagents audit, claude code hooks enforcement, claude code settings audit, mcp audit, claude code setup hardening, agentic engineering, claude code workflow evaluation, evaluate plan calibrate"
+    />
+    <meta
+      name="robots"
+      content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+    />
+
+    <!-- Restrict origins; the only third party is the pinned, SRI-verified mermaid bundle. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'self'; object-src 'none'; frame-src 'none'"
+    />
+
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://odere-pro.github.io/claude-calibration/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://odere-pro.github.io/claude-calibration/"
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="claude-calibration" />
+    <meta property="og:locale" content="en_US" />
+    <meta
+      property="og:title"
+      content="claude-calibration — audit, fix & enforce your Claude Code setup"
+    />
+    <meta
+      property="og:description"
+      content="A Claude Code plugin that runs an evaluate → plan → calibrate → re-evaluate loop over your setup, then scaffolds hooks, rules, and skills so the same issues stop recurring."
+    />
+    <meta property="og:url" content="https://odere-pro.github.io/claude-calibration/" />
+    <meta
+      property="og:image"
+      content="https://odere-pro.github.io/claude-calibration/assets/og-card.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta
+      property="og:image:alt"
+      content="claude-calibration: evaluate, plan, calibrate, re-evaluate — and scaffold enforcement so issues can't recur."
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="claude-calibration — audit, fix & enforce your Claude Code setup"
+    />
+    <meta
+      name="twitter:description"
+      content="A Claude Code plugin that audits CLAUDE.md, rules, settings, skills, subagents, hooks, MCP and plugins against your intent, fixes findings, and scaffolds enforcement so they stop recurring."
+    />
+    <meta
+      name="twitter:image"
+      content="https://odere-pro.github.io/claude-calibration/assets/og-card.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="The claude-calibration loop: evaluate, plan, calibrate, re-evaluate, and scaffold enforcement."
+    />
+
+    <!-- Structured data: describes the plugin and qualifies the FAQ and
+         install steps for rich results. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://odere-pro.github.io/claude-calibration/#website",
+            "url": "https://odere-pro.github.io/claude-calibration/",
+            "name": "claude-calibration",
+            "description": "A Claude Code plugin that calibrates your setup and scaffolds enforcement so issues stop recurring.",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://github.com/odere-pro#organization" }
+          },
+          {
+            "@type": "Organization",
+            "@id": "https://github.com/odere-pro#organization",
+            "name": "odere",
+            "url": "https://github.com/odere-pro/claude-calibration",
+            "sameAs": ["https://github.com/odere-pro/claude-calibration"]
+          },
+          {
+            "@type": "SoftwareApplication",
+            "@id": "https://odere-pro.github.io/claude-calibration/#app",
+            "name": "claude-calibration",
+            "applicationCategory": "DeveloperApplication",
+            "applicationSubCategory": "Claude Code Plugin",
+            "operatingSystem": "macOS, Linux, Windows (WSL)",
+            "description": "A Claude Code plugin that runs an evaluate → plan → calibrate → re-evaluate loop over your setup (CLAUDE.md, rules, settings, skills, subagents, hooks, MCP, plugins), applies surgical fixes through an approval gate, and scaffolds hooks, rules, and wrapper skills when a finding recurs. Also grades multi-step workflows with a deterministic scorer.",
+            "url": "https://odere-pro.github.io/claude-calibration/",
+            "softwareHelp": "https://github.com/odere-pro/claude-calibration#readme",
+            "softwareVersion": "0.1.1",
+            "license": "https://opensource.org/licenses/MIT",
+            "keywords": "claude code plugin, config audit, claude.md, rules, settings, skills, subagents, hooks, mcp, plugins, recurrence enforcement, workflow evaluation",
+            "featureList": [
+              "Audits nine Claude Code features in one parallel pass: CLAUDE.md, rules, settings, skills, subagents, hooks, MCP, plugins, and cross-cutting",
+              "Evaluate → plan → calibrate → re-evaluate loop against a stated or guessed intent",
+              "Recurrence → enforcement: scaffolds a hook, path-scoped rule, or wrapper skill when a finding recurs",
+              "Approval gate with surgical, git-revertable project-scope edits",
+              "Deterministic improvement tracking with /calibration-track",
+              "Behavioural workflow evaluation with /calibration-flow scored node, edge, and flow",
+              "Read-only /calibration-audit and ~5-second /calibration-doctor health check",
+              "Zero standing context cost — every shipped skill is disable-model-invocation"
+            ],
+            "isAccessibleForFree": true,
+            "author": { "@id": "https://github.com/odere-pro#organization" },
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+          },
+          {
+            "@type": "HowTo",
+            "@id": "https://odere-pro.github.io/claude-calibration/#install",
+            "name": "Install claude-calibration for Claude Code",
+            "description": "Install the claude-calibration plugin from the marketplace and run your first calibration in three steps.",
+            "totalTime": "PT2M",
+            "tool": [{ "@type": "HowToTool", "name": "Claude Code" }],
+            "step": [
+              {
+                "@type": "HowToStep",
+                "position": 1,
+                "name": "Add the marketplace",
+                "text": "In a Claude Code session run: /plugin marketplace add odere-pro/claude-calibration"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 2,
+                "name": "Install the plugin",
+                "text": "Run: /plugin install claude-calibration@odere-pro"
+              },
+              {
+                "@type": "HowToStep",
+                "position": 3,
+                "name": "Run your first calibration",
+                "text": "Run: /calibrate — or set a goal, e.g. /calibrate \"reduce always-on context cost\"."
+              }
+            ]
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://odere-pro.github.io/claude-calibration/#breadcrumbs",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://odere-pro.github.io/claude-calibration/" },
+              { "@type": "ListItem", "position": 2, "name": "How it works", "item": "https://odere-pro.github.io/claude-calibration/#how" },
+              { "@type": "ListItem", "position": 3, "name": "Commands", "item": "https://odere-pro.github.io/claude-calibration/#commands" },
+              { "@type": "ListItem", "position": 4, "name": "Install", "item": "https://odere-pro.github.io/claude-calibration/#install" }
+            ]
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://odere-pro.github.io/claude-calibration/#faq",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Does claude-calibration edit my Claude Code configuration?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes, but only after you approve a plan. Project-scope changes (CLAUDE.md, .claude/**, the repo's .mcp.json) are applied surgically and are easy to git revert; user-scope (~/.claude/**) changes are written up as recommendations for you to apply by hand. You can also run /claude-calibration:calibration-audit for a read-only pass that never edits anything."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What is the recurrence-to-enforcement move?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "When the same finding recurs — say several skills missing disable-model-invocation, or several subagents missing tools — the planner stops emitting one-off fixes and instead scaffolds a feature that enforces the standard: a PreToolUse hook, a path-scoped rule, or a wrapper skill. The problem then can't come back. That is the difference between a linter and a calibration system."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Will the plugin bloat my context window?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "No. Every shipped skill is disable-model-invocation: true, so its description is removed from context and the plugin adds ~zero standing context cost when idle. The worker subagents only cost tokens when a run spawns them, and the two rules are path-scoped so they load only when a run folder or bundle directory is open."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Can it grade a multi-step workflow, not just static config?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Yes. /claude-calibration:calibration-flow drives a multi-step workflow (for example a PR code-review pipeline) over a case set of golden fixtures and scores node recall/precision, edge handoff contracts, and end-to-end flow intent. The verdict comes from a deterministic scorer, not the model, so it is repeatable and can be a CI gate."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I know calibration is actually improving my setup?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "/claude-calibration:calibration-track produces a deterministic snapshot compared against two baselines: the last PR merged onto main (long-term progress) and the previous iteration (immediate change). Its verdict is IMPROVED, REGRESSION, or no change of note — independent of /calibrate's own built-in delta, so there is no circular grading."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How do I uninstall claude-calibration?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Run /plugin disable claude-calibration to turn it off, or /plugin uninstall claude-calibration to remove it entirely. Run artifacts under .claude/calibration/ are your project's data and are left in place; delete them with rm -rf .claude/calibration/ and add that path to .gitignore if you don't want runs committed."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <style>
+      :root {
+        --color-bg: oklch(22% 0.012 50);
+        --color-bg-raised: oklch(27% 0.016 52);
+        --color-surface: oklch(31% 0.02 54);
+        --color-text: oklch(92% 0.012 70);
+        --color-muted: oklch(76% 0.022 62);
+        --color-accent: oklch(70% 0.13 45);
+        --color-accent-soft: oklch(70% 0.13 45 / 0.16);
+        --color-accent-line: oklch(70% 0.13 45 / 0.4);
+        --color-line: oklch(40% 0.02 55);
+
+        --text-hero: clamp(2.6rem, 1.4rem + 5vw, 5.5rem);
+        --text-lead: clamp(1.1rem, 0.96rem + 0.6vw, 1.4rem);
+        --text-h2: clamp(1.6rem, 1.2rem + 1.5vw, 2.4rem);
+        --space-section: clamp(3.5rem, 2.5rem + 5vw, 7rem);
+
+        --radius: 14px;
+        --radius-sm: 9px;
+        --ease: cubic-bezier(0.16, 1, 0.3, 1);
+
+        --font-sans:
+          ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+        --font-mono:
+          ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas,
+          monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 5rem;
+      }
+
+      body {
+        margin: 0;
+        background:
+          radial-gradient(
+            120% 80% at 75% -10%,
+            var(--color-accent-soft),
+            transparent 60%
+          ),
+          var(--color-bg);
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 3px;
+        border-radius: 4px;
+      }
+
+      .wrap {
+        width: min(1100px, 92vw);
+        margin-inline: auto;
+      }
+
+      .vh {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .skip-link {
+        position: absolute;
+        left: 0.5rem;
+        top: 0.5rem;
+        z-index: 50;
+        transform: translateY(-160%);
+        background: var(--color-accent);
+        color: oklch(20% 0.02 50);
+        padding: 0.6rem 1rem;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        text-decoration: none;
+        transition: transform var(--ease) 200ms;
+      }
+
+      .skip-link:focus {
+        transform: translateY(0);
+      }
+
+      /* Header / nav */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: oklch(22% 0.012 50 / 0.82);
+        backdrop-filter: saturate(140%) blur(10px);
+        border-bottom: 1px solid var(--color-line);
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.2rem;
+        padding-block: 0.9rem;
+      }
+
+      .brand {
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 1.15rem;
+        letter-spacing: -0.02em;
+        text-decoration: none;
+      }
+
+      .brand span {
+        color: var(--color-accent);
+      }
+
+      nav .spacer {
+        flex: 1;
+      }
+
+      nav a:not(.brand) {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding-inline: 0.35rem;
+        text-decoration: none;
+        color: var(--color-muted);
+        font-size: 0.95rem;
+        transition: color var(--ease) 200ms;
+      }
+
+      nav a:not(.brand):hover,
+      nav a:not(.brand):focus-visible {
+        color: var(--color-text);
+      }
+
+      /* Hero */
+      .hero {
+        padding-block: var(--space-section);
+      }
+
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin: 0 0 1.2rem;
+      }
+
+      h1 {
+        font-size: var(--text-hero);
+        line-height: 0.98;
+        letter-spacing: -0.03em;
+        margin: 0 0 1.4rem;
+        max-width: 20ch;
+      }
+
+      .lead {
+        font-size: var(--text-lead);
+        color: var(--color-muted);
+        max-width: 60ch;
+        margin: 0 0 1.8rem;
+      }
+
+      .pills {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin: 0 0 2rem;
+        padding: 0;
+      }
+
+      .pills li {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        color: var(--color-text);
+        background: var(--color-surface);
+        border: 1px solid var(--color-line);
+        border-radius: 999px;
+        padding: 0.35rem 0.85rem;
+      }
+
+      .cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.9rem;
+        align-items: center;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8rem 1.4rem;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 600;
+        transition:
+          transform var(--ease) 200ms,
+          background var(--ease) 200ms;
+      }
+
+      .btn-primary {
+        background: var(--color-accent);
+        color: oklch(20% 0.02 50);
+      }
+
+      .btn-primary:hover,
+      .btn-primary:focus-visible {
+        transform: translateY(-2px);
+      }
+
+      .btn-ghost {
+        border: 1px solid var(--color-line);
+        color: var(--color-text);
+      }
+
+      .btn-ghost:hover,
+      .btn-ghost:focus-visible {
+        background: var(--color-surface);
+        transform: translateY(-2px);
+      }
+
+      /* Shared section chrome */
+      section.band {
+        padding-block: var(--space-section);
+        border-top: 1px solid var(--color-line);
+      }
+
+      .h2 {
+        font-size: var(--text-h2);
+        letter-spacing: -0.02em;
+        margin: 0 0 0.6rem;
+      }
+
+      .section-lead {
+        color: var(--color-muted);
+        max-width: 64ch;
+        margin: 0 0 2.6rem;
+        font-size: 1.02rem;
+      }
+
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin: 0 0 0.8rem;
+      }
+
+      /* Generic card grid */
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
+        gap: 1px;
+        background: var(--color-line);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius);
+        overflow: hidden;
+      }
+
+      .card {
+        background: var(--color-bg-raised);
+        padding: 1.6rem 1.5rem;
+      }
+
+      .card h3 {
+        margin: 0 0 0.5rem;
+        font-size: 1.05rem;
+        font-family: var(--font-mono);
+        color: var(--color-accent);
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--color-muted);
+        font-size: 0.96rem;
+      }
+
+      /* Two-mode split */
+      .modes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .mode {
+        background: var(--color-bg-raised);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius);
+        padding: 1.6rem 1.5rem;
+      }
+
+      .mode h3 {
+        margin: 0 0 0.6rem;
+        font-size: 1.18rem;
+        letter-spacing: -0.01em;
+      }
+
+      .mode p {
+        margin: 0 0 1rem;
+        color: var(--color-muted);
+        font-size: 0.97rem;
+      }
+
+      .mode .tags {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0;
+        padding: 0;
+      }
+
+      .mode .tags li {
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        color: var(--color-text);
+        background: var(--color-surface);
+        border: 1px solid var(--color-line);
+        border-radius: 6px;
+        padding: 0.18rem 0.5rem;
+      }
+
+      /* Diagram */
+      .diagram {
+        background: var(--color-bg-raised);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius);
+        padding: 1.6rem;
+        overflow-x: auto;
+        margin: 0 0 1.6rem;
+      }
+
+      .diagram .mermaid {
+        margin: 0;
+        text-align: center;
+      }
+
+      .diagram .mermaid svg {
+        max-width: 100%;
+        height: auto;
+      }
+
+      /* Worked example / callout */
+      .worked {
+        background: var(--color-bg-raised);
+        border: 1px solid var(--color-line);
+        border-left: 3px solid var(--color-accent);
+        border-radius: var(--radius);
+        padding: 1.6rem 1.6rem 1.4rem;
+      }
+
+      .worked p {
+        margin: 0 0 1rem;
+        color: var(--color-text);
+      }
+
+      .worked ol {
+        margin: 0;
+        padding-left: 1.2rem;
+        color: var(--color-muted);
+        display: grid;
+        gap: 0.5rem;
+      }
+
+      .worked code {
+        font-family: var(--font-mono);
+        color: var(--color-text);
+      }
+
+      /* Command table */
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius);
+      }
+
+      table.cmd {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.95rem;
+        background: var(--color-bg-raised);
+      }
+
+      table.cmd th,
+      table.cmd td {
+        text-align: left;
+        padding: 0.85rem 1.1rem;
+        border-bottom: 1px solid var(--color-line);
+        vertical-align: top;
+      }
+
+      table.cmd tr:last-child td {
+        border-bottom: 0;
+      }
+
+      table.cmd th {
+        color: var(--color-muted);
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      table.cmd td code {
+        font-family: var(--font-mono);
+        color: var(--color-accent);
+        white-space: nowrap;
+      }
+
+      table.cmd td:last-child {
+        color: var(--color-muted);
+      }
+
+      /* Code blocks */
+      pre {
+        margin: 0;
+        padding: 1.4rem 1.5rem;
+        background: oklch(16% 0.01 50);
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius);
+        max-width: 100%;
+        overflow-x: auto;
+        font-family: var(--font-mono);
+        font-size: 0.95rem;
+        line-height: 1.7;
+        color: var(--color-text);
+      }
+
+      pre .cmt {
+        color: var(--color-muted);
+      }
+
+      .stack {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1.2rem;
+      }
+
+      .stack > * {
+        min-width: 0;
+      }
+
+      .install-note {
+        background: var(--color-accent-soft);
+        border: 1px solid var(--color-accent-line);
+        border-radius: var(--radius);
+        padding: 1.1rem 1.3rem;
+        color: var(--color-text);
+        font-size: 0.96rem;
+      }
+
+      .install-note strong {
+        color: var(--color-accent);
+      }
+
+      .install-note code,
+      .faq code {
+        font-family: var(--font-mono);
+        color: var(--color-text);
+      }
+
+      .sub {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--color-muted);
+        margin: 2rem 0 0.7rem;
+      }
+
+      /* FAQ */
+      .faq dl {
+        margin: 0;
+        display: grid;
+        gap: 1.6rem;
+      }
+
+      .faq dt {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .faq dd {
+        margin: 0;
+        color: var(--color-muted);
+        max-width: 74ch;
+      }
+
+      /* Footer */
+      footer {
+        padding-block: 2.5rem;
+        border-top: 1px solid var(--color-line);
+        color: var(--color-muted);
+        font-size: 0.9rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1rem;
+        align-items: center;
+      }
+
+      footer .spacer {
+        flex: 1;
+      }
+
+      footer a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding-inline: 0.35rem;
+        color: var(--color-muted);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        color: var(--color-text);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header>
+      <nav class="wrap" aria-label="Primary">
+        <a class="brand" href="#main">claude-<span>calibration</span></a>
+        <span class="spacer"></span>
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#commands">Commands</a>
+        <a href="#use-cases">Use cases</a>
+        <a href="#install">Install</a>
+        <a href="#debug">Debug</a>
+        <a href="https://github.com/odere-pro/claude-calibration">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <section class="hero wrap" aria-labelledby="hero-heading">
+        <p class="eyebrow">A plugin for Claude Code · evaluate → plan → calibrate</p>
+        <h1 id="hero-heading">
+          Calibrate your Claude Code setup — and lock in standards that stick.
+        </h1>
+        <p class="lead">
+          <strong>claude-calibration</strong> audits your whole setup — CLAUDE.md,
+          rules, settings, skills, subagents, hooks, MCP and plugins — against a
+          stated (or guessed) intent, fixes findings surgically through an approval
+          gate, and — when a problem recurs — scaffolds a hook, rule, or wrapper
+          skill so it can't come back.
+        </p>
+        <ul class="pills" aria-label="Highlights">
+          <li>9 features audited</li>
+          <li>evaluate → plan → calibrate loop</li>
+          <li>recurrence → enforcement</li>
+          <li>~zero idle context cost</li>
+          <li>reversible &amp; project-scoped</li>
+          <li>MIT</li>
+        </ul>
+        <div class="cta">
+          <a class="btn btn-primary" href="#install">Get started</a>
+          <a class="btn btn-ghost" href="#how">See how it works</a>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section class="band" id="how" aria-labelledby="how-heading">
+        <div class="wrap">
+          <p class="kicker">How it works</p>
+          <h2 class="h2" id="how-heading">Two things to calibrate, one loop</h2>
+          <p class="section-lead">
+            Point claude-calibration at your <strong>configuration</strong> or at a
+            multi-step <strong>workflow</strong>. Either way it picks a target,
+            evaluates against your intent, and reports — and on the configuration
+            track, recurring findings get promoted from one-off fixes to scaffolded
+            enforcement.
+          </p>
+
+          <figure class="diagram">
+            <pre class="mermaid" aria-hidden="true">
+flowchart TD
+    start(["your setup + a calibration goal"])
+    pick{"pick a target"}
+    start --> pick
+
+    pick -->|configuration| cfg["calibrate configuration<br/>9 features, parallel audit"]
+    pick -->|workflows| flow["calibrate workflows<br/>/calibration-flow"]
+
+    cfg --> plan["plan"]
+    plan --> evaluate["evaluate · 9-way fan-out"]
+    evaluate --> approve["approve"]
+    approve --> calibrateStep["calibrate"]
+    calibrateStep --> reEvaluate["re-evaluate"]
+    reEvaluate --> report(["report"])
+    plan -.->|recurring finding?| scaffold["scaffold enforcement<br/>hook · rule · wrapper skill"]
+
+    flow --> fixtures["drive golden fixtures"]
+    fixtures --> score["score node · edge · flow"]
+    score --> verdict(["deterministic verdict"])
+
+    classDef accent fill:#3a2a20,stroke:#e0855f,color:#f3e7df;
+    class scaffold,verdict accent;
+            </pre>
+            <figcaption class="vh">
+              Flowchart: starting from your setup and a calibration goal, you pick a
+              target. The configuration track runs plan, evaluate (a nine-way
+              parallel fan-out), approve, calibrate, re-evaluate, and report; when a
+              finding recurs the plan scaffolds enforcement — a hook, a path-scoped
+              rule, or a wrapper skill. The workflows track drives golden fixtures,
+              scores node, edge and flow behaviour, and returns a deterministic
+              verdict.
+            </figcaption>
+          </figure>
+
+          <div class="worked">
+            <p>
+              <code>/calibrate</code> chains worker subagents — planner → evaluator
+              (which fans out one audit per feature) → calibrator → a delta
+              re-evaluation — and persists state in
+              <code>.claude/calibration/&lt;run&gt;/</code> so a run survives
+              <code>/clear</code>. Its highest-leverage move: when the same finding
+              recurs, the planner stops emitting one-off fixes and
+              <strong>scaffolds a feature that enforces the standard</strong> so the
+              problem can't return.
+            </p>
+            <ol>
+              <li>
+                A skill without <code>disable-model-invocation</code>, then another,
+                then a third — the evaluator tags each with the same signature.
+              </li>
+              <li>
+                The planner detects the recurrence and emits a
+                <code>kind: create</code> row instead of three separate edits.
+              </li>
+              <li>
+                You approve, and the calibrator scaffolds a
+                <code>PreToolUse</code> hook that blocks any future skill saved
+                without the flag. The standard is now enforced, not just documented.
+              </li>
+            </ol>
+          </div>
+
+          <div class="modes">
+            <article class="mode">
+              <h3>Calibrate your configuration</h3>
+              <p>
+                A rubric-driven audit of every Claude Code surface, a prioritised
+                plan with risk and scope, surgical fixes, and a before→after delta.
+              </p>
+              <ul class="tags">
+                <li>/calibrate</li>
+                <li>/calibration-audit</li>
+                <li>/calibration-diff</li>
+                <li>/calibration-track</li>
+                <li>/calibration-doctor</li>
+              </ul>
+            </article>
+            <article class="mode">
+              <h3>Calibrate your workflows</h3>
+              <p>
+                Drive a multi-step workflow over golden fixtures and score node
+                recall/precision, edge handoff contracts, and end-to-end intent —
+                with a deterministic verdict you can gate CI on.
+              </p>
+              <ul class="tags">
+                <li>/calibration-flow</li>
+                <li>node · edge · flow</li>
+                <li>deterministic scorer</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="band" id="features" aria-labelledby="features-heading">
+        <div class="wrap">
+          <p class="kicker">What it audits</p>
+          <h2 class="h2" id="features-heading">Nine features, one parallel pass</h2>
+          <p class="section-lead">
+            The evaluator fans out one audit per feature, so a full baseline is a
+            single wall-clock pass. Each bundle also runs standalone — type
+            <code>/claude-calibration:calibrate-&lt;feature&gt;</code> yourself.
+          </p>
+          <div class="grid">
+            <article class="card">
+              <h3>claude-md</h3>
+              <p>
+                Flags committed secrets, oversized memory files, aspirational
+                "must/always/never" prose with no enforcement, deep import chains,
+                and contradictions across nested CLAUDE.md files.
+              </p>
+            </article>
+            <article class="card">
+              <h3>rules</h3>
+              <p>
+                Catches oversized rule files, language- or area-specific rules
+                missing <code>paths:</code> (always-on context cost), broken globs,
+                and multi-step workflows that should be skills.
+              </p>
+            </article>
+            <article class="card">
+              <h3>settings</h3>
+              <p>
+                Finds committed secrets, <code>--dangerously-skip-permissions</code>,
+                blanket-destructive permissions, committed model pins, and values
+                silently overridden by managed policy.
+              </p>
+            </article>
+            <article class="card">
+              <h3>skills</h3>
+              <p>
+                Flags missing or vague frontmatter, descriptions over the routing
+                budget, side-effecting verbs without
+                <code>disable-model-invocation</code>, and bare CLI calls that should
+                be wrapped.
+              </p>
+            </article>
+            <article class="card">
+              <h3>subagents</h3>
+              <p>
+                Catches the big footgun — no <code>tools:</code> means it inherits
+                every tool, including all MCP servers — plus omitted
+                <code>model:</code> that silently inflates cost.
+              </p>
+            </article>
+            <article class="card">
+              <h3>hooks</h3>
+              <p>
+                Flags bare-<code>*</code> matchers on hot events, scripts that
+                <code>exit 1</code> instead of <code>exit 2</code>, remote payload
+                fetches, and heavy build/test work on the hot path.
+              </p>
+            </article>
+            <article class="card">
+              <h3>mcp</h3>
+              <p>
+                Finds literal tokens in committed JSON, servers with no paired
+                wrapper skill (always-on tool-set cost), over-broad surfaces, and
+                dead servers.
+              </p>
+            </article>
+            <article class="card">
+              <h3>plugins</h3>
+              <p>
+                Audits manifests for missing <code>name</code>/<code>version</code>,
+                components misplaced under <code>.claude-plugin/</code>, legacy
+                <code>commands/</code> without <code>skills/</code>, and duplicate
+                registrations.
+              </p>
+            </article>
+            <article class="card">
+              <h3>general</h3>
+              <p>
+                Rolls up estimated always-on context cost, nested-CLAUDE.md conflict
+                risk, settings precedence surprises, and missing
+                <code>.gitignore</code> coverage. Powers <code>/calibrate cost</code>.
+              </p>
+            </article>
+          </div>
+
+          <p class="kicker" style="margin-top: 2.6rem">What makes it calibration</p>
+          <div class="grid">
+            <article class="card">
+              <h3>recurrence → enforcement</h3>
+              <p>
+                A finding that recurs becomes a scaffolded hook, path-scoped rule, or
+                wrapper skill — so the standard is enforced, not just noted.
+              </p>
+            </article>
+            <article class="card">
+              <h3>parallel fan-out</h3>
+              <p>
+                Nine per-feature workers audit in parallel, merging into per-feature,
+                cross-feature, and intent-flow reports in one pass.
+              </p>
+            </article>
+            <article class="card">
+              <h3>deterministic tracking</h3>
+              <p>
+                <code>/calibration-track</code> measures real progress vs the last
+                merge to <code>main</code> and the previous iteration — no circular
+                self-grading.
+              </p>
+            </article>
+            <article class="card">
+              <h3>behavioural flow eval</h3>
+              <p>
+                <code>/calibration-flow</code> grades whether a multi-agent pipeline
+                actually catches what it should — scored by a deterministic oracle.
+              </p>
+            </article>
+            <article class="card">
+              <h3>~zero idle cost</h3>
+              <p>
+                Every shipped skill is <code>disable-model-invocation: true</code>, so
+                the plugin adds essentially no standing context when idle.
+              </p>
+            </article>
+            <article class="card">
+              <h3>reversible &amp; scoped</h3>
+              <p>
+                Project-scope edits are surgical and easy to <code>git revert</code>;
+                user-scope changes are written up as recommendations, never applied.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMANDS -->
+      <section class="band" id="commands" aria-labelledby="commands-heading">
+        <div class="wrap">
+          <p class="kicker">Commands</p>
+          <h2 class="h2" id="commands-heading">Everything is a slash command you type</h2>
+          <p class="section-lead">
+            Every command is <code>disable-model-invocation: true</code> — Claude
+            never auto-fires one; you invoke it by name. Run a full loop, a read-only
+            check, or a single feature.
+          </p>
+          <div class="table-wrap">
+            <table class="cmd">
+              <thead>
+                <tr>
+                  <th scope="col">Command</th>
+                  <th scope="col">What it does</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>/calibrate "&lt;goal&gt;"</code></td>
+                  <td>
+                    The orchestrator. Start or resume a full run against your intent;
+                    with no goal it states a guessed one. Supports
+                    <code>status</code> / <code>restart</code> / <code>--yes</code>,
+                    plus built-in <code>tighten</code> / <code>harden</code> /
+                    <code>cost</code> modes.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>/calibration</code></td>
+                  <td>
+                    Dispatcher — prints the menu, delegates to a flow, or forwards
+                    free text as the intent.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>/calibration-audit</code></td>
+                  <td>Read-only baseline evaluation — no plan, no edits. Good as a CI gate.</td>
+                </tr>
+                <tr>
+                  <td><code>/calibration-diff</code></td>
+                  <td>"What changed since the last run?" — re-evaluates against the previous baseline.</td>
+                </tr>
+                <tr>
+                  <td><code>/calibration-track</code></td>
+                  <td>
+                    "Is calibration actually improving my setup?" — a deterministic
+                    snapshot vs the last merge to <code>main</code> and vs the
+                    previous iteration. Independent of <code>/calibrate</code>'s
+                    built-in delta.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>/calibration-flow</code></td>
+                  <td>
+                    "Does my workflow still behave?" — drives a multi-step workflow
+                    over golden fixtures and scores node recall/precision, edge
+                    handoff contracts, and flow intent. Verdict from a deterministic
+                    scorer.
+                  </td>
+                </tr>
+                <tr>
+                  <td><code>/calibration-doctor</code></td>
+                  <td>~5-second structural health check: JSON parses, hooks executable, frontmatter valid.</td>
+                </tr>
+                <tr>
+                  <td><code>/calibration-onboarding</code></td>
+                  <td>First-time setup guide — detects your stack, recommends one next step.</td>
+                </tr>
+                <tr>
+                  <td><code>/calibrate-&lt;feature&gt;</code></td>
+                  <td>
+                    Nine per-feature bundles you can run on their own:
+                    <code>skills</code>, <code>subagents</code>,
+                    <code>claude-md</code>, <code>rules</code>, <code>settings</code>,
+                    <code>hooks</code>, <code>mcp</code>, <code>plugins</code>,
+                    <code>general</code>.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="section-lead" style="margin-top: 1.6rem">
+            Common intents: <code>"reduce always-on context cost"</code>,
+            <code>"tighten standards"</code>,
+            <code>"make the TDD loop reliable"</code>,
+            <code>"fix obvious safety gaps"</code>,
+            <code>"prepare for a team audit"</code>.
+          </p>
+        </div>
+      </section>
+
+      <!-- USE CASES -->
+      <section class="band" id="use-cases" aria-labelledby="use-cases-heading">
+        <div class="wrap">
+          <p class="kicker">Use cases</p>
+          <h2 class="h2" id="use-cases-heading">When to reach for it</h2>
+          <div class="grid">
+            <article class="card">
+              <h3>Bloated, slow setup</h3>
+              <p>
+                <code>/calibrate "reduce always-on context cost"</code> finds the
+                oversized CLAUDE.md, unconditional rules, and skills missing
+                <code>disable-model-invocation</code> that load every session.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Automate a standard</h3>
+              <p>
+                Keep forgetting <code>tools:</code> on subagents?
+                <code>/calibrate "tighten standards"</code> turns the recurring
+                finding into a hook that blocks the omission for good.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Pass a team audit</h3>
+              <p>
+                <code>/calibrate "prepare for a team audit"</code> weights all scopes
+                equally and writes user-scope changes as exact, copy-paste
+                recommendations.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Did my edits fix it?</h3>
+              <p>
+                After hand-editing, <code>/calibration-diff</code> scores findings as
+                resolved, partial, open, or new against the previous baseline.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Prove it's helping</h3>
+              <p>
+                <code>/calibration-track</code> gives a deterministic IMPROVED /
+                REGRESSION verdict over time — independent of the plugin's own delta.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Pipeline misses bugs</h3>
+              <p>
+                <code>/calibration-flow</code> drives your PR-review pipeline over
+                golden fixtures to find which node is dropping findings.
+              </p>
+            </article>
+            <article class="card">
+              <h3>CI / pre-commit gate</h3>
+              <p>
+                Add <code>/calibration-audit</code> (read-only) or the ~5-second
+                <code>/calibration-doctor</code> to catch config regressions before
+                they ship.
+              </p>
+            </article>
+            <article class="card">
+              <h3>Onboarding a teammate</h3>
+              <p>
+                <code>/calibration-onboarding</code> detects the stack and names one
+                minimal next step — no need to read all the docs first.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- INSTALL -->
+      <section class="band" id="install" aria-labelledby="install-heading">
+        <div class="wrap">
+          <p class="kicker">Get started</p>
+          <h2 class="h2" id="install-heading">Install in two commands</h2>
+          <div class="stack">
+            <pre><code><span class="cmt"># In a Claude Code session — add the marketplace, then install</span>
+/plugin marketplace add odere-pro/claude-calibration
+/plugin install claude-calibration@odere-pro
+
+<span class="cmt"># Run your first calibration (no goal = a guessed intent)</span>
+/calibrate
+/calibrate "reduce always-on context cost"</code></pre>
+
+            <div class="install-note">
+              <strong>Safe by design.</strong> The plugin adds
+              <strong>~zero standing context cost</strong> when idle — every skill is
+              <code>disable-model-invocation</code>. It only edits config
+              <em>after</em> you approve a plan; project-scope edits are easy to
+              <code>git revert</code>, and <code>~/.claude/**</code> changes are
+              written up as recommendations, never applied automatically.
+            </div>
+
+            <pre><code><span class="cmt"># Or load a local checkout for one session (development)</span>
+claude --plugin-dir /path/to/claude-calibration
+
+<span class="cmt"># Verify the install</span>
+/plugin        <span class="cmt"># confirms claude-calibration is enabled</span>
+/skills        <span class="cmt"># /calibrate, /calibration, /claude-calibration:* registered</span>
+/agents        <span class="cmt"># the calibration-* workers registered</span>
+/context       <span class="cmt"># confirms ~zero idle context cost</span></code></pre>
+
+            <p class="sub">Uninstall</p>
+            <pre><code>/plugin disable claude-calibration      <span class="cmt"># turn off without removing</span>
+/plugin uninstall claude-calibration    <span class="cmt"># remove entirely</span>
+
+<span class="cmt"># Run artifacts are your project's data — left in place. Clean up if you like:</span>
+rm -rf .claude/calibration/
+echo '.claude/calibration/' >> .gitignore</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEBUG -->
+      <section class="band" id="debug" aria-labelledby="debug-heading">
+        <div class="wrap">
+          <p class="kicker">Debug</p>
+          <h2 class="h2" id="debug-heading">When something looks off</h2>
+          <p class="section-lead">
+            Start with the doctor — a ~5-second structural check that tells you
+            whether the config is sound (not whether it's good; that's
+            <code>/calibration-audit</code>).
+          </p>
+          <div class="stack">
+            <pre><code>/claude-calibration:calibration-doctor
+
+<span class="cmt"># Example output</span>
+BROKEN: .claude/settings.json — invalid JSON
+WARN:   hooks/my-hook.sh — not executable
+OK:     .mcp.json — valid</code></pre>
+
+            <div class="table-wrap">
+              <table class="cmd">
+                <thead>
+                  <tr>
+                    <th scope="col">Symptom</th>
+                    <th scope="col">Likely cause &amp; fix</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>/calibrate</code> not in skill list</td>
+                    <td>
+                      Plugin not enabled or not loaded yet. Check <code>/plugin</code>;
+                      run <code>/reload-plugins</code> if just installed; restart if
+                      you added a new top-level <code>skills/</code> dir.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Plugin costs thousands of idle tokens</td>
+                    <td>
+                      <code>disable-model-invocation</code> didn't load — a stale
+                      fork. Reinstall: <code>/plugin uninstall</code> then
+                      <code>/plugin install claude-calibration@odere-pro</code>.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Can't read <code>docs/</code> / <code>BUNDLES_DIR=UNKNOWN</code></td>
+                    <td>
+                      The plugin's skill-dir resolution failed. Run with
+                      <code>--plugin-dir</code> for one session; if that works,
+                      reinstall via the marketplace.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Calibrator wrote outside expected paths</td>
+                    <td>
+                      Safety hooks didn't load. Confirm <code>hooks/hooks.json</code>
+                      exists; <code>/hooks</code> should list the two
+                      <code>claude-calibration</code> write-guards.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section class="band faq" id="faq" aria-labelledby="faq-heading">
+        <div class="wrap">
+          <p class="kicker">Questions</p>
+          <h2 class="h2" id="faq-heading">Frequently asked questions</h2>
+          <dl>
+            <dt>Does it edit my Claude Code configuration?</dt>
+            <dd>
+              Only after you approve a plan. Project-scope changes (CLAUDE.md,
+              <code>.claude/**</code>, the repo's <code>.mcp.json</code>) are applied
+              surgically and are easy to <code>git revert</code>; user-scope
+              (<code>~/.claude/**</code>) changes are written up as recommendations
+              for you to apply by hand. <code>/calibration-audit</code> is fully
+              read-only.
+            </dd>
+
+            <dt>What is the recurrence-to-enforcement move?</dt>
+            <dd>
+              When the same finding recurs, the planner stops emitting one-off fixes
+              and instead scaffolds a feature that enforces the standard: a
+              <code>PreToolUse</code> hook, a path-scoped rule, or a wrapper skill. The
+              problem then can't come back — that's the difference between a linter and
+              a calibration system.
+            </dd>
+
+            <dt>Will the plugin bloat my context window?</dt>
+            <dd>
+              No. Every shipped skill is <code>disable-model-invocation: true</code>, so
+              its description is removed from context and the plugin adds ~zero standing
+              cost when idle. Worker subagents only cost tokens when a run spawns them,
+              and the two rules are <code>paths:</code>-scoped.
+            </dd>
+
+            <dt>Can it grade a multi-step workflow, not just static config?</dt>
+            <dd>
+              Yes. <code>/calibration-flow</code> drives a workflow (e.g. a PR
+              code-review pipeline) over golden fixtures and scores node
+              recall/precision, edge handoff contracts, and end-to-end intent. The
+              verdict comes from a deterministic scorer, so it's repeatable and can gate
+              CI.
+            </dd>
+
+            <dt>How do I know calibration is actually improving things?</dt>
+            <dd>
+              <code>/calibration-track</code> produces a deterministic snapshot vs the
+              last PR merged to <code>main</code> and vs the previous iteration, with an
+              IMPROVED / REGRESSION / no-change verdict — independent of
+              <code>/calibrate</code>'s built-in delta, so there's no circular grading.
+            </dd>
+
+            <dt>How do I uninstall it?</dt>
+            <dd>
+              <code>/plugin disable claude-calibration</code> turns it off;
+              <code>/plugin uninstall claude-calibration</code> removes it. Run
+              artifacts under <code>.claude/calibration/</code> are your project's data
+              and are left in place — delete with <code>rm -rf .claude/calibration/</code>
+              and add the path to <code>.gitignore</code> if you don't want runs
+              committed.
+            </dd>
+          </dl>
+        </div>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      <span>MIT licensed · v0.1.1</span>
+      <span class="spacer"></span>
+      <a href="https://github.com/odere-pro/claude-calibration">GitHub</a>
+      <a href="https://github.com/odere-pro/claude-calibration#readme">Docs</a>
+      <a href="https://github.com/odere-pro/claude-calibration/issues">Issues</a>
+    </footer>
+
+    <!-- Pinned, SRI-verified mermaid bundle; the only third-party asset. -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"
+      integrity="sha384-rbtjAdnIQE/aQJGEgXrVUlMibdfTSa4PQju4HDhN3sR2PmaKFzhEafuePsl9H/9I"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+      defer
+    ></script>
+    <script>
+      // Render the flow diagram once the deferred bundle and DOM are ready.
+      // If mermaid fails to load, the visually-hidden figcaption still describes
+      // the flow for assistive tech and crawlers.
+      window.addEventListener("DOMContentLoaded", function () {
+        if (!window.mermaid) return;
+        var reduce = window.matchMedia(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+        window.mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: "strict",
+          theme: "base",
+          flowchart: { useMaxWidth: true, curve: "basis" },
+          themeVariables: {
+            background: "#221b18",
+            primaryColor: "#2e2620",
+            primaryTextColor: "#f0e7df",
+            primaryBorderColor: "#5c5048",
+            secondaryColor: "#3a3029",
+            tertiaryColor: "#2e2620",
+            lineColor: "#b9a99c",
+            textColor: "#f0e7df",
+            mainBkg: "#2e2620",
+            nodeBorder: "#5c5048",
+            clusterBkg: "#221b18",
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+            fontSize: "14px"
+          }
+        });
+        try {
+          window.mermaid.run({ querySelector: ".mermaid" });
+        } catch (e) {
+          /* leave the text fallback in place */
+        }
+      });
+    </script>
+  </body>
+</html>
