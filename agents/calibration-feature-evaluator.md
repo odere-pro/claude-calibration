@@ -23,7 +23,10 @@ features sequentially. Stay narrow: one feature in, one draft out.
 subagents, hooks, mcp, plugins, general` · `Run folder:` absolute path · `Bundles dir:` absolute
 path to `<plugin>/skills/` (the parent's primary toolkit; you'll read
 `<Bundles dir>/calibrate-<feature>/` directly) · `Rubric dir:` absolute path to `docs/`
-(fallback) · `Project dir:` absolute path · `Draft path:` absolute path to write to
+(fallback) · `Project dir:` absolute path · `Plugin filter:` the canonical
+`include:…|exclude:…|scope:…` spec (or empty = all plugins) — export it as
+`CALIBRATION_PLUGIN_FILTER` when you run `enumerate.sh` so the bundle's plugin/cache rows are scoped
+to the requested plugins · `Draft path:` absolute path to write to
 (`<run>/.drafts/feat-<feature>.md`). For Pass 2 only: `Baseline draft:` absolute path to the
 prior pass's draft for this feature (under `<run>/`), or `MISSING` if the baseline didn't
 cover this feature.
@@ -35,9 +38,11 @@ recurrence detector may underperform).
 
 ## Pass 1 — baseline draft for one feature
 
-1. **Enumerate.** Run `bash <Bundles dir>/calibrate-<Feature>/scripts/enumerate.sh
-   <Project dir>`. Output is TSV `<scope>\t<absolute path>` (scope = `user | project |
-   plugin-self | …`). Capture all rows.
+1. **Enumerate.** Run `CALIBRATION_PLUGIN_FILTER="<Plugin filter>" bash
+   <Bundles dir>/calibrate-<Feature>/scripts/enumerate.sh <Project dir>` (export the filter so
+   plugin/cache rows are scoped; when `Plugin filter` is empty this is a no-op and everything is
+   enumerated). Output is TSV `<scope>\t<absolute path>` (scope = `user | project | plugin-self |
+   …`). Capture all rows.
 
 2. **Lint.** Run `bash <Bundles dir>/calibrate-<Feature>/scripts/lint.sh <path …>` over every
    enumerated path. Output is TSV `<path>\t<signature>\t<severity>\t<detail>`. Capture all

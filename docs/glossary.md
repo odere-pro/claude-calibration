@@ -19,6 +19,12 @@ fuller treatment rather than restating it.
   [claude-structure.md](claude-structure.md). This *config* scope is distinct from a plan row's
   **change scope** (`scope: project|user` — the target of a fix) and a run's **audit scope** (the
   breadth of what was evaluated).
+- **Plugin filter** — an optional allow-list / block-list that narrows a run's **audit scope** to
+  specific plugins. Supplied as `/calibrate --plugins foo,bar` (allow-list — only those), `--plugins
+  -baz` (block-list — all but those), or `--plugins global|local` (restrict by install scope), or
+  persisted in `.claude/calibration/config.json`. Spans both globally-installed and locally-loaded
+  (project) plugins. Empty = every plugin is audited (the default). Carried through a run as the
+  `plugin_filter` field in `plan.md`. See [usage.md](usage.md) and [features/plugins.md](features/plugins.md).
 - **Layering** — how two config files at different scopes combine: **additive** (both apply) or
   **override-by-name** (the higher-precedence one wins). See [claude-structure.md](claude-structure.md).
 - **Precedence** — the order scopes win in a conflict (broadly: managed → local → project → user).

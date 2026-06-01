@@ -18,6 +18,24 @@ Self-contained bundles of skills, agents, hooks, rules, MCP servers, and command
 User-installed (via marketplace or `--plugin-dir`). Plugin-shipped components load for every user
 who enables the plugin — context cost matters.
 
+### Targeting which plugins a run audits
+
+A calibration run audits every enabled plugin by default. To focus on a subset, pass a plugin
+**allow-list / block-list** — see the [plugin filter](../glossary.md) term:
+
+```text
+/calibrate --plugins foo,bar    # only foo and bar
+/calibrate --plugins -baz       # everything except baz
+/calibrate --plugins global     # only globally-installed plugins
+/calibrate --plugins local      # only locally-loaded / project plugins
+```
+
+Or persist it in `.claude/calibration/config.json` (`{"plugins":{"mode":"include","names":["foo"],
+"scope":"all"}}`). The filter matches plugin names across both global and local installs and applies
+to every bundle that reaches into plugin caches — `plugins`, `skills`, `subagents`, `hooks`, `mcp` —
+so an excluded plugin is dropped from the **entire** audit, not just this page's checks. Full
+walkthrough: [usage.md → Targeting specific plugins](../usage.md#targeting-specific-plugins).
+
 ## Configure
 
 - Components at the **plugin root**, not inside `.claude-plugin/`. Manifest only lives in

@@ -6,6 +6,7 @@ A walkthrough of how to drive the plugin, from your first run to the per-feature
 recurrence → enforcement-creation flow that's its highest-leverage feature.
 
 **On this page:** [First run](#your-first-run) · [Setting an intent](#setting-an-intent) ·
+[Targeting plugins](#targeting-specific-plugins) ·
 [Resume / restart / status](#resuming-restarting-status) · [Per-feature usage](#per-feature-usage) ·
 [Recurrence → enforcement](#the-recurrence--enforcement-creation-flow) ·
 [3-vs-4-layer call](#the-3-vs-4-layer-call) · [Convenience flows](#convenience-flows) ·
@@ -108,6 +109,41 @@ The auto-promote rule (planner step 5) matches the intent text against
 `enforce | tighten | prevent recurrence | standardi[sz]e | harden` (case-insensitive). When it
 matches, recurring patterns become `create` rows **in the main table**; otherwise they're listed
 under `### Enforcement opportunities` for you to opt into by id during the approval gate.
+
+## Targeting specific plugins
+
+By default a run audits **every** enabled plugin (alongside your user and project config). When you
+have many plugins installed but only care about some of them, scope the run with `--plugins`:
+
+```text
+/calibrate --plugins foo,bar        # allow-list — audit only plugins foo and bar
+/calibrate --plugins -baz           # block-list — audit every plugin except baz
+/calibrate --plugins global         # only globally-installed plugins (~/.claude/plugins)
+/calibrate --plugins local          # only locally-loaded / project plugins
+/calibrate --plugins foo,global     # allow-list foo, restricted to the global install scope
+```
+
+The names are matched as a plugin's installed name (the directory under
+`~/.claude/plugins/cache/<marketplace>/`, or this repo's `.claude-plugin/plugin.json` → `name` when
+the project is itself a plugin). The filter spans **both** globally-installed and locally-loaded
+plugins, and it applies everywhere the audit reaches into plugins — not just the `plugins` feature,
+but the cached **skills**, **subagents**, **hooks**, and **MCP** those plugins ship.
+
+The same flag works on the read-only audit: `/claude-calibration:calibration-audit --plugins foo,bar`.
+A later `/claude-calibration:calibration-diff` automatically reuses the baseline run's filter, so the
+delta re-audits the identical scope.
+
+**Persisting it.** To make a filter the default for every run without retyping the flag, write
+`.claude/calibration/config.json`:
+
+```json
+{ "plugins": { "mode": "exclude", "names": ["heavy-plugin"], "scope": "all" } }
+```
+
+`mode` is `include` or `exclude`; `names` is the plugin list; `scope` is `all` (default), `global`,
+or `local`. A `--plugins` flag on the command line overrides the config file for that run. The active
+filter is recorded as `plugin_filter` in the run's `plan.md` and shown on the final report's
+**Scope** line and in `/calibrate status`.
 
 ## Resuming, restarting, status
 

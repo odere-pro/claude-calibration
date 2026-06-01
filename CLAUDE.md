@@ -98,6 +98,7 @@ Two files are authoritative; everything else defers to them:
 | G17 `17-glossary-consistency` | `docs/glossary.md` defines the power-word vocabulary (`agent`/`subagent` distinct) AND prose uses it — drift is caught | a power word with no entry, or a banned synonym in prose (e.g. a worker subagent written as a plain `agent`) |
 | G18 `18-changelog-fragment-unique` | every `changelog/<NN>-<slug>.md` has a distinct `<NN>` | two in-flight PRs picked the same fragment number |
 | G19 `19-flow-fixture-integrity` | behavioural-flow fixtures have `input/` + a parseable `expected.md` oracle naming only catalogued signatures; the scorer can score each shipped example | a fixture with no `expected.md`, an unparseable oracle, or a signature not in `signatures.md` |
+| G20 `20-plugin-filter` | the `skills/lib/` plugin-filter helpers extract names, apply allow/block + scope correctly, and the resolver normalises `--plugins` / `config.json` | a regression in plugin allow/block-list scoping |
 
 ## Test / verify quick-recipes
 
@@ -124,6 +125,7 @@ claude --plugin-dir .                             # load the plugin against itse
 | ---- | ---- | ------ |
 | `.claude-plugin/` | `plugin.json` + `marketplace.json` | yes |
 | `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 6 flows, 9 per-feature bundles | yes |
+| `skills/lib/` | shared shell helpers (`plugin-filter.sh` sourced by bundle `enumerate.sh`; `resolve-plugin-filter.sh` called by `calibrate`/audit/diff) — not a skill, no `SKILL.md` | yes |
 | `agents/` | the 5 worker subagents | yes |
 | `rules/` | `signatures.md` + `dispatch.md` (path-scoped) | yes |
 | `hooks/` | the two `PreToolUse` write-guards | yes |

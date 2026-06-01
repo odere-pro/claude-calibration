@@ -10,6 +10,7 @@ description: >-
   orchestrator (`/calibrate`) and standalone via `/claude-calibration:calibrate-plugins`.
 disable-model-invocation: true
 model: sonnet
+argument-hint: "[--plugins <a,b|-c|global|local>]"
 allowed-tools: Read, Grep, Glob, Bash(bash *), Edit(.claude-plugin/*.json), Write(.claude-plugin/*.json)
 ---
 
@@ -29,6 +30,19 @@ The workflow is the same; only the framing differs.
 ```bash
 bash <BUNDLE>/scripts/enumerate.sh "$PROJECT_DIR"
 ```
+
+**Scoping to specific plugins (optional).** `enumerate.sh` honours the `CALIBRATION_PLUGIN_FILTER`
+env var — an allow-list / block-list of plugin names (and an optional global/local scope). When the
+user passes a `--plugins <val>` argument, normalise it first and export it:
+
+```bash
+PF="$(bash <BUNDLE>/../lib/resolve-plugin-filter.sh "$ARGUMENTS" "$PROJECT_DIR")"
+CALIBRATION_PLUGIN_FILTER="$PF" bash <BUNDLE>/scripts/enumerate.sh "$PROJECT_DIR"
+```
+
+`--plugins foo,bar` audits only those plugins, `--plugins -baz` audits all but `baz`, and
+`--plugins global|local` restricts by install scope. With no `--plugins` and no
+`.claude/calibration/config.json`, `PF` is empty and every plugin is enumerated (the default).
 
 Yields TSV `scope\tpath`. Scopes:
 

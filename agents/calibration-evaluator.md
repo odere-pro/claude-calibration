@@ -25,8 +25,10 @@ fields you own (`last_phase_completed`, `baseline_severity`, `baseline_reports`,
 `<plugin>/skills/` (**primary** — for each feature read
 `<Bundles dir>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
 `scripts/enumerate.sh` + `scripts/lint.sh` for actual numbers) · `Project dir:` absolute path
-· `Audit scope:` user + project + plugins. For Pass 2 only: `Baseline reports:` comma-separated
-filenames of the Pass-1 reports under `<Run folder>`.
+· `Audit scope:` user + project + plugins · `Plugin filter:` the canonical
+`include:…|exclude:…|scope:…` spec (or empty = all plugins) — pass it **verbatim** to every
+`calibration-feature-evaluator` you spawn (both passes use the same value). For Pass 2 only:
+`Baseline reports:` comma-separated filenames of the Pass-1 reports under `<Run folder>`.
 
 If `Bundles dir` is `UNKNOWN` or empty, fall back to `<Rubric dir>/features/<feature>.md` and use
 signature names from `<Bundles dir>/../rules/signatures.md`. If both unreachable, derive sensible
@@ -49,6 +51,7 @@ settings, skills, subagents, hooks, mcp, plugins, general`), then sequential cro
    Bundles dir: <Bundles dir>.
    Rubric dir: <Rubric dir>.
    Project dir: <Project dir>.
+   Plugin filter: <Plugin filter>.
    Draft path: <Run folder>/.drafts/feat-<feature>.md.
    ```
 
@@ -104,6 +107,7 @@ Same parallel fan-out shape. Re-runs the 9-feature fan-out against the baseline 
    Bundles dir: <Bundles dir>.
    Rubric dir: <Rubric dir>.
    Project dir: <Project dir>.
+   Plugin filter: <Plugin filter>.
    Draft path: <Run folder>/.drafts/delta-<feature>.md.
    Baseline draft: <Run folder>/.drafts/baseline-feat-<feature>.md.
    ```

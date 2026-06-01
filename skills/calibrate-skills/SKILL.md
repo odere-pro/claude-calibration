@@ -34,6 +34,9 @@ Yields TSV `scope\tpath`. Scope is `user` (`~/.claude/skills/**/SKILL.md`), `pro
 (`$PROJECT/.claude/skills/**/SKILL.md`), or `plugin-self` (`$PROJECT/skills/**/SKILL.md` when
 the project itself is a plugin, plus plugin-cache best-effort).
 
+The `plugin-self` (cached + project-plugin) rows honour the `CALIBRATION_PLUGIN_FILTER` env var, so
+a calibration run scoped with `/calibrate --plugins …` only audits the requested plugins' skills.
+
 ## 2. Lint
 
 ```bash
