@@ -9,8 +9,10 @@ description: >-
   to set the calibration goal; /calibrate status; /calibrate restart; /calibrate --yes to skip the
   approval gate. Three convenience modes pre-fill common workflows: /calibrate tighten (intent "tighten
   standards"), /calibrate harden (= tighten + --yes), /calibrate cost (single-number standing-context-
-  cost snapshot — no planner/evaluator/calibrator).
-argument-hint: "[intent text | --yes | restart | status | tighten | harden | cost]"
+  cost snapshot — no planner/evaluator/calibrator). Scope which plugins a run audits with /calibrate
+  --plugins foo,bar (allow-list), --plugins -baz (block-list), or --plugins global|local (scope); a
+  persisted .claude/calibration/config.json sets the same as a default.
+argument-hint: "[intent text | --yes | restart | status | tighten | harden | cost | --plugins <a,b|-c|global|local>]"
 disable-model-invocation: true
 model: opus
 allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git diff:*), Bash(git status:*), Bash(git rev-parse:*), Bash(rm:*), Bash(ls:*)
@@ -54,6 +56,14 @@ if echo "$ARGUMENTS" | grep -qiE '(^|[[:space:]])cost([[:space:]]|$)'; then
     echo "COST_LINT_NOT_FOUND=$COST_LINT"
   fi
 fi
+# Plugin filter: a CLI `--plugins <val>` flag wins; else `.claude/calibration/config.json`.
+# Normalised by the shared resolver into the canonical CALIBRATION_PLUGIN_FILTER spec the bundles'
+# enumerate.sh read (include:a,b | exclude:a,b | scope:global|local). Empty => audit everything.
+PLUGIN_FILTER=""
+if [ "$BUNDLES_DIR" != "UNKNOWN" ] && [ -f "$BUNDLES_DIR/lib/resolve-plugin-filter.sh" ]; then
+  PLUGIN_FILTER="$(bash "$BUNDLES_DIR/lib/resolve-plugin-filter.sh" "$ARGUMENTS" "${CLAUDE_PROJECT_DIR:-$(pwd)}" 2>/dev/null || true)"
+fi
+echo "PLUGIN_FILTER=$PLUGIN_FILTER"
 echo "=== end preprocessing ==="
 ```
 
@@ -101,8 +111,11 @@ in Phase 8 via `Write` (to bake in the summary block and update `summary_status`
 
 ## 0. Parse the arguments
 
-Tokenise `$ARGUMENTS` (split on whitespace, case-insensitive). Resolve in this order — later rules
-only fire if no earlier rule matched:
+Tokenise `$ARGUMENTS` (split on whitespace, case-insensitive). **First**, strip any
+`--plugins <value>` (or `--plugins=<value>`) flag pair from the token stream — the preprocessing
+block has already normalised it into `PLUGIN_FILTER` (the canonical `include:…|exclude:…|scope:…`
+spec, or empty). Carry `PLUGIN_FILTER` through the run; it is **not** part of the intent text. Then
+resolve the remaining tokens in this order — later rules only fire if no earlier rule matched:
 
 - `status` → **Status mode** (§ 0c). Stop after.
 - `cost` (standalone token) → **Cost mode** (§ 0b). Stop after.
@@ -167,8 +180,11 @@ section was added.
 If `CURRENT_RUN` points to a folder with a `plan.md`:
 
 - Read `<run>/plan.md` — `intent`, `intent_source`, `head_sha`, `last_phase_completed`,
-  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`. Check (via Glob)
-  whether a `final-report-*.md` exists.
+  `touched_files`, `baseline_reports`, `last_evaluation`, `summary_status`, `plugin_filter`. Check
+  (via Glob) whether a `final-report-*.md` exists. **On resume, the run's recorded `plugin_filter`
+  wins** over a freshly-parsed `PLUGIN_FILTER`: set `PLUGIN_FILTER` to the plan's `plugin_filter` so
+  the delta pass (Phase 6) re-audits the exact same scope as the baseline. (A new `--plugins` flag is
+  honoured only on a `restart` / new run.)
 - **If complete** (`last_phase_completed: delta-eval` AND a `final-report-*.md` exists AND
   `summary_status` ∈ {`completed`, `kept`}) and the argument is not `restart` and there's no
   new intent: tell the user the latest run finished — one line of `last_evaluation`, the
@@ -208,7 +224,9 @@ Skip any already done per `last_phase_completed`. Every subagent prompt carries 
 `Intent source: given|stored|guessed.` · `Run folder: <abs>.` · `Project dir: <PROJECT_DIR>.` ·
 `Rubric dir: <DOCS_DIR>.` · `Bundles dir: <BUNDLES_DIR>.` · `Git HEAD: <GIT_HEAD>.` · `Started:
 <NOW_ISO>.` · `Audit scope: user (~/.claude/) + project (CLAUDE.md, .claude/, .mcp.json under
-PROJECT_DIR) + enabled plugins.` "Create the run folder; write plan.md per your instructions; write
+PROJECT_DIR) + enabled plugins.` · `Plugin filter: <PLUGIN_FILTER>` (empty = all plugins; else the
+canonical `include:…|exclude:…|scope:…` spec — record it verbatim in plan.md frontmatter as
+`plugin_filter`). "Create the run folder; write plan.md per your instructions; write
 .claude/calibration/current; return one line." → On return: `✓ Plan initialised: <run>/plan.md · 📌
 calibration log folder remembered. → Next: baseline evaluation.`
 
@@ -217,7 +235,8 @@ calibration log folder remembered. → Next: baseline evaluation.`
 <BUNDLES_DIR>` (**primary** — for each Claude Code feature, read
 `<BUNDLES_DIR>/calibrate-<feature>/reference.md` for the rubric and run that bundle's
 `scripts/enumerate.sh|measure.sh|lint.sh` for the actual numbers). · `Project dir: <PROJECT_DIR>.` ·
-`Audit scope: user + project + plugins.` "Write eval-features-<ts>.md (with the 'diagnostics to paste'
+`Audit scope: user + project + plugins.` · `Plugin filter: <PLUGIN_FILTER>` (pass verbatim to each
+feature-evaluator). "Write eval-features-<ts>.md (with the 'diagnostics to paste'
 section + per-finding pattern signatures + the 3-vs-4-layer call per capability),
 eval-interactions-<ts>.md, eval-intent-flow-<ts>.md; update plan.md (check the baseline box, set
 last_phase_completed: baseline-eval, record baseline_severity + baseline_reports); return ONLY severity
@@ -256,7 +275,9 @@ applied/recommended/skipped + the touched-file list." → On return: print the c
 
 **Phase 6 — evaluator (delta).** `Agent(calibration-evaluator)`: `Pass: 2 (delta).` · `Run folder: <abs>.` ·
 `Plan: <run>/plan.md.` · `Baseline reports: <the pass-1 filenames>.` · `Rubric dir: <DOCS_DIR>.` ·
-`Bundles dir: <BUNDLES_DIR>.` "Re-audit the same scope using the bundles' `reference.md` + `scripts/`;
+`Bundles dir: <BUNDLES_DIR>.` · `Plugin filter: <PLUGIN_FILTER>` (same filter as the baseline — pass
+verbatim to each feature-evaluator so the delta re-audits the identical scope). "Re-audit the same
+scope using the bundles' `reference.md` + `scripts/`;
 write eval-delta-<ts>.md (per finding: resolved/partial/open/new; before→after counts); update plan.md:
 check the delta box and set last_phase_completed: delta-eval and last_evaluation; return ONLY
 before→after counts + any newly-introduced issue." → On return you have everything.
@@ -271,7 +292,7 @@ Exact shape:
 # Calibration final report — <ts>
 
 **Intent:** <verbatim from plan.md ## Intent> _(<intent_source>)_
-**Scope:** <audit_scope>
+**Scope:** <audit_scope><if plugin_filter set: ` (plugin filter: <plugin_filter>)`>
 **Diagnostics still owed:** <list of `/doctor`, `/context all`, `/skills (t)`, `/mcp` if the
   evaluator flagged `general:diagnostics-ask`; otherwise `— none`>
 
@@ -379,7 +400,8 @@ conservative default) and note the unexpected input one line.
 ## Status mode
 
 Read `CURRENT_RUN`'s `plan.md` (if none: "No calibration run found — run /calibrate to start"). Print:
-intent (and source) · log folder · `last_phase_completed` · the `## Contents` Progress block with
+intent (and source) · plugin filter (if `plugin_filter` set; else `— all plugins`) · log folder ·
+`last_phase_completed` · the `## Contents` Progress block with
 ✓/▢ · whether a final report exists · `summary_status` · `baseline_severity` · `last_evaluation`
 (if set) · `touched_files` count · improvement-plan status counts (e.g. `5 done · 1 partial · 2
 pending · 0 skipped`). End with the `→ Next:` step (or "complete"). Stop.

@@ -10,6 +10,10 @@ context — the user fires them by name).
 - `calibration/` — the `/claude-calibration:calibration` dispatcher (menu / router).
 - `calibration-{audit,diff,doctor,onboarding}/` — the four flows.
 - `calibrate-{claude-md,rules,settings,skills,subagents,hooks,mcp,plugins,general}/` — the nine bundles.
+- `lib/` — shared shell helpers, **not** a skill (no `SKILL.md`, so the loader ignores it):
+  `plugin-filter.sh` (sourced by the cache-touching `enumerate.sh` to apply the plugin allow/block
+  list) and `resolve-plugin-filter.sh` (normalises a `--plugins` flag / `config.json` into the
+  canonical `CALIBRATION_PLUGIN_FILTER` spec; called by `calibrate`, `calibration-audit`).
 
 ## Map — every `calibrate-<feature>` bundle ships the same layout
 

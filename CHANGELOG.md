@@ -15,6 +15,20 @@ The version of record is `.claude-plugin/plugin.json` → `version`. Each releas
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-06-01
+
+### Added
+
+- Target which plugins a calibration run audits with a plugin allow-list / block-list:
+  `/calibrate --plugins foo,bar` (allow-list), `--plugins -baz` (block-list), or
+  `--plugins global|local` (restrict by install scope), with the same available on
+  `/claude-calibration:calibration-audit` and a persisted `.claude/calibration/config.json` default.
+  The filter spans both globally-installed and locally-loaded plugins and applies everywhere the
+  audit reaches into plugin caches (the `plugins`, `skills`, and `subagents` bundles), carried
+  through the run as `plugin_filter` in `plan.md` and shown on the final report's Scope line. New
+  shared shell helpers under `skills/lib/` (`plugin-filter.sh`, `resolve-plugin-filter.sh`) keep the
+  parse and gating in one place; default (no filter) enumeration is byte-identical to before.
+
 ## [0.1.1] — 2026-05-26
 
 ### Added
@@ -100,6 +114,7 @@ First public release. Everything below ships in `v0.1.0`.
   plugin skill count in `docs/install.md` (15 skills / four flows).
 - `3ebeb47` — Corrected the marketplace `owner.email` to `odere.pro@gmail.com`.
 
-[Unreleased]: https://github.com/odere-pro/claude-calibration/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/odere-pro/claude-calibration/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/odere-pro/claude-calibration/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/odere-pro/claude-calibration/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/odere-pro/claude-calibration/releases/tag/v0.1.0

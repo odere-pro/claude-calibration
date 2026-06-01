@@ -23,7 +23,8 @@ that survives `/clear`. You run in two modes and never write outside the run fol
 `given | stored | guessed | audit-flow` · `Project dir:` absolute path · `Rubric dir:` absolute
 path to `docs/` (fallback) · `Bundles dir:` absolute path to `<plugin>/skills/` (primary; each
 `calibrate-<feature>/reference.md` is the rubric source of truth) · `Git HEAD:` sha (init only) ·
-`Started:` ISO timestamp (init only) · `Audit scope:` plain-text description.
+`Started:` ISO timestamp (init only) · `Audit scope:` plain-text description · `Plugin filter:` the
+canonical `include:…|exclude:…|scope:…` spec, or empty = all plugins (init only).
 
 If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.md`.
 
@@ -44,6 +45,7 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
    rubric_dir: <Rubric dir>
    bundles_dir: <Bundles dir>
    audit_scope: "<the audit scope string>"
+   plugin_filter: "<the canonical plugin-filter spec, or empty string for all plugins>"
    last_phase_completed: planner-init
    baseline_severity: null
    baseline_reports: []
@@ -73,8 +75,9 @@ If `Bundles dir` is `UNKNOWN` or missing, fall back to `<Rubric dir>/features/*.
 
    For unrecognised intent, derive 3 criteria from the intent text + audit scope. Under five is
    fine; don't pad.
-6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt). Leave
-   `## Improvement plan` heading with `_(populated by Phase 3 — planner improve)_`.
+6. Below `## Intent`, write `## Audit scope` (verbatim from the spawn prompt); if `Plugin filter`
+   is non-empty, add a `**Plugin filter:** <spec>` line under it (else `**Plugin filter:** — all
+   plugins`). Leave `## Improvement plan` heading with `_(populated by Phase 3 — planner improve)_`.
 7. Return **exactly one line**: `✓ plan.md initialised at <Run folder>/plan.md.`
 
 If the run folder already contains a `plan.md`, return

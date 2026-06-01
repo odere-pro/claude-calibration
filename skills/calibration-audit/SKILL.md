@@ -5,8 +5,10 @@ description: >-
   per-feature findings, then stops. No improvement plan, no approval gate, no edits. The same first
   half of /calibrate. Use this as a periodic health check or a CI gate when you only want to know
   "what's wrong" without applying anything. Persists baseline reports to .claude/calibration/<ts>/
-  so a later /claude-calibration:calibration-diff can compare against them.
-argument-hint: "[restart]"
+  so a later /claude-calibration:calibration-diff can compare against them. Scope which plugins the
+  audit covers with --plugins foo,bar (allow-list), --plugins -baz (block-list), or --plugins
+  global|local; a persisted .claude/calibration/config.json sets the same default.
+argument-hint: "[restart | --plugins <a,b|-c|global|local>]"
 disable-model-invocation: true
 model: opus
 allowed-tools: Read, Grep, Glob, Agent, TodoWrite, Write(.claude/calibration/**), Bash(git rev-parse:*), Bash(git status:*), Bash(date:*), Bash(ls:*), Bash(grep:*), Bash(mkdir:*)
@@ -23,6 +25,9 @@ echo "TIMESTAMP=$(date +%Y%m%d-%H%M%S)"
 echo "NOW_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "GIT_HEAD=$(git rev-parse HEAD 2>/dev/null || echo not-a-git-repo)"
 echo "GITIGNORE_HAS_CALIBRATION=$(grep -qs 'calibration' .gitignore && echo yes || echo no)"
+PLUGIN_FILTER=""
+[ "$BUNDLES_DIR" != "UNKNOWN" ] && [ -f "$BUNDLES_DIR/lib/resolve-plugin-filter.sh" ] && PLUGIN_FILTER="$(bash "$BUNDLES_DIR/lib/resolve-plugin-filter.sh" "$ARGUMENTS" "${CLAUDE_PROJECT_DIR:-$(pwd)}" 2>/dev/null || true)"
+echo "PLUGIN_FILTER=$PLUGIN_FILTER"
 echo "=== end preprocessing ==="
 ```
 
@@ -33,7 +38,8 @@ You are the **audit-only flow**. Your job is to chain `calibration-planner` (ini
 No improvement plan; no approval gate; no calibrator. The user wants to know what's wrong, not fix
 it.
 
-The arguments are: `$ARGUMENTS` (only `restart` is honored — start a new audit run).
+The arguments are: `$ARGUMENTS` (`restart` starts a new audit run; `--plugins <val>` scopes which
+plugins are audited — already normalised into `PLUGIN_FILTER` by the preprocessing block).
 
 ## Phases (subset of `/calibrate`)
 
@@ -68,6 +74,7 @@ The arguments are: `$ARGUMENTS` (only `restart` is honored — start a new audit
    Git HEAD: <GIT_HEAD>.
    Started: <NOW_ISO>.
    Audit scope: user (~/.claude/) + project + enabled plugins.
+   Plugin filter: <PLUGIN_FILTER>.
    ```
    On return: `✓ Audit run initialised: <run>/plan.md. → Next: baseline evaluation.`
 4. Phase 2 — spawn `calibration-evaluator`:
@@ -80,6 +87,7 @@ The arguments are: `$ARGUMENTS` (only `restart` is honored — start a new audit
    Bundles dir: <BUNDLES_DIR>.
    Project dir: <PROJECT_DIR>.
    Audit scope: user + project + plugins.
+   Plugin filter: <PLUGIN_FILTER>.
    ```
    On return: print the counts + top 3 lines the evaluator returned.
 5. **Read the reports yourself.** Open `<run>/eval-features-*.md`, `eval-interactions-*.md`, and

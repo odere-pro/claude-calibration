@@ -43,7 +43,8 @@ run's baseline reports and stop. No planner, no calibrator, no edits.
    list in `plan.md` (read it; the field is set when the evaluator finishes Pass 1). If the user
    passed a run identifier in `$ARGUMENTS` (e.g. a timestamp), use that one. If no run is found,
    print one line: `No prior calibration run found — run /calibrate first to establish a baseline.`
-   and stop.
+   and stop. Also read the picked run's `plugin_filter` field — the delta must re-audit the **same
+   plugin scope** as the baseline, so reuse it verbatim (don't take a new `--plugins` flag here).
 3. **Spawn the evaluator (Pass 2):**
    ```
    Agent(calibration-evaluator)
@@ -54,6 +55,7 @@ run's baseline reports and stop. No planner, no calibrator, no edits.
    Rubric dir: <DOCS_DIR>.
    Bundles dir: <BUNDLES_DIR>.
    Project dir: <PROJECT_DIR>.
+   Plugin filter: <the picked run's plugin_filter from plan.md, or empty = all plugins>.
    ```
    The evaluator will write `eval-delta-<ts>.md` into the run folder and update `plan.md`'s
    `last_evaluation` field.

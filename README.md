@@ -62,7 +62,8 @@ flowchart TD
     pick --> diff["<b>diff</b><br/>what changed since the last run"]
     pick --> calibrate["<b>calibrate</b><br/>the full loop"]
 
-    calibrate --> plan[plan]
+    calibrate --> scope["scope plugins<br/>--plugins allow/block (optional)"]
+    scope --> plan[plan]
     plan --> evaluate[evaluate]
     evaluate --> approve[approve]
     approve --> calibrateStep[calibrate]
@@ -74,7 +75,7 @@ flowchart TD
     classDef readonly fill:#eef6ff,stroke:#5a82b8,color:#0b2545
     classDef loop fill:#fff4e6,stroke:#b87333,color:#3a1f00
     class onboarding,doctor,audit,diff readonly
-    class calibrate,plan,evaluate,approve,calibrateStep,reEvaluate,report,scaffold loop
+    class calibrate,scope,plan,evaluate,approve,calibrateStep,reEvaluate,report,scaffold loop
 ```
 
 `/calibrate` chains worker subagents — planner → evaluator (which fans out per-feature) → calibrator →
