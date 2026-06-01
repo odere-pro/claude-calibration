@@ -7,6 +7,7 @@
 [![gates](https://img.shields.io/github/actions/workflow/status/odere-pro/claude-calibration/ci.yml?branch=main&label=gates)](https://github.com/odere-pro/claude-calibration/actions/workflows/ci.yml)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/odere-pro/claude-calibration/badge)](https://scorecard.dev/viewer/?uri=github.com/odere-pro/claude-calibration)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/12996/badge)](https://www.bestpractices.dev/projects/12996)
+[![website](https://img.shields.io/badge/website-odere--pro.github.io-d97757)](https://odere-pro.github.io/claude-calibration/)
 
 A Claude Code **plugin** that calibrates your setup — it runs an **evaluate → plan → calibrate →
 re-evaluate** loop against a stated (or guessed) **intent**, produces a report, and — when the
@@ -30,23 +31,32 @@ claude --plugin-dir /path/to/claude-calibration
 Full lifecycle — install / verify / update / uninstall — is in
 [`docs/install.md`](docs/install.md).
 
-## Commands
+## Skills
 
-Every command is `disable-model-invocation: true` — Claude never auto-fires one; you invoke them by
-name. The full matrix (modes, arguments, per-feature shortcuts) is in
-[`docs/usage.md`](docs/usage.md).
+Every entry point is a **skill** — the plugin ships no `commands/` components — and every one is
+`disable-model-invocation: true`, so Claude never auto-fires it; you invoke them by name. The full
+matrix (modes, arguments, per-feature shortcuts) is in [`docs/usage.md`](docs/usage.md).
 
-| Command | What it does |
+- **Orchestrator** — `/calibrate "<goal>"` runs the full loop against your intent (with no goal it
+  states a guessed one). Supports `status` / `restart` / `--yes`, plus built-in `tighten` / `harden`
+  / `cost` modes.
+- **Dispatcher** — `/calibration` prints the menu, delegates to a flow, or forwards free text as the
+  intent.
+
+**Flows** — six standalone checks you can run without committing to the full loop:
+
+| Flow | What it does |
 |---|---|
-| `/calibrate "<goal>"` | **The orchestrator.** Start or resume a full run against your intent; with no goal it states a guessed one. Supports `status` / `restart` / `--yes`, plus built-in `tighten` / `harden` / `cost` modes. |
-| `/claude-calibration:calibration` | **Dispatcher** — prints the menu, delegates to a flow, or forwards free text as the intent. |
 | `/claude-calibration:calibration-audit` | Read-only baseline evaluation — no plan, no edits. Good as a CI gate. |
 | `/claude-calibration:calibration-diff` | "What changed since the last run?" — re-evaluates against the previous baseline. |
 | `/claude-calibration:calibration-track` | "Is calibration actually improving my setup?" — a deterministic snapshot compared vs a baseline anchored to the last PR merged onto `main` **and** vs the previous iteration. Independent of `/calibrate`'s built-in delta. |
 | `/claude-calibration:calibration-flow` | "Does my *workflow* still behave?" — drives a multi-step workflow over a case set of golden fixtures and scores node recall/precision, edge handoff contracts, and flow intent. On-demand behavioural cross-check (non-deterministic); the verdict comes from a deterministic scorer. |
 | `/claude-calibration:calibration-doctor` | ~5-second structural health check: JSON parses, hooks executable, frontmatter valid. |
 | `/claude-calibration:calibration-onboarding` | First-time setup guide — detects your stack, recommends one next step. |
-| `/claude-calibration:calibrate-<feature>` | Nine per-feature bundles you can run on their own: `skills`, `subagents`, `claude-md`, `rules`, `settings`, `hooks`, `mcp`, `plugins`, `general`. |
+
+**Per-feature bundles (9)** — `/claude-calibration:calibrate-<feature>` runs one feature's audit on
+its own, where `<feature>` is `skills`, `subagents`, `claude-md`, `rules`, `settings`, `hooks`,
+`mcp`, `plugins`, or `general`.
 
 ## How it works · why it's shaped this way
 
@@ -91,6 +101,19 @@ so the problem can't come back.
 - **Developing / contributing** — dev loop, gates, the signature contract →
   [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
+## Agents
+
+Five worker subagents do the actual auditing and editing. They are invoked **only by the skill layer
+above** — never by you directly, and never auto-fired.
+
+| Subagent | Model | Role |
+|---|---|---|
+| `calibration-planner` | opus | Writes and updates the plan; when a finding recurs, scaffolds the enforcing feature instead of a one-off fix. |
+| `calibration-evaluator` | sonnet | Audits the setup against the rubric and fans out the per-feature work. |
+| `calibration-feature-evaluator` | haiku | Parallel per-feature worker — the evaluator spawns one per feature. |
+| `calibration-calibrator` | sonnet | Applies approved plan rows to project-scope config only; user-scope rows become recommendations. |
+| `calibration-flow-evaluator` | sonnet | Behavioural worker that `/calibration-flow` spawns to score a workflow against its oracle. |
+
 ## Good to know
 
 - **It edits your config.** Review the plan before approving. Project changes (`CLAUDE.md`,
@@ -105,3 +128,8 @@ so the problem can't come back.
 ## License
 
 MIT.
+
+---
+
+For contributors: the [changelog](CHANGELOG.md) tracks every shipped change, and
+[`docs/RELEASING.md`](docs/RELEASING.md) covers the release process.
