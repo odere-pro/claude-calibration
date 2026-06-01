@@ -1,0 +1,1 @@
+- Add a promotional GitHub Pages landing page under `site/` (features, how-it-works mermaid diagram, commands, use cases, install/uninstall, debug, FAQ, SEO metadata) plus a `pages.yml` deploy workflow.

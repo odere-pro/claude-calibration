@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="claude-calibration — audit, fix and enforce your Claude Code setup">
+  <defs>
+    <radialGradient id="glow" cx="78%" cy="-6%" r="85%">
+      <stop offset="0%" stop-color="#e0855f" stop-opacity="0.22" />
+      <stop offset="60%" stop-color="#e0855f" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="#221b18" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+
+  <!-- brand -->
+  <text x="80" y="120" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="30" font-weight="700" letter-spacing="-0.5">
+    <tspan fill="#f0e7df">claude-</tspan><tspan fill="#e0855f">calibration</tspan>
+  </text>
+
+  <!-- headline -->
+  <text x="80" y="248" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="74" font-weight="700" letter-spacing="-2" fill="#f0e7df">
+    <tspan x="80" dy="0">Calibrate your Claude</tspan>
+    <tspan x="80" dy="86">Code setup — and lock</tspan>
+    <tspan x="80" dy="86">in standards that stick.</tspan>
+  </text>
+
+  <!-- subline -->
+  <text x="82" y="512" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="29" fill="#b9a99c">
+    evaluate → plan → calibrate → re-evaluate · then scaffold enforcement
+  </text>
+
+  <!-- pills -->
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="22" fill="#f0e7df">
+    <rect x="80" y="556" width="232" height="46" rx="23" fill="#31261f" stroke="#5c5048" />
+    <text x="100" y="585">9 features audited</text>
+    <rect x="328" y="556" width="290" height="46" rx="23" fill="#31261f" stroke="#5c5048" />
+    <text x="348" y="585">recurrence → enforcement</text>
+    <rect x="634" y="556" width="252" height="46" rx="23" fill="#31261f" stroke="#5c5048" />
+    <text x="654" y="585">~zero idle context</text>
+  </g>
+
+  <!-- calibration dial mark, top-right -->
+  <g transform="translate(1000, 150)">
+    <path d="M-70 50 A 70 70 0 0 1 70 50" fill="none" stroke="#5c5048" stroke-width="14" stroke-linecap="round" />
+    <path d="M-70 50 A 70 70 0 0 1 -20 -17" fill="none" stroke="#e0855f" stroke-width="15" stroke-linecap="round" />
+    <line x1="0" y1="50" x2="44" y2="-12" stroke="#e0855f" stroke-width="15" stroke-linecap="round" />
+    <circle cx="0" cy="50" r="15" fill="#e0855f" />
+  </g>
+</svg>
