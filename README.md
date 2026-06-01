@@ -125,11 +125,11 @@ above** — never by you directly, and never auto-fired.
 - Add `.claude/calibration/` to `.gitignore` unless you want runs committed (the calibrator offers
   to do this).
 
-## License
-
-MIT.
-
 ---
 
-For contributors: the [changelog](CHANGELOG.md) tracks every shipped change, and
-[`docs/RELEASING.md`](docs/RELEASING.md) covers the release process.
+<p align="center">
+  <a href="https://odere-pro.github.io/claude-calibration/">Website</a> ·
+  <a href="CHANGELOG.md">Changelog</a> ·
+  <a href="docs/RELEASING.md">Release process</a> ·
+  <a href="LICENSE">MIT License</a>
+</p>
