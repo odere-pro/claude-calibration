@@ -128,8 +128,6 @@ above** — never by you directly, and never auto-fired.
 ---
 
 <p align="center">
-  <a href="https://odere-pro.github.io/claude-calibration/">Website</a> ·
-  <a href="CHANGELOG.md">Changelog</a> ·
-  <a href="docs/RELEASING.md">Release process</a> ·
-  <a href="LICENSE">MIT License</a>
+  <a href="https://odere-pro.github.io/claude-calibration/">Landing page</a> ·
+  <a href="LICENSE">MIT</a>
 </p>
