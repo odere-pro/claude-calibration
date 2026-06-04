@@ -12,11 +12,19 @@ application — every file under here ships to end users when the plugin is inst
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
   `calibration-diff`, `calibration-track`, `calibration-flow`, `calibration-doctor`,
   `calibration-onboarding`
+- `workflows/calibration-audit-parallel.mjs` — a `Workflow` script (run via the `Workflow` tool /
+  `/workflows`) that parallelizes the read-only audit: it fans the 9 feature evaluators out via a
+  deterministic `parallel()` over `calibration-feature-evaluator`, then synthesizes via
+  `calibration-evaluator`. There is no native plugin component for workflows, so the SessionStart hook
+  `install-workflows.sh` copies it into the project's `.claude/workflows/` registry on session start
+  (idempotent, never clobbers local edits); same reports as `/claude-calibration:calibration-audit`
 - `agents/calibration-*.md` — 5 worker subagents: planner, evaluator, calibrator,
   `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel), and
   `calibration-flow-evaluator` (sonnet worker the `/calibration-flow` behavioural flow spawns)
 - `rules/{signatures,dispatch}.md` — canonical signature catalogue + dispatch map
 - `hooks/{hooks.json,calibrator-write-guard.sh,audit-write-guard.sh}` — `PreToolUse` write-guards
+- `hooks/install-workflows.sh` — `SessionStart` hook that installs `workflows/*.mjs` into the
+  project's `.claude/workflows/`
 - `docs/` — human-readable rubric (the doc-set the plugin grades against)
 
 ## What doesn't
@@ -24,6 +32,10 @@ application — every file under here ships to end users when the plugin is inst
 - `.claude/` (this dir's project config — only for plugin authors, not loaded for end users)
 - `tmp/` (scratch)
 - `.claude/calibration/` (run artifacts)
+
+> The parallel-audit `Workflow` ships at **`workflows/`** (plugin root, see "What ships"), not under
+> `.claude/`. Since there is no plugin component type for workflows, the `SessionStart` hook
+> materialises it into each project's `.claude/workflows/` registry so `/workflows` lists it.
 
 > Note: Claude Code clones the **whole** repo into the plugin cache — there is no ship-whitelist or
 > `.claudeignore`. So author-only files (`.claude/`, `tests/gates/`, `.github/`, `CONTRIBUTING.md`,
@@ -128,12 +140,13 @@ claude --plugin-dir .                             # load the plugin against itse
 | `skills/lib/` | shared shell helpers (`plugin-filter.sh` sourced by bundle `enumerate.sh`; `resolve-plugin-filter.sh` called by `calibrate`/audit/diff) — not a skill, no `SKILL.md` | yes |
 | `agents/` | the 5 worker subagents | yes |
 | `rules/` | `signatures.md` + `dispatch.md` (path-scoped) | yes |
-| `hooks/` | the two `PreToolUse` write-guards | yes |
+| `hooks/` | the two `PreToolUse` write-guards + the `SessionStart` workflow installer | yes |
 | `docs/` | the rubric the plugin grades against | yes |
 | `tests/gates/` | the CI validation suite (`run-all.sh` + numbered gates) | author-only |
 | `tests/eval/` | deterministic eval harness (`run-eval.sh` / `compare-eval.sh` + `baseline.json` + `history.jsonl`) | author-only |
 | `scripts/` | maintenance scripts (`changelog-aggregate.sh`) | author-only |
 | `changelog/` | per-PR changelog fragments | author-only |
+| `workflows/` | `calibration-audit-parallel.mjs` — `Workflow` script; installed into the project's `.claude/workflows/` by the `SessionStart` hook | yes |
 | `.claude/` | this repo's own project config + maintenance skills/agent | author-only |
 | `.github/` | CI/release workflows + issue/PR templates | author-only |
 

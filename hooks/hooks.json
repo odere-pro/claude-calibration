@@ -16,6 +16,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/install-workflows.sh",
+            "description": "Install bundled Workflow scripts into the project's .claude/workflows/ so they are runnable via /workflows (never overwrites local edits)"
+          }
+        ]
+      }
     ]
   }
 }
