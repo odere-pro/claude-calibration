@@ -2,14 +2,20 @@
 
 ## Scope
 
-The plugin's two `PreToolUse` write-guards and their wiring. They ship with the plugin and protect
-the audited project from unintended writes during a calibration run.
+The plugin's two `PreToolUse` write-guards plus a `SessionStart` workflow installer, and their wiring.
+They ship with the plugin; the guards protect the audited project from unintended writes during a
+calibration run, and the installer makes the bundled `Workflow` script(s) runnable.
 
-- `hooks.json` — wires both guards on `Edit|Write|MultiEdit`, using `${CLAUDE_PLUGIN_ROOT}`.
+- `hooks.json` — wires both guards on `Edit|Write|MultiEdit` and the installer on `SessionStart`,
+  using `${CLAUDE_PLUGIN_ROOT}`.
 - `calibrator-write-guard.sh` — fires **only** when the active subagent is `calibration-calibrator`;
   blocks writes outside the calibrator's allow-list.
 - `audit-write-guard.sh` — fires **only** during a `calibration-audit` run (`intent_source: audit-flow`);
   blocks writes outside the run folder (the read-only contract).
+- `install-workflows.sh` — `SessionStart`; copies `../workflows/*.mjs` into the project's
+  `.claude/workflows/` registry (so `/workflows` lists them). Idempotent and never clobbers local
+  edits: copies when missing, silent when identical, warns when a present copy differs. Always
+  `exit 0` (never blocks a session); no network.
 
 ## Invariants you must not break
 
