@@ -10,11 +10,13 @@ application — every file under here ships to end users when the plugin is inst
   is omitted here on purpose — `plugin.json` wins
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
-  `calibration-audit-parallel` (the read-only audit parallelized with a headless `claude -p`
-  fan-out: `SKILL.md` launcher + `scripts/run-parallel-audit.sh` that launches one `claude -p` per
-  feature, then a single synthesis pass — same reports as `calibration-audit`),
   `calibration-diff`, `calibration-track`, `calibration-flow`, `calibration-doctor`,
   `calibration-onboarding`
+- `.claude/workflows/calibration-audit-parallel.mjs` — a `Workflow` script (run via the `Workflow`
+  tool / `/workflows`) that parallelizes the read-only audit: it fans the 9 feature evaluators out
+  via a deterministic `parallel()` over `calibration-feature-evaluator`, then synthesizes via
+  `calibration-evaluator`. Cloned into the plugin cache with the rest of the repo (see "What doesn't"
+  note); same reports as `/claude-calibration:calibration-audit`
 - `agents/calibration-*.md` — 5 worker subagents: planner, evaluator, calibrator,
   `calibration-feature-evaluator` (haiku worker the evaluator fans out to in parallel), and
   `calibration-flow-evaluator` (sonnet worker the `/calibration-flow` behavioural flow spawns)
@@ -27,6 +29,11 @@ application — every file under here ships to end users when the plugin is inst
 - `.claude/` (this dir's project config — only for plugin authors, not loaded for end users)
 - `tmp/` (scratch)
 - `.claude/calibration/` (run artifacts)
+
+> `.claude/workflows/calibration-audit-parallel.mjs` is the one deliberate end-user artifact under
+> `.claude/`: it isn't auto-*loaded* as a plugin component, but the whole-repo clone puts it in the
+> cache, so it is runnable by the `Workflow` tool (by name where the registry sees it, or by
+> `scriptPath`). It is **not** a skill — there is no `SKILL.md`.
 
 > Note: Claude Code clones the **whole** repo into the plugin cache — there is no ship-whitelist or
 > `.claudeignore`. So author-only files (`.claude/`, `tests/gates/`, `.github/`, `CONTRIBUTING.md`,
@@ -138,6 +145,7 @@ claude --plugin-dir .                             # load the plugin against itse
 | `scripts/` | maintenance scripts (`changelog-aggregate.sh`) | author-only |
 | `changelog/` | per-PR changelog fragments | author-only |
 | `.claude/` | this repo's own project config + maintenance skills/agent | author-only |
+| `.claude/workflows/` | `calibration-audit-parallel.mjs` — `Workflow` script (parallel read-only audit); cloned to cache, run via the `Workflow` tool | not loaded, cloned |
 | `.github/` | CI/release workflows + issue/PR templates | author-only |
 
 ## Where to read before editing
