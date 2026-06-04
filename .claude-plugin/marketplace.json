@@ -1,10 +1,10 @@
 {
   "name": "odere-pro",
   "owner": {
-    "name": "odere",
-    "email": "odere.pro@gmail.com",
-    "url": "https://github.com/odere-pro"
+    "name": "odere-pro",
+    "email": "odere.pro@gmail.com"
   },
+  "description": "Calibration tooling for Claude Code — an evaluate → plan → calibrate → re-evaluate loop that audits and hardens a Claude Code setup (CLAUDE.md, rules, settings, skills, subagents, hooks, MCP, plugins), promoting recurring findings into enforcement (hooks/rules/wrapper skills).",
   "plugins": [
     {
       "name": "claude-calibration",
