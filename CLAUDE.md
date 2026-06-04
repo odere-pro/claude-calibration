@@ -6,8 +6,10 @@ application — every file under here ships to end users when the plugin is inst
 ## What ships
 
 - `.claude-plugin/plugin.json` — manifest (version of record)
-- `.claude-plugin/marketplace.json` — single-plugin marketplace manifest (`source: "./"`); version
-  is omitted here on purpose — `plugin.json` wins
+
+This repo no longer ships its own `marketplace.json`. Distribution is via the external
+[`odere-pro`](https://github.com/odere-pro/claude-software-3-0-marketplace) aggregator marketplace,
+which lists this plugin by `github` source — install with `claude-calibration@odere-pro`.
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
   `calibration-diff`, `calibration-track`, `calibration-flow`, `calibration-doctor`,
@@ -80,7 +82,6 @@ Two files are authoritative; everything else defers to them:
 | Gate | Protects | Typical failure |
 | ---- | -------- | --------------- |
 | G1 `01-json-parses` | every shipped `*.json` is valid | a typo in `plugin.json` / `hooks.json` |
-| G2 `02-marketplace-shape` | `marketplace.json` shape; entry name matches `plugin.json`; no `version` | drift between the two manifests |
 | G3 `03-skill-frontmatter` | every `SKILL.md` has `name` + `description` | missing frontmatter |
 | G4 `04-skill-dmi` | every shipped skill is `disable-model-invocation: true` | a skill that can auto-fire |
 | G5 `05-agent-frontmatter` | `agents/*.md` declare `name`/`description`/`tools`/`model` | a tool-inheriting agent |
@@ -123,7 +124,7 @@ claude --plugin-dir .                             # load the plugin against itse
 
 | Path | Role | Ships? |
 | ---- | ---- | ------ |
-| `.claude-plugin/` | `plugin.json` + `marketplace.json` | yes |
+| `.claude-plugin/` | `plugin.json` (the manifest) | yes |
 | `skills/` | orchestrator (`calibrate`), dispatcher (`calibration`), 6 flows, 9 per-feature bundles | yes |
 | `skills/lib/` | shared shell helpers (`plugin-filter.sh` sourced by bundle `enumerate.sh`; `resolve-plugin-filter.sh` called by `calibrate`/audit/diff) — not a skill, no `SKILL.md` | yes |
 | `agents/` | the 5 worker subagents | yes |
