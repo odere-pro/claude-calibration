@@ -10,8 +10,9 @@ application — every file under here ships to end users when the plugin is inst
   is omitted here on purpose — `plugin.json` wins
 - `skills/calibrate*/` — orchestrators + 9 per-feature bundles
 - `skills/calibration-*/` — top-level flows: `calibration` (dispatcher), `calibration-audit`,
-  `calibration-audit-parallel` (the read-only audit run as a `Workflow`: `SKILL.md` launcher +
-  `workflow.mjs` script that fans the 9 feature evaluators out via a deterministic `parallel()`),
+  `calibration-audit-parallel` (the read-only audit parallelized with a headless `claude -p`
+  fan-out: `SKILL.md` launcher + `scripts/run-parallel-audit.sh` that launches one `claude -p` per
+  feature, then a single synthesis pass — same reports as `calibration-audit`),
   `calibration-diff`, `calibration-track`, `calibration-flow`, `calibration-doctor`,
   `calibration-onboarding`
 - `agents/calibration-*.md` — 5 worker subagents: planner, evaluator, calibrator,

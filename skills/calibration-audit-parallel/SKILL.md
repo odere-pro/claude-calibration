@@ -1,91 +1,74 @@
 ---
 name: calibration-audit-parallel
 description: >-
-  Read-only calibration audit, run as a Claude Workflow. Same result as
-  /claude-calibration:calibration-audit (planner-init -> baseline-eval -> reports under
-  .claude/calibration/<ts>/), but the nine per-feature evaluators are fanned out by a deterministic
-  parallel() barrier at the workflow layer instead of being LLM-batched inside the evaluator. Use it
-  as a periodic health check or CI gate when you want the baseline with guaranteed-parallel fan-out
-  and a live progress tree (/workflows). Persists baseline reports so a later
-  /claude-calibration:calibration-diff can compare. Scope plugins with --plugins foo,bar (allow),
-  --plugins -baz (block), or --plugins global|local; a persisted .claude/calibration/config.json
-  sets the same default.
-argument-hint: "[restart | --plugins <a,b|-c|global|local>]"
+  Read-only calibration audit, parallelized with a headless `claude -p` fan-out. Runs the shipped
+  scripts/run-parallel-audit.sh, which launches one `claude -p` process per feature (true OS-level
+  parallelism), each acting as calibration-feature-evaluator, then a single synthesis pass merges the
+  drafts into the baseline reports under .claude/calibration/<ts>/. Same result as
+  /claude-calibration:calibration-audit, but the nine feature workers run as separate parallel CLI
+  processes instead of one in-session fan-out — useful when you want maximum wall-clock parallelism or
+  a script you can also run standalone in a terminal / CI. Read-only: no plan, no edits. Scope plugins
+  with --plugins foo,bar (allow), --plugins -baz (block), or --plugins global|local.
+argument-hint: "[--plugins <a,b|-c|global|local>]"
 disable-model-invocation: true
 model: sonnet
-allowed-tools: Workflow, Read, Glob, Bash(ls:*)
+allowed-tools: Read, Glob, Bash(bash *)
 ---
 
 ```!
 echo "=== calibration-audit-parallel preprocessing ==="
-DOCS_DIR="$(cd "${CLAUDE_SKILL_DIR}/../../docs" 2>/dev/null && pwd || echo UNKNOWN)"
-BUNDLES_DIR="$(cd "${CLAUDE_SKILL_DIR}/.." 2>/dev/null && pwd || echo UNKNOWN)"
-WORKFLOW_SCRIPT="${CLAUDE_SKILL_DIR}/workflow.mjs"
-echo "DOCS_DIR=$DOCS_DIR"
-echo "BUNDLES_DIR=$BUNDLES_DIR"
-echo "WORKFLOW_SCRIPT=$WORKFLOW_SCRIPT"
-echo "WORKFLOW_SCRIPT_EXISTS=$([ -f "$WORKFLOW_SCRIPT" ] && echo yes || echo no)"
+SCRIPT="${CLAUDE_SKILL_DIR}/scripts/run-parallel-audit.sh"
+echo "SCRIPT=$SCRIPT"
+echo "SCRIPT_EXISTS=$([ -f "$SCRIPT" ] && echo yes || echo no)"
 echo "PROJECT_DIR=${CLAUDE_PROJECT_DIR:-$(pwd)}"
-case " $ARGUMENTS " in *" restart "*) echo "RESTART=true";; *) echo "RESTART=false";; esac
-PLUGIN_FILTER=""
-[ "$BUNDLES_DIR" != "UNKNOWN" ] && [ -f "$BUNDLES_DIR/lib/resolve-plugin-filter.sh" ] && PLUGIN_FILTER="$(bash "$BUNDLES_DIR/lib/resolve-plugin-filter.sh" "$ARGUMENTS" "${CLAUDE_PROJECT_DIR:-$(pwd)}" 2>/dev/null || true)"
-echo "PLUGIN_FILTER=$PLUGIN_FILTER"
+echo "CLAUDE_ON_PATH=$(command -v claude >/dev/null 2>&1 && echo yes || echo no)"
+echo "ARGUMENTS=$ARGUMENTS"
 echo "=== end preprocessing ==="
 ```
 
-# calibration-audit-parallel — read-only baseline, run as a Workflow
+# calibration-audit-parallel — read-only baseline via headless `claude -p` fan-out
 
-You are the **launcher** for the parallel calibration audit. Your only job is to start the shipped
-`Workflow` script and report its result. You do **not** spawn the planner/evaluator yourself, and you
-**never** apply edits — the workflow chains `calibration-planner` (init) and `calibration-evaluator`
-(baseline) and stops, exactly like `/claude-calibration:calibration-audit`.
+You are the **launcher** for the parallel calibration audit. This flow is read-only (no improvement
+plan, no approval gate, no calibrator) — identical in scope to `/claude-calibration:calibration-audit`,
+but the nine per-feature evaluators run as **separate parallel `claude -p` processes** driven by a
+shipped shell script, rather than as one in-session subagent fan-out.
 
-The arguments are `$ARGUMENTS` (`restart` starts a fresh run; `--plugins <val>` scopes which plugins
-are audited — already normalised into `PLUGIN_FILTER` by the preprocessing block above).
+The arguments are `$ARGUMENTS` (`--plugins <val>` scopes which plugins are audited; passed straight
+through to the script).
 
 ## Procedure
 
-1. Read `WORKFLOW_SCRIPT`, `WORKFLOW_SCRIPT_EXISTS`, `BUNDLES_DIR`, `DOCS_DIR`, `PROJECT_DIR`,
-   `RESTART`, and `PLUGIN_FILTER` from the preprocessing block. If `WORKFLOW_SCRIPT_EXISTS=no`,
-   stop and tell the user the shipped workflow script is missing from the plugin install (one line);
-   suggest `/claude-calibration:calibration-audit` as the fallback. If `BUNDLES_DIR=UNKNOWN`, pass
-   `bundlesDir`/`docsDir` as empty so the workflow falls back to its own discovery.
-2. Launch the workflow by **path** (this is the opt-in: a user-invoked skill whose instructions tell
-   you to call `Workflow`). Pass the resolved paths as `args` so the workflow does not have to
-   re-discover them:
+1. Read `SCRIPT`, `SCRIPT_EXISTS`, `PROJECT_DIR`, and `CLAUDE_ON_PATH` from the preprocessing block.
+   - If `SCRIPT_EXISTS=no`, stop and tell the user the shipped script is missing from the plugin
+     install (one line); point them at `/claude-calibration:calibration-audit` as the in-session
+     fallback.
+   - If `CLAUDE_ON_PATH=no`, stop and tell the user this flow needs the `claude` CLI on `PATH`
+     (the workflow shells out to `claude -p`); suggest `/claude-calibration:calibration-audit`.
+2. Run the script, forwarding the project dir and any `--plugins` argument. This launches the nine
+   parallel `claude -p` workers, then the synthesis pass:
 
    ```
-   Workflow({
-     scriptPath: "<WORKFLOW_SCRIPT>",
-     args: {
-       projectDir:   "<PROJECT_DIR>",
-       bundlesDir:   "<BUNDLES_DIR>",     // omit if UNKNOWN
-       docsDir:      "<DOCS_DIR>",        // omit if UNKNOWN
-       pluginFilter: "<PLUGIN_FILTER>",   // empty string = all plugins
-       restart:      <RESTART>            // true | false
-     }
-   })
+   Bash: bash "<SCRIPT>" "<PROJECT_DIR>" $ARGUMENTS
    ```
 
-   The workflow runs four phases — **Resolve → Init → Fan-out (9 parallel feature evaluators) →
-   Synthesize** — and returns `{ runFolder, pluginFilter, featuresDrafted, featuresFailed, summary }`.
-3. **Print the audit summary** from the workflow's return value:
-   - The diagnostics ask (the four CLI outputs the user must paste for exact numbers): `/doctor`,
-     `/context all`, `/skills` (press `t` to sort by token cost), `/mcp`.
-   - The `summary` line (baseline C/H/M/L counts + top findings) verbatim.
-   - If `featuresFailed` is non-empty, note which features' workers errored.
-   - The `runFolder` path so the user can open `eval-features-*.md`, `eval-interactions-*.md`, and
-     `eval-intent-flow-*.md`.
-   - `→ Re-run /calibrate to plan fixes, or /claude-calibration:calibration-diff after manual edits.`
-4. Optionally, if `summary` is empty or truncated, `Glob` the run folder for `eval-features-*.md` and
-   `Read` it to recover the top 5 findings (`severity · scope · feature · signature · one-line detail`).
+   It is a long-running, read-only command (nine concurrent headless `claude` processes, all
+   writing only inside the new run folder). Let it finish; don't interrupt it.
+3. **Present the result.** The script prints the run folder, the three report filenames, any worker
+   errors, and the diagnostics ask. Relay that, then:
+   - `Glob` the run folder for `eval-features-*.md` and `Read` it to surface the top 5 findings,
+     one per line: `severity · scope · feature · signature · one-line detail`.
+   - End with: `→ Re-run /calibrate to plan fixes, or /claude-calibration:calibration-diff after
+     manual edits.`
 
 ## Hard rules
 
-- You **never** call `Agent(calibration-calibrator)` and never run the planner in `improve` mode —
-  this flow is read-only, identical in scope to `/claude-calibration:calibration-audit`.
-- All file writes happen **inside** the run folder, performed by the workflow's subagents; the shipped
-  `audit-write-guard.sh` hook (armed by `intent_source: audit-flow` in `plan.md`) blocks anything that
-  tries to write outside it. Treat any such block as a bug and report it.
-- If the `Workflow` run fails, surface the error in one line and stop — do not silently fall back to a
-  sequential audit.
+- You **never** call `Agent(calibration-calibrator)` and never plan or apply edits — this flow is
+  read-only, same scope as `/claude-calibration:calibration-audit`.
+- All file writes are performed by the script's child `claude -p` processes and land **inside** the
+  run folder; the shipped `audit-write-guard.sh` hook (armed by `intent_source: audit-flow` in
+  `plan.md`) blocks anything that tries to write outside it. Treat any such block as a bug.
+- If the script exits non-zero, surface its error line and stop — do not silently fall back to a
+  sequential in-session audit.
+- This flow spends real tokens across nine concurrent `claude -p` invocations (haiku) plus one
+  synthesis (sonnet). It is heavier than `/claude-calibration:calibration-audit`; only the wall-clock
+  changes, not the rubric.
