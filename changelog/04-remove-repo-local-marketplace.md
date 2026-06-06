@@ -1,1 +1,0 @@
-- Remove this repo's own `marketplace.json` and the now-obsolete G2 `02-marketplace-shape` gate: distribute the plugin via the external `odere-pro` aggregator marketplace, eliminating the `odere-pro` marketplace name collision between plugin repos.
