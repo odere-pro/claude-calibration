@@ -15,10 +15,10 @@ intent calls for it — **scaffolds new config that stops the same issues recurr
 
 ## Install
 
-In a Claude Code session, install from the marketplace:
+In a Claude Code session, add the `odere-pro` marketplace and install:
 
 ```text
-/plugin marketplace add odere-pro/claude-calibration
+/plugin marketplace add odere-pro/claude-software-3-0-marketplace
 /plugin install claude-calibration@odere-pro
 ```
 
