@@ -1,0 +1,1 @@
+- Normalize to the odere-pro plugin conventions: canonical author (Oleksandr Derechei), README reshaped to the standard skeleton, and a Privacy section.
